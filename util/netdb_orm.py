@@ -14,7 +14,6 @@ class NetdbORM:
 
 
     def saltToMongo(self):
-
         out = []
 
         for device, elements in self.data.items():
@@ -34,7 +33,6 @@ class NetdbORM:
 
 
     def mongoToSalt(self):
-
         out = {}
 
         if self.column == 'device':

@@ -35,7 +35,6 @@ def api_entry(column, device_id = None):
     netdb = NetDB(column = column)
 
     if request.method == 'POST':
-
         to_mongo = NetdbORM(data, column).saltToMongo()
 
         if to_mongo['result']:
@@ -44,7 +43,6 @@ def api_entry(column, device_id = None):
             response = to_mongo
 
     elif request.method == 'GET':
-
         mongo_out = netdb.fetch(id_key = device_id)
 
         if mongo_out['result']:

@@ -25,7 +25,6 @@ class NetDB:
 
 
     def _fetch(self, query = {} ):
-
         ret = self.mongo.read(query)
 
         if not ret['out']:
@@ -110,7 +109,6 @@ class NetDB:
 
     
     def _registration_check(self, data, device_id):
-
         devices = MongoAPI( DATABASE_NAME, 'device' ).read({ 'id': device_id })
 
         for element in devices['out']:
@@ -121,7 +119,6 @@ class NetDB:
 
 
     def save(self, data):
-
         if self.column == 'device':
             items = data
             added = 0
@@ -204,7 +201,6 @@ class NetDB:
 
 
     def fetch(self, id_key = None):
-
         query = {}
 
         if id_key != None:
