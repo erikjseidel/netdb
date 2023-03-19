@@ -13,6 +13,7 @@ class netdbColumn:
     ELEMENT_ID = {
         'device'   : 'id',
         'interface': 'interface_id',
+        'igp'      : 'set_id',
         }
 
     def set(self, data):
@@ -44,6 +45,6 @@ class netdbColumn:
 
 
     def fetch(self, filt = {}):
-        self.load()
+        self.load(filt)
 
         return { 'result': True, 'out': self.data }

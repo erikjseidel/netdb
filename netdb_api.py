@@ -1,7 +1,9 @@
 from flask          import Flask, Response, request, json
 
-from models.netdb_device    import netdbDevice
-from models.netdb_interface import netdbInterface
+from models.netdb_device         import netdbDevice
+from models.netdb_interface      import netdbInterface
+from models.netdb_igp            import netdbIgp
+from builders.igp_config_builder import igpConfigBuilder
 
 import yaml
 app = Flask(__name__)
@@ -19,10 +21,11 @@ def base():
   
 
 @app.route('/api/<column>', methods=['GET', 'POST', 'DELETE'])
-@app.route('/api/<column>/<device_id>', methods=['GET', 'POST', 'DELETE'])
-def api_entry(column, device_id = None):
+@app.route('/api/<column>/<top_id>', methods=['GET', 'POST', 'DELETE'])
+@app.route('/api/<column>/<top_id>/<opt>', methods=['GET'])
+def api_entry(column, top_id = None, opt = None):
 
-    if column not in ['device', 'interface']:
+    if column not in ['device', 'interface', 'igp'] or opt not in [ None, 'config']:
         return Response(response=json.dumps({"result": False, "comment": "Invalid endpoint"}),
                         status=400,
                         mimetype='application/json')
@@ -38,21 +41,28 @@ def api_entry(column, device_id = None):
         netdb = netdbDevice()  
     if column == 'interface':
         netdb = netdbInterface()  
+    if column == 'igp':
+        netdb = netdbIgp()  
 
     if request.method == 'POST':
         netdb.set(data)
         response = netdb.save()
 
     elif request.method == 'GET':
-        if not device_id:
+        if not top_id:
             query = {}
+        elif column == 'igp':
+            query = { "set_id": top_id }
         else:
-            query = { "id": device_id }
+            query = { "id": top_id }
 
-        response = netdb.fetch(query)
+        if column == 'igp' and opt == 'config':
+            response = igpConfigBuilder(top_id).build()
+        else:
+            response = netdb.fetch(query)
 
     else:
-        response = netdb.delete({ 'id': device_id })
+        response = netdb.delete({ 'id': top_id })
 
     return Response(response=json.dumps(response),
                     status=200,
