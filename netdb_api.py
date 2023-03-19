@@ -1,6 +1,8 @@
 from flask          import Flask, Response, request, json
-from util.netdb     import NetDB
-from util.netdb_orm import NetdbORM
+
+from models.netdb_device    import netdbDevice
+from models.netdb_interface import netdbInterface
+
 import yaml
 app = Flask(__name__)
 
@@ -32,23 +34,23 @@ def api_entry(column, device_id = None):
                             status=400,
                             mimetype='application/json')
 
-    netdb = NetDB(column = column)
+    if column == 'device':
+        netdb = netdbDevice()  
+    if column == 'interface':
+        netdb = netdbInterface()  
 
     if request.method == 'POST':
-        to_mongo = NetdbORM(data, column).saltToMongo()
-
-        if to_mongo['result']:
-            response = netdb.save(to_mongo['out'])
-        else:
-            response = to_mongo
+        netdb.set(data)
+        response = netdb.save()
 
     elif request.method == 'GET':
-        mongo_out = netdb.fetch(id_key = device_id)
-
-        if mongo_out['result']:
-            response = NetdbORM(mongo_out['out'], column).mongoToSalt()
+        if not device_id:
+            query = {}
         else:
-            response = mongo_out
+            query = { "id": device_id }
+
+        response = netdb.fetch(query)
+
     else:
         response = netdb.delete({ 'id': device_id })
 

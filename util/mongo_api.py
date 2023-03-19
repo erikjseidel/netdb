@@ -24,6 +24,12 @@ class MongoAPI:
         return { 'result': True, 'comment': str(response.inserted_id) + ' created' }
 
 
+    def write_many(self, documents):
+        response = self.collection.insert_many(documents)
+
+        return { 'result': True, 'comment': str(len(response.inserted_ids)) + ' documents created' }
+
+
     def delete(self, document):
         response = self.collection.delete_one(document)
         if response.deleted_count > 0:
