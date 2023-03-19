@@ -44,10 +44,6 @@ class netdbColumn:
 
 
     def fetch(self, filt = {}):
-        ret = self.mongo.read(filt)
+        self.load()
 
-        if not ret['out']:
-            return { 'result': False, 'out': {}, 'comment': 'empty data set' }
-
-        self.from_mongo(ret['out'])
         return { 'result': True, 'out': self.data }
