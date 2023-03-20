@@ -1,10 +1,12 @@
 from flask          import Flask, Response, request, json
 
-from models.netdb_device         import netdbDevice
-from models.netdb_interface      import netdbInterface
-from models.netdb_igp            import netdbIgp
-from models.netdb_firewall       import netdbFirewall
-from builders.igp_config_builder import igpConfigBuilder
+from models.netdb_device    import netdbDevice
+from models.netdb_interface import netdbInterface
+from models.netdb_igp       import netdbIgp
+from models.netdb_firewall  import netdbFirewall
+
+from builders.igp_config_builder      import igpConfigBuilder
+from builders.firewall_config_builder import firewallConfigBuilder
 
 import yaml
 app = Flask(__name__)
@@ -59,8 +61,10 @@ def api_entry(column, top_id = None, opt = None):
         else:
             query = { "id": top_id }
 
-        if column == 'igp' and opt == 'config':
+        if column in ['igp'] and opt == 'config':
             response = igpConfigBuilder(top_id).build()
+        elif column in ['firewall'] and opt == 'config':
+            response = firewallConfigBuilder(top_id).build()
         else:
             response = netdb.fetch(query)
 

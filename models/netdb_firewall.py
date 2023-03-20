@@ -22,6 +22,7 @@ class netdbFirewall(netdbColumn):
             'zone_policy'  : 'zone_policy',
             'state_policy' : 'state_policy',
             'options'      : 'option_set',
+            'mss_clamp'    : 'mss_clamp',
             }
 
     _FROM_MONGO = {
@@ -30,6 +31,7 @@ class netdbFirewall(netdbColumn):
             'zone_policy'  : 'zone_policy',
             'state_policy' : 'state_policy',
             'option_set'   : 'options',
+            'mss_clamp'    : 'mss_clamp',
             '_roles'       : 'roles',
             }
 
@@ -82,7 +84,7 @@ class netdbFirewall(netdbColumn):
                         entry.update(elements)
                         out.append(entry)
 
-                elif category in ['options', 'state_policy']:
+                elif category in ['options', 'state_policy', 'mss_clamp']:
                     entry = { 
                             'set_id'         : config_set,
                             'category'       : self._TO_MONGO[category],
@@ -133,7 +135,8 @@ class netdbFirewall(netdbColumn):
 
                 out[config_set][new_cat][elem_type][elem] = element
 
-            elif category in ['option_set', 'state_policy']:
+            elif category in ['option_set', 'state_policy', 'mss_clamp']:
+                element.pop('element_id', None)
                 out[config_set][new_cat] = element
 
             elif category == '_roles':
@@ -193,12 +196,19 @@ class netdbFirewall(netdbColumn):
                 elif category == 'state_policy':
                     for option, value in contents.items():
                         if option not in ['established', 'related'] or value not in ['accept', 'drop']:
-                            return { 'result': False, 'comment': "%s.%s: invalid option or value" % (top_id, category) }
+                            return { 'result': False, 'comment': "%s.%s.%s: invalid key or value" % (top_id, category, option) }
 
                 elif category == 'options':
                     for option, value in contents.items():
                         if not isinstance(value, str) and not isinstance(value, int):
-                            return { 'result': False, 'comment': "%s.%s: invalid option or value" % (top_id, category) }
+                            return { 'result': False, 'comment': "%s.%s.%s: invalid key or value" % (top_id, category, option) }
+
+                elif category == 'mss_clamp':
+                    for option, value in contents.items():
+                        if option not in ['ipv4', 'ipv6', 'interfaces']:
+                            return { 'result': False, 'comment': "%s.%s.%s: invalid key" % (top_id, category, option) }
+                        if option == 'interfaces' and not isinstance(value, list):
+                            return { 'result': False, 'comment': "%s.%s.%s: invalid value" % (top_id, category, option) }
 
                 elif top_id.startswith('_') and category == 'roles':
                     if not isinstance(contents, list):
