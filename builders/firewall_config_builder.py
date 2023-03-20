@@ -33,12 +33,11 @@ class firewallConfigBuilder(configBuilder):
                     break
 
         if device_id in self.data:
-            config.update({ 'local': self.data[device_id] })
+            config.update({ device_id: self.data[device_id] })
 
         config.pop('id', None)
 
-        out = {}
-        out[self.device_id] = config
+        out = config
 
         return { 'result': True, 'comment': 'firewall configuration generated', 'out': out }
                 
