@@ -8,12 +8,14 @@ class netdbColumn:
         'device',
         'interface',
         'igp',
+        'firewall',
         ]
 
     ELEMENT_ID = {
         'device'   : 'id',
         'interface': 'interface_id',
         'igp'      : 'set_id',
+        'firewall' : 'element_id',
         }
 
     def set(self, data):

@@ -3,6 +3,7 @@ from flask          import Flask, Response, request, json
 from models.netdb_device         import netdbDevice
 from models.netdb_interface      import netdbInterface
 from models.netdb_igp            import netdbIgp
+from models.netdb_firewall       import netdbFirewall
 from builders.igp_config_builder import igpConfigBuilder
 
 import yaml
@@ -25,7 +26,7 @@ def base():
 @app.route('/api/<column>/<top_id>/<opt>', methods=['GET'])
 def api_entry(column, top_id = None, opt = None):
 
-    if column not in ['device', 'interface', 'igp'] or opt not in [ None, 'config']:
+    if column not in ['device', 'interface', 'igp', 'firewall'] or opt not in [ None, 'config']:
         return Response(response=json.dumps({"result": False, "comment": "Invalid endpoint"}),
                         status=400,
                         mimetype='application/json')
@@ -43,6 +44,8 @@ def api_entry(column, top_id = None, opt = None):
         netdb = netdbInterface()  
     if column == 'igp':
         netdb = netdbIgp()  
+    if column == 'firewall':
+        netdb = netdbFirewall()  
 
     if request.method == 'POST':
         netdb.set(data)
@@ -51,7 +54,7 @@ def api_entry(column, top_id = None, opt = None):
     elif request.method == 'GET':
         if not top_id:
             query = {}
-        elif column == 'igp':
+        elif column in ['igp', 'firewall']:
             query = { "set_id": top_id }
         else:
             query = { "id": top_id }

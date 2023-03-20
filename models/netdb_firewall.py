@@ -30,6 +30,7 @@ class netdbFirewall(netdbColumn):
             'zone_policy'  : 'zone_policy',
             'state_policy' : 'state_policy',
             'option_set'   : 'options',
+            '_roles'       : 'roles',
             }
 
     def __init__(self, data = {}):
@@ -45,7 +46,7 @@ class netdbFirewall(netdbColumn):
                 entry = {
                         'set_id'     : config_set,
                         'category'   : '_roles',
-                        'roles'      : config_set['roles'],
+                        'roles'      : categories['roles'],
                         }
                 out.append(entry)
 
@@ -91,11 +92,8 @@ class netdbFirewall(netdbColumn):
                     if not config_set.startswith('_'):
                         entry.update({ 'id' : config_set })
 
-                    entry.update(category)
+                    entry.update(contents)
                     out.append(entry)
-
-                else:
-                    return None
 
         return out
 
@@ -109,33 +107,34 @@ class netdbFirewall(netdbColumn):
                 out[config_set] = {}
 
             category = element.pop('category')
+            new_cat  = self._FROM_MONGO[category]
 
             if category in ['policy', 'group']:
                 family = element.pop('family')
                 elem   = element.pop('element_id')
 
-                if category not in out[config_set]:
-                    out[config_set][self._FROM_MONGO[category]] = {}
+                if new_cat not in out[config_set]:
+                    out[config_set][new_cat] = {}
 
-                if family not in out[config_set][category]:
-                    out[config_set][self._FROM_MONGO[category]][family] = {}
+                if family not in out[config_set][new_cat]:
+                    out[config_set][new_cat][family] = {}
                     
-                out[config_set][category][family][elem] = element
+                out[config_set][new_cat][family][elem] = element
 
             elif category in ['zone_policy']:
-                elem_type = element.pop['type']
-                elem      = element.pop['element_id']
+                elem_type = element.pop('type')
+                elem      = element.pop('element_id')
 
-                if category not in out[config_set]:
-                    out[config_set][self._FROM_MONGO[category]] = {}
+                if new_cat not in out[config_set]:
+                    out[config_set][new_cat] = {}
 
-                if elem_type not in out[config_set][category]:
-                    out[config_set][self._FROM_MONGO[category]][elem_type] = {}
+                if elem_type not in out[config_set][new_cat]:
+                    out[config_set][new_cat][elem_type] = {}
 
-                out[config_set][category][elem_type][elem] = element
+                out[config_set][new_cat][elem_type][elem] = element
 
             elif category in ['option_set', 'state_policy']:
-                out[config_set][self._FROM_MONGO[category]] = element
+                out[config_set][new_cat] = element
 
             elif category == '_roles':
                 out[config_set]['roles'] = element['roles']
@@ -159,7 +158,7 @@ class netdbFirewall(netdbColumn):
                 return { 'result': False, 'comment': "%s: config set already exists" % top_id }
 
             if top_id.startswith('_'):
-                if 'roles' not in config_data:
+                if 'roles' not in categories.keys():
                     return { 'result': False, 'comment': "%s: roles required for shared config set" % top_id }
 
             elif top_id not in devices.keys():
@@ -167,7 +166,7 @@ class netdbFirewall(netdbColumn):
 
             for category, contents in categories.items():
                 if category in ['policies', 'groups']:
-                    for family, items in category.items():
+                    for family, items in contents.items():
                         if family not in ['ipv4', 'ipv6']:
                             return { 'result': False, 'comment': "%s.%s: family must me either ipv4 or ipv6" % (top_id, category) }
 
@@ -177,17 +176,19 @@ class netdbFirewall(netdbColumn):
                         return { 'result': False, 'comment': "%s.%s: zone node required" % (top_id, category) }
                     for item, elements in contents['zone'].items():
                         for element, elem_data in elements.items():
-                            if element == 'interfaces' and not isinstance(elem_data, list):
-                                return { 'result': False, 'comment': "%s.%s.%s.%s: must be a list" % (top_id, category, item, element) }
-                            elif element == 'default_action' and elem_data not in ['drop', 'accept']:
-                                return { 'result': False, 'comment': "%s.%s.%s.%s: must be drop or accept" % (top_id, category, item, element) }
+                            if element == 'interfaces':
+                                if not isinstance(elem_data, list):
+                                    return { 'result': False, 'comment': "%s.%s.%s.%s: must be a list" % (top_id, category, item, element) }
+                            elif element == 'default_action':  
+                                if elem_data not in ['drop', 'accept']:
+                                    return { 'result': False, 'comment': "%s.%s.%s.%s: must be drop or accept" % (top_id, category, item, element) }
                             elif element == 'from':
                                 if not isinstance(elem_data, list):
                                     for zone in elem_data:
                                         if 'zone' not in zone:
                                             return { 'result': False, 'comment': "%s.%s.%s.%s: invalid from data" % (top_id, category, item, element) }
                             else:
-                                return { 'result': False, 'comment': "%s.%s.%s.%s: invalid node" % (top_id, category, item, element) }
+                                return { 'result': False, 'comment': "%s.%s.%s.%s: HERE invalid node" % (top_id, category, item, element) }
 
                 elif category == 'state_policy':
                     for option, value in contents.items():
@@ -196,7 +197,7 @@ class netdbFirewall(netdbColumn):
 
                 elif category == 'options':
                     for option, value in contents.items():
-                        if not isinstance(option, str) or not isinstance(value, str) or not isinstance(value, int):
+                        if not isinstance(value, str) and not isinstance(value, int):
                             return { 'result': False, 'comment': "%s.%s: invalid option or value" % (top_id, category) }
 
                 elif top_id.startswith('_') and category == 'roles':
