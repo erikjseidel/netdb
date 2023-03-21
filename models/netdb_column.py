@@ -16,6 +16,7 @@ class netdbColumn:
         'interface': 'interface_id',
         'igp'      : 'set_id',
         'firewall' : 'element_id',
+        'policy'   : 'element_id',
         }
 
     def set(self, data):
