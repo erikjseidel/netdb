@@ -1,7 +1,6 @@
 
 from builders.config_builder import configBuilder
 from models.netdb_firewall   import netdbFirewall
-from models.netdb_device     import netdbDevice
 
 class firewallConfigBuilder(configBuilder):
 

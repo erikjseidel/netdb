@@ -62,7 +62,6 @@ class configBuilder:
 
 
     def build(self):
-
         if not self._DEV_AVAIL:
             return { 'result': False, 'comment': 'Device not found.' }
 
