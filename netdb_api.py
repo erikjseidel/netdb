@@ -6,9 +6,10 @@ from models.netdb_igp       import netdbIgp
 from models.netdb_firewall  import netdbFirewall
 from models.netdb_policy    import netdbPolicy
 
-from builders.igp_config_builder      import igpConfigBuilder
-from builders.firewall_config_builder import firewallConfigBuilder
-from builders.policy_config_builder   import policyConfigBuilder
+from builders.igp_config_builder       import igpConfigBuilder
+from builders.firewall_config_builder  import firewallConfigBuilder
+from builders.policy_config_builder    import policyConfigBuilder
+from builders.interface_config_builder import interfaceConfigBuilder
 
 import yaml
 app = Flask(__name__)
@@ -71,6 +72,8 @@ def api_entry(column, top_id = None, opt = None):
             response = firewallConfigBuilder(top_id).build()
         elif column in ['policy'] and opt == 'config':
             response = policyConfigBuilder(top_id).build()
+        elif column in ['interface'] and opt == 'config':
+            response = interfaceConfigBuilder(top_id).build()
         else:
             response = netdb.fetch(query)
 
