@@ -6,7 +6,6 @@ from util.mongo_api      import MongoAPI
 class netdbFirewall(netdbColumn):
 
     _COLUMN     = 'firewall'
-    _ELEMENT_ID = netdbColumn.ELEMENT_ID[_COLUMN]
 
     _COLUMN_CAT  = {
             'type_1'   :  [ 'policies', 'groups' ],

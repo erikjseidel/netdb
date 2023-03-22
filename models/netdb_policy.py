@@ -6,7 +6,6 @@ from util.mongo_api      import MongoAPI
 class netdbPolicy(netdbColumn):
 
     _COLUMN     = 'policy'
-    _ELEMENT_ID = netdbColumn.ELEMENT_ID[_COLUMN]
 
     _COLUMN_CAT  = {
             'type_1'   :  [ 'prefix_lists', 'route_maps' ],

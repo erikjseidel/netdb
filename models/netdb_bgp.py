@@ -6,7 +6,6 @@ from util.mongo_api      import MongoAPI
 class netdbBgp(netdbColumn):
 
     _COLUMN     = 'bgp'
-    _ELEMENT_ID = netdbColumn.ELEMENT_ID[_COLUMN]
 
     _COLUMN_CAT  = {
             'type_1'   :  [ 'address_family' ],

@@ -15,9 +15,6 @@ class netdbColumn:
         'device'   : 'id',
         'interface': 'interface_id',
         'igp'      : 'set_id',
-        'firewall' : 'element_id',
-        'policy'   : 'element_id',
-        'bgp'      : 'element_id',
         }
 
 
@@ -39,10 +36,10 @@ class netdbColumn:
                         if family in contents:
                             for element, elem_data in contents[family].items():
                                 entry = {
-                                        'set_id'          : config_set,
-                                        'category'        : self._TO_MONGO[category],
-                                        'family'          : family,
-                                        self._ELEMENT_ID  : element,
+                                        'set_id'      : config_set,
+                                        'category'    : self._TO_MONGO[category],
+                                        'family'      : family,
+                                        'element_id'  : element,
                                         }
 
                                 if not config_set.startswith('_'):
@@ -54,9 +51,9 @@ class netdbColumn:
                 elif category in self._COLUMN_CAT['type_2']:
                     for element, elem_data in contents.items():
                         entry = {
-                                'set_id'          : config_set,
-                                'category'        : self._TO_MONGO[category],
-                                self._ELEMENT_ID  : element,
+                                'set_id'      : config_set,
+                                'category'    : self._TO_MONGO[category],
+                                'element_id'  : element,
                                 }
 
                         if not config_set.startswith('_'):
@@ -67,9 +64,9 @@ class netdbColumn:
 
                 elif category in self._COLUMN_CAT['type_3']:
                     entry = {
-                            'set_id'         : config_set,
-                            'category'       : self._TO_MONGO[category],
-                            self._ELEMENT_ID : "%s.%s" % (config_set, category),
+                            'set_id'      : config_set,
+                            'category'    : self._TO_MONGO[category],
+                            'element_id'  : "%s.%s" % (config_set, category),
                             }
 
                     if not config_set.startswith('_'):
