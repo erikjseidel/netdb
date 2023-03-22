@@ -8,9 +8,16 @@ class netdbPolicy(netdbColumn):
     _COLUMN     = 'policy'
     _ELEMENT_ID = netdbColumn.ELEMENT_ID[_COLUMN]
 
-    CATEGORIES  = {
-            'route_map'   :  [], 
-            'prefix_list' :  [], 
+    _COLUMN_CAT  = {
+            'type_1'   :  [ 'prefix_lists', 'route_maps' ],
+            'type_2'   :  [ 'aspath_lists', 'community_lists' ],
+            'type_3'   :  [],
+            }
+
+    _MONGO_CAT  = {
+            'type_1'   :  [ 'prefix_list', 'route_map' ],
+            'type_2'   :  [ 'aspath_list', 'community_list' ],
+            'type_3'   :  [],
             }
 
     _TO_MONGO = {
@@ -27,87 +34,6 @@ class netdbPolicy(netdbColumn):
     def __init__(self, data = {}):
         self.data = data
         self.mongo = MongoAPI( netdbColumn.DB_NAME, self._COLUMN )
-
-
-    def to_mongo(self):
-        out = []
-
-        for config_set, categories in self.data.items():
-            if config_set.startswith('_'):
-                entry = {
-                        'set_id'     : config_set,
-                        'category'   : '_roles',
-                        'roles'      : categories['roles'],
-                        }
-                out.append(entry)
-
-            for category, contents in categories.items():
-                if category in ['prefix_lists', 'route_maps']:
-                    for family, items in contents.items():
-                        for item, elements in items.items():
-                            entry = { 
-                                    'set_id'          : config_set,
-                                    'category'        : self._TO_MONGO[category],
-                                    'family'          : family,
-                                    self._ELEMENT_ID  : item,
-                                    }
-
-                            if not config_set.startswith('_'):
-                                entry.update({ 'id' : config_set })
-
-                            entry.update(elements)
-                            out.append(entry)
-
-                elif category in ['aspath_lists', 'community_lists']:
-                    entry = { 
-                            'set_id'         : config_set,
-                            'category'       : self._TO_MONGO[category],
-                            self._ELEMENT_ID : "%s.%s" % (config_set, category),
-                            }
-
-                    if not config_set.startswith('_'):
-                       entry.update({ 'id' : config_set })
-
-                    entry.update(elements)
-                    out.append(entry)
-        return out
-
-
-    def from_mongo(self, data):
-        out = {}
-
-        for element in data:
-            config_set = element.pop('set_id')
-            element.pop('id', None)
-            if config_set not in out:
-                out[config_set] = {}
-
-            category = element.pop('category')
-            new_cat  = self._FROM_MONGO[category]
-
-            if category in ['prefix_list', 'route_map']:
-                family = element.pop('family')
-                elem   = element.pop('element_id')
-
-                if new_cat not in out[config_set]:
-                    out[config_set][new_cat] = {}
-
-                if family not in out[config_set][new_cat]:
-                    out[config_set][new_cat][family] = {}
-                    
-                out[config_set][new_cat][family][elem] = element
-
-            elif category in ['aspath_list', 'community_list']:
-                element.pop('element_id', None)
-                out[config_set][new_cat] = element
-
-            elif category == '_roles':
-                out[config_set]['roles'] = element['roles']
-
-            else:
-                out = {}
-
-        self.data = out
 
 
     def _save_checker(self):

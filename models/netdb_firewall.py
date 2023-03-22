@@ -8,12 +8,16 @@ class netdbFirewall(netdbColumn):
     _COLUMN     = 'firewall'
     _ELEMENT_ID = netdbColumn.ELEMENT_ID[_COLUMN]
 
-    CATEGORIES  = {
-            'options'      :  [],
-            'zone_policy'  :  [ 'zone' ],
-            'state_policy' :  [], 
-            'policy'       :  [], 
-            'group'        :  [ 'network' ],
+    _COLUMN_CAT  = {
+            'type_1'   :  [ 'policies', 'groups' ],
+            'type_2'   :  [ 'zone_policy' ],
+            'type_3'   :  [ 'options', 'state_policy', 'mss_clamp' ],
+            }
+
+    _MONGO_CAT  = {
+            'type_1'   :  [ 'policy', 'group' ],
+            'type_2'   :  [ 'zone_policy' ],
+            'type_3'   :  [ 'option_set', 'state_policy', 'mss_clamp' ],
             }
 
     _TO_MONGO = {
@@ -38,115 +42,6 @@ class netdbFirewall(netdbColumn):
     def __init__(self, data = {}):
         self.data = data
         self.mongo = MongoAPI( netdbColumn.DB_NAME, self._COLUMN )
-
-
-    def to_mongo(self):
-        out = []
-
-        for config_set, categories in self.data.items():
-            if config_set.startswith('_'):
-                entry = {
-                        'set_id'     : config_set,
-                        'category'   : '_roles',
-                        'roles'      : categories['roles'],
-                        }
-                out.append(entry)
-
-            for category, contents in categories.items():
-                if category in ['policies', 'groups']:
-                    for family, items in contents.items():
-                        for item, elements in items.items():
-                            entry = { 
-                                    'set_id'          : config_set,
-                                    'category'        : self._TO_MONGO[category],
-                                    'family'          : family,
-                                    self._ELEMENT_ID  : item,
-                                    }
-
-                            if not config_set.startswith('_'):
-                                entry.update({ 'id' : config_set })
-
-                            entry.update(elements)
-                            out.append(entry)
-
-                elif category == 'zone_policy':
-                    for item, elements in contents['zone'].items():
-                        entry = { 
-                                'set_id'         : config_set,
-                                'category'       : self._TO_MONGO[category],
-                                'type'           : 'zone',
-                                self._ELEMENT_ID : item,
-                                }
-
-                        if not config_set.startswith('_'):
-                            entry.update({ 'id' : config_set })
-
-                        entry.update(elements)
-                        out.append(entry)
-
-                elif category in ['options', 'state_policy', 'mss_clamp']:
-                    entry = { 
-                            'set_id'         : config_set,
-                            'category'       : self._TO_MONGO[category],
-                            self._ELEMENT_ID : "%s.%s" % (config_set, category),
-                            }
-
-                    if not config_set.startswith('_'):
-                        entry.update({ 'id' : config_set })
-
-                    entry.update(contents)
-                    out.append(entry)
-
-        return out
-
-
-    def from_mongo(self, data):
-        out = {}
-
-        for element in data:
-            config_set = element.pop('set_id')
-            element.pop('id', None)
-            if config_set not in out:
-                out[config_set] = {}
-
-            category = element.pop('category')
-            new_cat  = self._FROM_MONGO[category]
-
-            if category in ['policy', 'group']:
-                family = element.pop('family')
-                elem   = element.pop('element_id')
-
-                if new_cat not in out[config_set]:
-                    out[config_set][new_cat] = {}
-
-                if family not in out[config_set][new_cat]:
-                    out[config_set][new_cat][family] = {}
-                    
-                out[config_set][new_cat][family][elem] = element
-
-            elif category in ['zone_policy']:
-                elem_type = element.pop('type')
-                elem      = element.pop('element_id')
-
-                if new_cat not in out[config_set]:
-                    out[config_set][new_cat] = {}
-
-                if elem_type not in out[config_set][new_cat]:
-                    out[config_set][new_cat][elem_type] = {}
-
-                out[config_set][new_cat][elem_type][elem] = element
-
-            elif category in ['option_set', 'state_policy', 'mss_clamp']:
-                element.pop('element_id', None)
-                out[config_set][new_cat] = element
-
-            elif category == '_roles':
-                out[config_set]['roles'] = element['roles']
-
-            else:
-                out = {}
-
-        self.data = out
 
 
     def _save_checker(self):
@@ -174,11 +69,8 @@ class netdbFirewall(netdbColumn):
                         if family not in ['ipv4', 'ipv6']:
                             return { 'result': False, 'comment': "%s.%s: family must me either ipv4 or ipv6" % (top_id, category) }
 
-
                 elif category == 'zone_policy':
-                    if 'zone' not in contents:
-                        return { 'result': False, 'comment': "%s.%s: zone node required" % (top_id, category) }
-                    for item, elements in contents['zone'].items():
+                    for item, elements in contents.items():
                         for element, elem_data in elements.items():
                             if element == 'interfaces':
                                 if not isinstance(elem_data, list):
