@@ -78,6 +78,7 @@ class netdbPolicy(netdbColumn):
 
         for element in data:
             config_set = element.pop('set_id')
+            element.pop('id', None)
             if config_set not in out:
                 out[config_set] = {}
 

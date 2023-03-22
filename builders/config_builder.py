@@ -79,6 +79,7 @@ class configBuilder:
 
             for role in set_data['roles']:
                 if role in roles or role == '*':
+                    set_data.pop('roles', None)
                     config.update({ config_set: set_data })
                     break
 

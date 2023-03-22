@@ -3,36 +3,36 @@ from models.netdb_column import netdbColumn
 from models.netdb_device import netdbDevice
 from util.mongo_api      import MongoAPI
 
-class netdbFirewall(netdbColumn):
+class netdbBgp(netdbColumn):
 
-    _COLUMN     = 'firewall'
+    _COLUMN     = 'bgp'
     _ELEMENT_ID = netdbColumn.ELEMENT_ID[_COLUMN]
 
-    CATEGORIES  = {
-            'options'      :  [],
-            'zone_policy'  :  [ 'zone' ],
-            'state_policy' :  [], 
-            'policy'       :  [], 
-            'group'        :  [ 'network' ],
+    _COLUMN_CAT  = {
+            'type_1'   :  [ 'address_family' ],
+            'type_2'   :  [ 'peer_groups', 'neighbors' ],
+            'type_3'   :  [ 'options' ],
+            }
+
+    _MONGO_CAT  = {
+            'type_1'   :  [ 'address_family' ],
+            'type_2'   :  [ 'peer_group', 'neighbor' ],
+            'type_3'   :  [ 'option_set' ],
             }
 
     _TO_MONGO = {
-            'policies'     : 'policy',
-            'groups'       : 'group',
-            'zone_policy'  : 'zone_policy',
-            'state_policy' : 'state_policy',
-            'options'      : 'option_set',
-            'mss_clamp'    : 'mss_clamp',
+            'options'        : 'option_set',
+            'peer_groups'    : 'peer_group',
+            'neighbors'      : 'neighbor',
+            'address_family' : 'address_family',
             }
 
     _FROM_MONGO = {
-            'policy'       : 'policies',
-            'group'        : 'groups',
-            'zone_policy'  : 'zone_policy',
-            'state_policy' : 'state_policy',
-            'option_set'   : 'options',
-            'mss_clamp'    : 'mss_clamp',
-            '_roles'       : 'roles',
+            'option_set'     : 'options',
+            'peer_group'     : 'peer_groups',
+            'neighbor'       : 'neighbors',
+            'address_family' : 'address_family',
+            '_roles'         : 'roles',
             }
 
     def __init__(self, data = {}):
@@ -53,38 +53,37 @@ class netdbFirewall(netdbColumn):
                 out.append(entry)
 
             for category, contents in categories.items():
-                if category in ['policies', 'groups']:
-                    for family, items in contents.items():
-                        for item, elements in items.items():
-                            entry = { 
+                if category == 'address_family':
+                    for family in ['ipv4', 'ipv6']:
+                        for element, elem_data in contents[family].items():
+                            entry = {
                                     'set_id'          : config_set,
                                     'category'        : self._TO_MONGO[category],
                                     'family'          : family,
-                                    self._ELEMENT_ID  : item,
+                                    self._ELEMENT_ID  : element,
                                     }
 
                             if not config_set.startswith('_'):
                                 entry.update({ 'id' : config_set })
 
-                            entry.update(elements)
+                            entry.update(elem_data)
                             out.append(entry)
 
-                elif category == 'zone_policy':
-                    for item, elements in contents['zone'].items():
+                elif category in ['peer_groups', 'neighbors']:
+                    for element, elem_data in contents.items():
                         entry = { 
-                                'set_id'         : config_set,
-                                'category'       : self._TO_MONGO[category],
-                                'type'           : 'zone',
-                                self._ELEMENT_ID : item,
+                                'set_id'          : config_set,
+                                'category'        : self._TO_MONGO[category],
+                                self._ELEMENT_ID  : element,
                                 }
 
                         if not config_set.startswith('_'):
                             entry.update({ 'id' : config_set })
 
-                        entry.update(elements)
+                        entry.update(elem_data)
                         out.append(entry)
 
-                elif category in ['options', 'state_policy', 'mss_clamp']:
+                elif category == 'options':
                     entry = { 
                             'set_id'         : config_set,
                             'category'       : self._TO_MONGO[category],
@@ -112,7 +111,7 @@ class netdbFirewall(netdbColumn):
             category = element.pop('category')
             new_cat  = self._FROM_MONGO[category]
 
-            if category in ['policy', 'group']:
+            if category == 'address_family':
                 family = element.pop('family')
                 elem   = element.pop('element_id')
 
@@ -121,22 +120,18 @@ class netdbFirewall(netdbColumn):
 
                 if family not in out[config_set][new_cat]:
                     out[config_set][new_cat][family] = {}
-                    
+
                 out[config_set][new_cat][family][elem] = element
 
-            elif category in ['zone_policy']:
-                elem_type = element.pop('type')
-                elem      = element.pop('element_id')
+            elif category in ['peer_group', 'neighbor']:
+                elem   = element.pop('element_id')
 
                 if new_cat not in out[config_set]:
                     out[config_set][new_cat] = {}
 
-                if elem_type not in out[config_set][new_cat]:
-                    out[config_set][new_cat][elem_type] = {}
+                out[config_set][new_cat][elem] = element
 
-                out[config_set][new_cat][elem_type][elem] = element
-
-            elif category in ['option_set', 'state_policy', 'mss_clamp']:
+            elif category == 'option_set':
                 element.pop('element_id', None)
                 out[config_set][new_cat] = element
 
@@ -154,7 +149,7 @@ class netdbFirewall(netdbColumn):
             return { 'result': False, 'comment': 'invalid dataset' }
 
         devices     = netdbDevice().fetch( filt = {} )['out']
-        config_sets = netdbFirewall().fetch( filt = {} )['out']
+        config_sets = netdbBgp().fetch( filt = {} )['out']
 
         for top_id, categories in self.data.items():
 
@@ -169,54 +164,33 @@ class netdbFirewall(netdbColumn):
                 return { 'result': False, 'comment': "%s: device not registered" % top_id }
 
             for category, contents in categories.items():
-                if category in ['policies', 'groups']:
+                if category == 'address_family':
                     for family, items in contents.items():
                         if family not in ['ipv4', 'ipv6']:
                             return { 'result': False, 'comment': "%s.%s: family must me either ipv4 or ipv6" % (top_id, category) }
 
-
-                elif category == 'zone_policy':
-                    if 'zone' not in contents:
-                        return { 'result': False, 'comment': "%s.%s: zone node required" % (top_id, category) }
-                    for item, elements in contents['zone'].items():
-                        for element, elem_data in elements.items():
-                            if element == 'interfaces':
-                                if not isinstance(elem_data, list):
-                                    return { 'result': False, 'comment': "%s.%s.%s.%s: must be a list" % (top_id, category, item, element) }
-                            elif element == 'default_action':  
-                                if elem_data not in ['drop', 'accept']:
-                                    return { 'result': False, 'comment': "%s.%s.%s.%s: must be drop or accept" % (top_id, category, item, element) }
-                            elif element == 'from':
-                                if not isinstance(elem_data, list):
-                                    for zone in elem_data:
-                                        if 'zone' not in zone:
-                                            return { 'result': False, 'comment': "%s.%s.%s.%s: invalid from data" % (top_id, category, item, element) }
-                            else:
-                                return { 'result': False, 'comment': "%s.%s.%s.%s: HERE invalid node" % (top_id, category, item, element) }
-
-                elif category == 'state_policy':
-                    for option, value in contents.items():
-                        if option not in ['established', 'related'] or value not in ['accept', 'drop']:
-                            return { 'result': False, 'comment': "%s.%s.%s: invalid key or value" % (top_id, category, option) }
+                elif category in ['peer_groups', 'neighbors']:
+                    for element, elem_data in contents.items():
+                        if category == 'peer_groups':
+                            for i in elem_data.keys():
+                                if i not in ['family', 'type', 'remote_asn', 'source', 'password', 'multihop']:
+                                    return { 'result': False, 'comment': "%s.%s.%s: invalid peer_group key" % (top_id, category, element) }
+                        else:
+                            for i in elem_data.keys():
+                                if i not in ['peer_group', 'family', 'type', 'remote_asn']:
+                                    return { 'result': False, 'comment': "%s.%s.%s: invalid neighbor key" % (top_id, category, element) }
 
                 elif category == 'options':
                     for option, value in contents.items():
                         if not isinstance(value, str) and not isinstance(value, int):
                             return { 'result': False, 'comment': "%s.%s.%s: invalid key or value" % (top_id, category, option) }
 
-                elif category == 'mss_clamp':
-                    for option, value in contents.items():
-                        if option not in ['ipv4', 'ipv6', 'interfaces']:
-                            return { 'result': False, 'comment': "%s.%s.%s: invalid key" % (top_id, category, option) }
-                        if option == 'interfaces' and not isinstance(value, list):
-                            return { 'result': False, 'comment': "%s.%s.%s: invalid value" % (top_id, category, option) }
-
                 elif top_id.startswith('_') and category == 'roles':
                     if not isinstance(contents, list):
                         return { 'result': False, 'comment': "%s: roles must be a list" % top_id }
 
                 else:
-                    return { 'result': False, 'comment': "%s: invalid category found" % top_id}
+                    return { 'result': False, 'comment': "%s.%s: invalid category found" % (top_id, category) }
 
         return { 'result': True, 'comment': "%s - all checks passed" % top_id }
 

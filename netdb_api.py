@@ -5,8 +5,10 @@ from models.netdb_interface import netdbInterface
 from models.netdb_igp       import netdbIgp
 from models.netdb_firewall  import netdbFirewall
 from models.netdb_policy    import netdbPolicy
+from models.netdb_bgp       import netdbBgp
 
 from builders.igp_config_builder       import igpConfigBuilder
+from builders.bgp_config_builder       import bgpConfigBuilder
 from builders.firewall_config_builder  import firewallConfigBuilder
 from builders.policy_config_builder    import policyConfigBuilder
 from builders.interface_config_builder import interfaceConfigBuilder
@@ -31,7 +33,7 @@ def base():
 @app.route('/api/<column>/<top_id>/<opt>', methods=['GET'])
 def api_entry(column, top_id = None, opt = None):
 
-    if column not in ['device', 'interface', 'igp', 'firewall', 'policy'] or opt not in [ None, 'config']:
+    if column not in ['device', 'interface', 'igp', 'firewall', 'policy', 'bgp'] or opt not in [ None, 'config']:
         return Response(response=json.dumps({"result": False, "comment": "Invalid endpoint"}),
                         status=400,
                         mimetype='application/json')
@@ -45,14 +47,16 @@ def api_entry(column, top_id = None, opt = None):
 
     if column == 'device':
         netdb = netdbDevice()  
-    if column == 'interface':
+    elif column == 'interface':
         netdb = netdbInterface()  
-    if column == 'igp':
+    elif column == 'igp':
         netdb = netdbIgp()  
-    if column == 'firewall':
+    elif column == 'firewall':
         netdb = netdbFirewall()  
-    if column == 'policy':
+    elif column == 'policy':
         netdb = netdbPolicy()  
+    elif column == 'bgp':
+        netdb = netdbBgp()  
 
     if request.method == 'POST':
         netdb.set(data)
@@ -74,6 +78,8 @@ def api_entry(column, top_id = None, opt = None):
             response = policyConfigBuilder(top_id).build()
         elif column in ['interface'] and opt == 'config':
             response = interfaceConfigBuilder(top_id).build()
+        elif column in ['bgp'] and opt == 'config':
+            response = bgpConfigBuilder(top_id).build()
         else:
             response = netdb.fetch(query)
 
