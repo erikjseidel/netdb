@@ -6,35 +6,31 @@ from util.mongo_api      import MongoAPI
 class netdbIgp(netdbColumn):
 
     _COLUMN     = 'igp'
-    _ELEMENT_ID = netdbColumn.ELEMENT_ID[_COLUMN]
+
+    _COLUMN_CAT  = {
+            'type_1'   :  [],
+            'type_2'   :  [],
+            'type_3'   :  [ 'config_set' ],
+            }
+
+    _MONGO_CAT  = {
+            'type_1'   :  [],
+            'type_2'   :  [],
+            'type_3'   :  [ 'config_set' ],
+            }
+
+    _TO_MONGO = {
+            'config_set' : 'config_set',
+            }
+
+    _FROM_MONGO = {
+            'config_set' : 'config_set',
+            '_roles'     : 'roles',
+            }
 
     def __init__(self, data = {}):
         self.data = data
         self.mongo = MongoAPI( netdbColumn.DB_NAME, self._COLUMN )
-
-
-    def to_mongo(self):
-        out = []
-
-        for config_set, elements in self.data.items():
-            entry = { self._ELEMENT_ID : config_set }
-            if not config_set.startswith('_'):
-                entry.update({ 'id' : config_set })
-            entry.update(elements)
-
-            out.append(entry)
-
-        return out
-
-
-    def from_mongo(self, data):
-        out = {}
-
-        for config_set in data:
-            set_id  = config_set.pop(self._ELEMENT_ID)
-            out[set_id] = config_set
-
-        self.data = out
 
 
     def _save_checker(self):

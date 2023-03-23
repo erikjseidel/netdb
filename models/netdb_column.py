@@ -14,7 +14,6 @@ class netdbColumn:
     ELEMENT_ID = {
         'device'   : 'id',
         'interface': 'interface_id',
-        'igp'      : 'set_id',
         }
 
 
