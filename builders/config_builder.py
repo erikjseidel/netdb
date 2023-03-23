@@ -9,7 +9,7 @@ class configBuilder:
 
         self._DATA_FILT = { 
                 '$or': [ 
-                    { 'id':     device_id }, 
+                    { 'set_id':     device_id }, 
                     { 'set_id': { '$regex': '^_' } }, 
                     { 'roles':  { '$exists': True } } 
                     ] 
@@ -85,8 +85,6 @@ class configBuilder:
 
         if device_id in self.data:
             config.update({ device_id: self.data[device_id] })
-
-        config.pop('id', None)
 
         # Set the cvars
         out = self._dict_replace_values(config, self.cvars)

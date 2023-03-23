@@ -13,22 +13,6 @@ class netdbInterface(netdbColumn):
             'type_3'   :  [],
             }
 
-    _MONGO_CAT  = {
-            'type_1'   :  [],
-            'type_2'   :  [ 'interfaces' ],
-            'type_3'   :  [],
-            }
-
-    _TO_MONGO = {
-            'interfaces' : 'interfaces',
-            }
-
-    _FROM_MONGO = {
-            'interfaces' : 'interfaces',
-            '_roles'     : 'roles',
-            }
-
-
     IFACE_TYPES = ['ethernet', 'vlan', 'lacp', 'dummy', 'gre', 'l2gre']
 
     def __init__(self, data = {}):

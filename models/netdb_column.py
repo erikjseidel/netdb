@@ -20,7 +20,7 @@ class netdbColumn:
             if config_set.startswith('_'):
                 entry = {
                         'set_id'     : config_set,
-                        'category'   : '_roles',
+                        'category'   : 'roles',
                         'roles'      : categories['roles'],
                         }
                 out.append(entry)
@@ -32,13 +32,10 @@ class netdbColumn:
                             for element, elem_data in contents[family].items():
                                 entry = {
                                         'set_id'      : config_set,
-                                        'category'    : self._TO_MONGO[category],
+                                        'category'    : category,
                                         'family'      : family,
                                         'element_id'  : element,
                                         }
-
-                                if not config_set.startswith('_'):
-                                    entry.update({ 'id' : config_set })
 
                                 entry.update(elem_data)
                                 out.append(entry)
@@ -47,12 +44,9 @@ class netdbColumn:
                     for element, elem_data in contents.items():
                         entry = {
                                 'set_id'      : config_set,
-                                'category'    : self._TO_MONGO[category],
+                                'category'    : category,
                                 'element_id'  : element,
                                 }
-
-                        if not config_set.startswith('_'):
-                            entry.update({ 'id' : config_set })
 
                         entry.update(elem_data)
                         out.append(entry)
@@ -60,12 +54,8 @@ class netdbColumn:
                 elif category in self._COLUMN_CAT['type_3']:
                     entry = {
                             'set_id'      : config_set,
-                            'category'    : self._TO_MONGO[category],
-                            'element_id'  : "%s.%s" % (config_set, category),
+                            'category'    : category,
                             }
-
-                    if not config_set.startswith('_'):
-                        entry.update({ 'id' : config_set })
 
                     entry.update(contents)
                     out.append(entry)
@@ -78,38 +68,35 @@ class netdbColumn:
 
         for element in data:
             config_set = element.pop('set_id')
-            element.pop('id', None)
             if config_set not in out:
                 out[config_set] = {}
 
             category = element.pop('category')
-            new_cat  = self._FROM_MONGO[category]
 
-            if category in self._MONGO_CAT['type_1']:
+            if category in self._COLUMN_CAT['type_1']:
                 family = element.pop('family')
                 elem   = element.pop('element_id')
 
-                if new_cat not in out[config_set]:
-                    out[config_set][new_cat] = {}
+                if category not in out[config_set]:
+                    out[config_set][category] = {}
 
-                if family not in out[config_set][new_cat]:
-                    out[config_set][new_cat][family] = {}
+                if family not in out[config_set][category]:
+                    out[config_set][category][family] = {}
 
-                out[config_set][new_cat][family][elem] = element
+                out[config_set][category][family][elem] = element
 
-            elif category in self._MONGO_CAT['type_2']:
+            elif category in self._COLUMN_CAT['type_2']:
                 elem   = element.pop('element_id')
 
-                if new_cat not in out[config_set]:
-                    out[config_set][new_cat] = {}
+                if category not in out[config_set]:
+                    out[config_set][category] = {}
 
-                out[config_set][new_cat][elem] = element
+                out[config_set][category][elem] = element
 
-            elif category in self._MONGO_CAT['type_3']:
-                element.pop('element_id', None)
-                out[config_set][new_cat] = element
+            elif category in self._COLUMN_CAT['type_3']:
+                out[config_set][category] = element
 
-            elif category == '_roles':
+            elif category == 'roles':
                 out[config_set]['roles'] = element['roles']
 
             else:

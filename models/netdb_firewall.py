@@ -13,31 +13,6 @@ class netdbFirewall(netdbColumn):
             'type_3'   :  [ 'options', 'state_policy', 'mss_clamp' ],
             }
 
-    _MONGO_CAT  = {
-            'type_1'   :  [ 'policy', 'group' ],
-            'type_2'   :  [ 'zone_policy' ],
-            'type_3'   :  [ 'option_set', 'state_policy', 'mss_clamp' ],
-            }
-
-    _TO_MONGO = {
-            'policies'     : 'policy',
-            'groups'       : 'group',
-            'zone_policy'  : 'zone_policy',
-            'state_policy' : 'state_policy',
-            'options'      : 'option_set',
-            'mss_clamp'    : 'mss_clamp',
-            }
-
-    _FROM_MONGO = {
-            'policy'       : 'policies',
-            'group'        : 'groups',
-            'zone_policy'  : 'zone_policy',
-            'state_policy' : 'state_policy',
-            'option_set'   : 'options',
-            'mss_clamp'    : 'mss_clamp',
-            '_roles'       : 'roles',
-            }
-
     def __init__(self, data = {}):
         self.data = data
         self.mongo = MongoAPI( netdbColumn.DB_NAME, self._COLUMN )

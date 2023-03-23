@@ -65,10 +65,10 @@ def api_entry(column, top_id = None, opt = None):
     elif request.method == 'GET':
         if not top_id:
             query = {}
-        elif column in ['igp', 'firewall', 'policy']:
-            query = { "set_id": top_id }
-        else:
+        elif column in ['device']:
             query = { "id": top_id }
+        else:
+            query = { "set_id": top_id }
 
         if column in ['igp'] and opt == 'config':
             response = igpConfigBuilder(top_id).build()

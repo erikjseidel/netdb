@@ -13,27 +13,6 @@ class netdbBgp(netdbColumn):
             'type_3'   :  [ 'options' ],
             }
 
-    _MONGO_CAT  = {
-            'type_1'   :  [ 'address_family' ],
-            'type_2'   :  [ 'peer_group', 'neighbor' ],
-            'type_3'   :  [ 'option_set' ],
-            }
-
-    _TO_MONGO = {
-            'options'        : 'option_set',
-            'peer_groups'    : 'peer_group',
-            'neighbors'      : 'neighbor',
-            'address_family' : 'address_family',
-            }
-
-    _FROM_MONGO = {
-            'option_set'     : 'options',
-            'peer_group'     : 'peer_groups',
-            'neighbor'       : 'neighbors',
-            'address_family' : 'address_family',
-            '_roles'         : 'roles',
-            }
-
     def __init__(self, data = {}):
         self.data = data
         self.mongo = MongoAPI( netdbColumn.DB_NAME, self._COLUMN )

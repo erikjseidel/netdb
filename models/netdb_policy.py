@@ -13,23 +13,6 @@ class netdbPolicy(netdbColumn):
             'type_3'   :  [],
             }
 
-    _MONGO_CAT  = {
-            'type_1'   :  [ 'prefix_list', 'route_map' ],
-            'type_2'   :  [ 'aspath_list', 'community_list' ],
-            'type_3'   :  [],
-            }
-
-    _TO_MONGO = {
-            'prefix_lists' : 'prefix_list',
-            'route_maps'   : 'route_map',
-            }
-
-    _FROM_MONGO = {
-            'prefix_list' : 'prefix_lists',
-            'route_map'   : 'route_maps',
-            '_roles'      : 'roles',
-            }
-
     def __init__(self, data = {}):
         self.data = data
         self.mongo = MongoAPI( netdbColumn.DB_NAME, self._COLUMN )

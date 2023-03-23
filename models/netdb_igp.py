@@ -13,21 +13,6 @@ class netdbIgp(netdbColumn):
             'type_3'   :  [ 'isis' ],
             }
 
-    _MONGO_CAT  = {
-            'type_1'   :  [],
-            'type_2'   :  [],
-            'type_3'   :  [ 'isis' ],
-            }
-
-    _TO_MONGO = {
-            'isis' : 'isis',
-            }
-
-    _FROM_MONGO = {
-            'isis' : 'isis',
-            '_roles'     : 'roles',
-            }
-
     def __init__(self, data = {}):
         self.data = data
         self.mongo = MongoAPI( netdbColumn.DB_NAME, self._COLUMN )
