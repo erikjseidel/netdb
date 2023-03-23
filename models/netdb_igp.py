@@ -10,21 +10,21 @@ class netdbIgp(netdbColumn):
     _COLUMN_CAT  = {
             'type_1'   :  [],
             'type_2'   :  [],
-            'type_3'   :  [ 'config_set' ],
+            'type_3'   :  [ 'isis' ],
             }
 
     _MONGO_CAT  = {
             'type_1'   :  [],
             'type_2'   :  [],
-            'type_3'   :  [ 'config_set' ],
+            'type_3'   :  [ 'isis' ],
             }
 
     _TO_MONGO = {
-            'config_set' : 'config_set',
+            'isis' : 'isis',
             }
 
     _FROM_MONGO = {
-            'config_set' : 'config_set',
+            'isis' : 'isis',
             '_roles'     : 'roles',
             }
 
