@@ -6,41 +6,34 @@ from util.mongo_api      import MongoAPI
 class netdbInterface(netdbColumn):
 
     _COLUMN     = 'interface'
-    _ELEMENT_ID = netdbColumn.ELEMENT_ID[_COLUMN]
+
+    _COLUMN_CAT  = {
+            'type_1'   :  [],
+            'type_2'   :  [ 'interfaces' ],
+            'type_3'   :  [],
+            }
+
+    _MONGO_CAT  = {
+            'type_1'   :  [],
+            'type_2'   :  [ 'interfaces' ],
+            'type_3'   :  [],
+            }
+
+    _TO_MONGO = {
+            'interfaces' : 'interfaces',
+            }
+
+    _FROM_MONGO = {
+            'interfaces' : 'interfaces',
+            '_roles'     : 'roles',
+            }
+
 
     IFACE_TYPES = ['ethernet', 'vlan', 'lacp', 'dummy', 'gre', 'l2gre']
 
     def __init__(self, data = {}):
         self.data = data
         self.mongo = MongoAPI( netdbColumn.DB_NAME, self._COLUMN )
-
-
-    def to_mongo(self):
-        out = []
-
-        for device, elements in self.data.items():
-            for element, contents in elements.items():
-                entry = { 'id' : device, self._ELEMENT_ID : element }
-                entry.update(contents)
-
-                out.append(entry)
-
-        return out
-
-
-    def from_mongo(self, data):
-        out = {}
-
-        for entry in data:
-            element_id  = entry.pop(self._ELEMENT_ID)
-            device_id   = entry.pop('id')
-
-            if device_id not in out:
-                out[device_id] = {}
-
-            out[device_id][element_id] = entry
-
-        self.data = out
 
 
     def _save_checker(self):
@@ -50,11 +43,15 @@ class netdbInterface(netdbColumn):
         devices = netdbDevice().fetch()['out']
         current_ifaces = netdbInterface().fetch()['out']
 
+
         for top_id, interfaces in self.data.items():
             if top_id.upper() not in devices.keys():
                 return { 'result': False, 'comment': "id %s not a registered device" % top_id }
 
-            for iface, ifd in interfaces.items():
+            if 'interfaces' not in interfaces:
+                return { 'result': False, 'comment': "%s: interfaces set not found" % top_id }
+
+            for iface, ifd in interfaces['interfaces'].items():
                 if top_id in current_ifaces and iface in current_ifaces[top_id].keys():
                     return { 'result': False, 'comment': "%s - already exists" % iface }
 

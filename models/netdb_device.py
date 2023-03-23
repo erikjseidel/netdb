@@ -5,7 +5,6 @@ from util.mongo_api      import MongoAPI
 class netdbDevice(netdbColumn):
 
     _COLUMN     = 'device'
-    _ELEMENT_ID = netdbColumn.ELEMENT_ID[_COLUMN]
 
     def __init__(self, data = {}):
         self.data = data
@@ -28,7 +27,7 @@ class netdbDevice(netdbColumn):
         out = {}
 
         for device in data:
-            device_id  = device.pop(self._ELEMENT_ID)
+            device_id  = device.pop('id')
             out[device_id] = device
 
         self.data = out

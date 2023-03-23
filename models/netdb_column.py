@@ -9,13 +9,9 @@ class netdbColumn:
         'interface',
         'igp',
         'firewall',
+        'bgp',
+        'policy',
         ]
-
-    ELEMENT_ID = {
-        'device'   : 'id',
-        'interface': 'interface_id',
-        }
-
 
     def to_mongo(self):
         out = []
