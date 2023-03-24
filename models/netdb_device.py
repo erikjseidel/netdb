@@ -1,15 +1,9 @@
 
 from .netdb_column      import netdbColumn
-from util.mongo_api      import MongoAPI
 
 class netdbDevice(netdbColumn):
 
     _COLUMN     = 'device'
-
-    def __init__(self, data = {}):
-        self.data = data
-        self.mongo = MongoAPI( netdbColumn.DB_NAME, self._COLUMN )
-
 
     def filter(self, filt):
         if not filt:
@@ -24,10 +18,10 @@ class netdbDevice(netdbColumn):
         return self
 
 
-    def _to_mongo(self):
+    def _to_mongo(self, data):
         out = []
 
-        for device, elements in self.data.items():
+        for device, elements in data.items():
             entry = { 'id' : device }
             entry.update(elements)
 
@@ -43,7 +37,7 @@ class netdbDevice(netdbColumn):
             device_id  = device.pop('id')
             out[device_id] = device
 
-        self.data = out
+        return out
 
 
     def _save_checker(self):

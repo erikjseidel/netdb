@@ -1,4 +1,5 @@
-from pymongo import MongoClient
+from pymongo import MongoClient, errors
+from pymongo.errors import *
 
 class MongoAPI:
 
@@ -18,16 +19,30 @@ class MongoAPI:
         return {'result': True, 'out': out }
 
 
-    def write(self, document):
+    def write_one(self, document):
         response = self.collection.insert_one(document)
 
         return { 'result': True, 'comment': str(response.inserted_id) + ' created' }
 
 
     def write_many(self, documents):
-        response = self.collection.insert_many(documents)
+        response = None
+
+        try:
+            response = self.collection.insert_many(documents, ordered = False)
+        except BulkWriteError:
+            return { 'result': True, 'comment':  'warning: duplicates were found. not all documents added' }
 
         return { 'result': True, 'comment': str(len(response.inserted_ids)) + ' documents created' }
+
+
+    def update_one(self, filt, document):
+        response = self.collection.update_one(filt, document)
+
+        if response.modified_count > 0:
+            return { 'result': True, 'comment': str(response.modified_count) + ' updated' }
+
+        return { 'result': False, 'comment': 'nothing updated. %s matched' % response.matched_count }
 
 
     def delete_many(self, filt):

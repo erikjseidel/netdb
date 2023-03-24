@@ -1,7 +1,6 @@
 
 from .netdb_column      import netdbColumn
 from .netdb_device      import netdbDevice
-from util.mongo_api     import MongoAPI
 
 class netdbInterface(netdbColumn):
 
@@ -15,23 +14,11 @@ class netdbInterface(netdbColumn):
 
     IFACE_TYPES = ['ethernet', 'vlan', 'lacp', 'dummy', 'gre', 'l2gre']
 
-    def __init__(self, data = {}):
-        self.data = data
-        self.mongo = MongoAPI( netdbColumn.DB_NAME, self._COLUMN )
-
-
     def _save_checker(self):
         if not isinstance(self.data, dict) or not self.data:
             return { 'result': False, 'comment': 'invalid dataset' }
 
-        devices = netdbDevice().fetch()['out']
-        current_ifaces = netdbInterface().fetch()['out']
-
-
         for top_id, interfaces in self.data.items():
-            if top_id.upper() not in devices.keys():
-                return { 'result': False, 'comment': "id %s not a registered device" % top_id }
-
             if 'interfaces' not in interfaces:
                 return { 'result': False, 'comment': "%s: interfaces set not found" % top_id }
 

@@ -1,10 +1,16 @@
 
+from util.mongo_api     import MongoAPI
 
 class netdbColumn:
 
     DB_NAME = 'netdb'
 
     _FILT = {}
+
+    def __init__(self, data = {}):
+        self.data = data
+        self.mongo = MongoAPI(netdbColumn.DB_NAME, self._COLUMN)
+
 
     def _get_type(category):
         for d_type, categories in self.COLUMN_CAT.items():
@@ -14,10 +20,10 @@ class netdbColumn:
         return None
 
 
-    def _to_mongo(self):
+    def _to_mongo(self, data):
         out = []
 
-        for config_set, categories in self.data.items():
+        for config_set, categories in data.items():
             if config_set.startswith('_'):
                 entry = {
                         'set_id'     : config_set,
@@ -103,7 +109,30 @@ class netdbColumn:
             else:
                 out = {}
 
-        self.data = out
+        return out
+
+
+    def _is_registered(self):
+        mongo_answer = MongoAPI(netdbColumn.DB_NAME, 'device').read()['out']
+        devices = []
+        for device in mongo_answer:
+            devices.append(device.pop('id'))
+
+        top_ids = self.data.keys()
+
+        name = None
+
+        registered = True
+        for top_id in top_ids:
+            if not top_id.startswith('_') and top_id not in devices:
+                ret = { 'result': False, 'comment': '%s: device not registered' % top_id }
+                registered = False
+                break
+
+        if registered:
+            ret = { 'result': True, 'comment': 'all devices registered' }
+
+        return ret
 
 
     def filter(self, filt):
@@ -140,12 +169,15 @@ class netdbColumn:
 
 
     def save(self):
-        ret = self._save_checker()
-
+        ret = self._is_registered()
         if not ret['result']:
             return ret
 
-        return self.mongo.write_many(self._to_mongo())
+        ret = self._save_checker()
+        if not ret['result']:
+            return ret
+
+        return self.mongo.write_many(self._to_mongo(self.data))
 
 
     def delete(self):
@@ -157,16 +189,37 @@ class netdbColumn:
         
 
     def update(self):
-        # We don't want to try an update with an empty filter.
-        if not self._FILT:
-            return { 'result': False, 'error': True, 'comment': 'filter not set' }
-
-        if not self._save_checker()['result']:
+        ret = self._is_registered()
+        if not ret['result']:
             return ret
 
-        self.mongo.delete_many(self._FILT)
+        ret = self._save_checker()
+        if not ret['result']:
+            return ret
 
-        return self.mongo.write_many(self._to_mongo())
+        return self._update(self._to_mongo(self.data))
+
+
+    def _update(self, documents):
+        count = 0
+
+        for document in documents:
+            if 'id' in document:
+                filt = { 'id' = document['id'] }
+
+            else:
+                filt = { 'set_id': document['set_id'] }
+                for key in ['category', 'family', 'element_id']:
+                    if key in document:
+                        filt.update({ key : document[key] })
+
+            if self.mongo.update_one(filt, document)['result']:
+                count += 1
+
+        if count > 0:
+            return { 'result': True, 'comment': '%s documents updated' % str(count) }
+
+        return { 'result': False, 'comment': 'no documents updated' }
 
 
     def load(self):
@@ -176,7 +229,7 @@ class netdbColumn:
             self.data = {}
             return { 'result': False, 'comment': 'empty data set' }
 
-        self._from_mongo(ret['out'])
+        self.data = self._from_mongo(ret['out'])
         return { 'result': True, 'comment': 'data set loaded' }
 
 

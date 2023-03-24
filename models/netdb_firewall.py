@@ -1,7 +1,6 @@
 
 from .netdb_column      import netdbColumn
 from .netdb_device      import netdbDevice
-from util.mongo_api     import MongoAPI
 
 class netdbFirewall(netdbColumn):
 
@@ -13,29 +12,16 @@ class netdbFirewall(netdbColumn):
             'type_3'   :  [ 'options', 'state_policy', 'mss_clamp' ],
             }
 
-    def __init__(self, data = {}):
-        self.data = data
-        self.mongo = MongoAPI( netdbColumn.DB_NAME, self._COLUMN )
-
 
     def _save_checker(self):
         if not isinstance(self.data, dict) or not self.data:
             return { 'result': False, 'comment': 'invalid dataset' }
 
-        devices     = netdbDevice().fetch()['out']
-        config_sets = netdbFirewall().fetch()['out']
-
         for top_id, categories in self.data.items():
-
-            if top_id in config_sets.keys():
-                return { 'result': False, 'comment': "%s: config set already exists" % top_id }
 
             if top_id.startswith('_'):
                 if 'roles' not in categories.keys():
                     return { 'result': False, 'comment': "%s: roles required for shared config set" % top_id }
-
-            elif top_id not in devices.keys():
-                return { 'result': False, 'comment': "%s: device not registered" % top_id }
 
             for category, contents in categories.items():
                 if category in ['policies', 'groups']:
