@@ -1,5 +1,5 @@
 
-from models.netdb_column import netdbColumn
+from .netdb_column      import netdbColumn
 from util.mongo_api      import MongoAPI
 
 class netdbDevice(netdbColumn):

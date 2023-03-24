@@ -4,14 +4,7 @@ class netdbColumn:
 
     DB_NAME = 'netdb'
 
-    COLUMNS = [
-        'device',
-        'interface',
-        'igp',
-        'firewall',
-        'bgp',
-        'policy',
-        ]
+
 
     def to_mongo(self):
         out = []
@@ -107,6 +100,7 @@ class netdbColumn:
 
     def set(self, data):
         self.data = data
+        return self
 
 
     def get(self):

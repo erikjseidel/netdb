@@ -1,5 +1,5 @@
 
-from builders.config_builder import configBuilder
+from .config_builder         import configBuilder
 from models.netdb_firewall   import netdbFirewall
 
 class firewallConfigBuilder(configBuilder):

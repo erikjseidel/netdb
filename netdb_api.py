@@ -1,19 +1,9 @@
-from flask          import Flask, Response, request, json
+from flask import Flask, Response, request, json
 
-from models.netdb_device    import netdbDevice
-from models.netdb_interface import netdbInterface
-from models.netdb_igp       import netdbIgp
-from models.netdb_firewall  import netdbFirewall
-from models.netdb_policy    import netdbPolicy
-from models.netdb_bgp       import netdbBgp
+import models, builders
+import models.netdb     as netdb
+import builders.builder as builder
 
-from builders.igp_config_builder       import igpConfigBuilder
-from builders.bgp_config_builder       import bgpConfigBuilder
-from builders.firewall_config_builder  import firewallConfigBuilder
-from builders.policy_config_builder    import policyConfigBuilder
-from builders.interface_config_builder import interfaceConfigBuilder
-
-import yaml
 app = Flask(__name__)
 
 def handle_bad_request(e):
@@ -28,12 +18,12 @@ def base():
                     mimetype='application/json')
   
 
-@app.route('/api/<column>', methods=['GET', 'POST', 'DELETE'])
-@app.route('/api/<column>/<top_id>', methods=['GET', 'POST', 'DELETE'])
+@app.route('/api/<column>',                methods=['GET', 'POST', 'DELETE'])
+@app.route('/api/<column>/<top_id>',       methods=['GET', 'POST', 'DELETE'])
 @app.route('/api/<column>/<top_id>/<opt>', methods=['GET'])
 def api_entry(column, top_id = None, opt = None):
 
-    if column not in ['device', 'interface', 'igp', 'firewall', 'policy', 'bgp'] or opt not in [ None, 'config']:
+    if column not in netdb.COLUMNS or opt not in [ None, 'config']:
         return Response(response=json.dumps({"result": False, "comment": "Invalid endpoint"}),
                         status=400,
                         mimetype='application/json')
@@ -45,24 +35,7 @@ def api_entry(column, top_id = None, opt = None):
                             status=400,
                             mimetype='application/json')
 
-    if column == 'device':
-        netdb = netdbDevice()  
-    elif column == 'interface':
-        netdb = netdbInterface()  
-    elif column == 'igp':
-        netdb = netdbIgp()  
-    elif column == 'firewall':
-        netdb = netdbFirewall()  
-    elif column == 'policy':
-        netdb = netdbPolicy()  
-    elif column == 'bgp':
-        netdb = netdbBgp()  
-
-    if request.method == 'POST':
-        netdb.set(data)
-        response = netdb.save()
-
-    elif request.method == 'GET':
+    if request.method == 'GET':
         if not top_id:
             query = {}
         elif column in ['device']:
@@ -70,21 +43,16 @@ def api_entry(column, top_id = None, opt = None):
         else:
             query = { "set_id": top_id }
 
-        if column in ['igp'] and opt == 'config':
-            response = igpConfigBuilder(top_id).build()
-        elif column in ['firewall'] and opt == 'config':
-            response = firewallConfigBuilder(top_id).build()
-        elif column in ['policy'] and opt == 'config':
-            response = policyConfigBuilder(top_id).build()
-        elif column in ['interface'] and opt == 'config':
-            response = interfaceConfigBuilder(top_id).build()
-        elif column in ['bgp'] and opt == 'config':
-            response = bgpConfigBuilder(top_id).build()
+        if opt == 'config':
+            response = builder.newBuilder(column, top_id).build()
         else:
-            response = netdb.fetch(query)
+            response = netdb.newColumn(column).fetch(query)
+
+    elif request.method == 'POST':
+        response = netdb.newColumn(column).set(data).save()
 
     else:
-        response = netdb.delete({ 'id': top_id })
+        response = db.delete({ 'id': top_id })
 
     return Response(response=json.dumps(response),
                     status=200,

@@ -1,7 +1,7 @@
 
-from models.netdb_column import netdbColumn
-from models.netdb_device import netdbDevice
-from util.mongo_api      import MongoAPI
+from .netdb_column      import netdbColumn
+from .netdb_device      import netdbDevice
+from util.mongo_api     import MongoAPI
 
 class netdbFirewall(netdbColumn):
 
