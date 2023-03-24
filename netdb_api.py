@@ -52,7 +52,7 @@ def api_entry(column, top_id = None, opt = None):
         response = netdb.newColumn(column).set(data).save()
 
     else:
-        response = db.delete({ 'id': top_id })
+        response = netdb.newColumn(column).delete({ 'id': top_id })
 
     return Response(response=json.dumps(response),
                     status=200,
