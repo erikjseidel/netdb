@@ -37,7 +37,7 @@ class MongoAPI:
 
 
     def update_one(self, filt, document):
-        response = self.collection.update_one(filt, document)
+        response = self.collection.update_one(filt, document, upsert = True)
 
         if response.modified_count > 0:
             return { 'result': True, 'comment': str(response.modified_count) + ' updated' }
