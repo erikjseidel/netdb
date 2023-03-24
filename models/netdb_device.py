@@ -24,7 +24,7 @@ class netdbDevice(netdbColumn):
         return self
 
 
-    def to_mongo(self):
+    def _to_mongo(self):
         out = []
 
         for device, elements in self.data.items():
@@ -36,7 +36,7 @@ class netdbDevice(netdbColumn):
         return out
 
 
-    def from_mongo(self, data):
+    def _from_mongo(self, data):
         out = {}
 
         for device in data:

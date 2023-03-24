@@ -14,7 +14,7 @@ class netdbColumn:
         return None
 
 
-    def to_mongo(self):
+    def _to_mongo(self):
         out = []
 
         for config_set, categories in self.data.items():
@@ -64,7 +64,7 @@ class netdbColumn:
         return out
 
 
-    def from_mongo(self, data):
+    def _from_mongo(self, data):
         out = {}
 
         for element in data:
@@ -145,7 +145,7 @@ class netdbColumn:
         if not ret['result']:
             return ret
 
-        return self.mongo.write_many(self.to_mongo())
+        return self.mongo.write_many(self._to_mongo())
 
 
     def delete(self):
@@ -166,7 +166,7 @@ class netdbColumn:
 
         self.mongo.delete_many(self._FILT)
 
-        return self.mongo.write_many(self.to_mongo())
+        return self.mongo.write_many(self._to_mongo())
 
 
     def load(self):
@@ -176,7 +176,7 @@ class netdbColumn:
             self.data = {}
             return { 'result': False, 'comment': 'empty data set' }
 
-        self.from_mongo(ret['out'])
+        self._from_mongo(ret['out'])
         return { 'result': True, 'comment': 'data set loaded' }
 
 
