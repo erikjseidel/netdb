@@ -30,10 +30,10 @@ class MongoAPI:
         return { 'result': True, 'comment': str(len(response.inserted_ids)) + ' documents created' }
 
 
-    def delete(self, document):
-        response = self.collection.delete_one(document)
+    def delete_many(self, filt):
+        response = self.collection.delete_many(filt)
         if response.deleted_count > 0:
-            ret = { 'result': True, 'comment': 'Successfully deleted' }
+            ret = { 'result': True, 'comment': '%s records deleted' % response.deleted_count }
         else:
             ret = { 'result': False, 'comment': 'Nothing deleted' }
 

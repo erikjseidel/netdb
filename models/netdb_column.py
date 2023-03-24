@@ -4,6 +4,14 @@ class netdbColumn:
 
     DB_NAME = 'netdb'
 
+    _FILT = {}
+
+    def _get_type(category):
+        for d_type, categories in self.COLUMN_CAT.items():
+            if category in categories:
+                return d_type
+
+        return None
 
 
     def to_mongo(self):
@@ -98,6 +106,30 @@ class netdbColumn:
         self.data = out
 
 
+    def filter(self, filt):
+        if not filt:
+            self._FILT = {}
+
+        elif isinstance(filt, list):
+            if len(filt) == 4:
+
+                # the four tuple 'mask' filter. works similar to what one might see
+                # in juniper config mode.
+                keys = ['set_id', 'category', 'family', 'element_id']
+
+                d = dict(zip(keys, filt))
+
+                self._FILT = {k: v for k, v in d.items() if v }
+
+        elif isinstance(filt, dict):
+            self._FILT = filt
+
+        else:
+            self._FILT = { 'set_id': filt }
+
+        return self
+
+
     def set(self, data):
         self.data = data
         return self
@@ -116,8 +148,29 @@ class netdbColumn:
         return self.mongo.write_many(self.to_mongo())
 
 
-    def load(self, filt = {}):
-        ret = self.mongo.read(filt)
+    def delete(self):
+        # We don't want to try a delete with an empty filter.
+        if not self._FILT:
+            return { 'result': False, 'error': True, 'comment': 'filter not set' }
+           
+        return self.mongo.delete_many(self._FILT)
+        
+
+    def update(self):
+        # We don't want to try an update with an empty filter.
+        if not self._FILT:
+            return { 'result': False, 'error': True, 'comment': 'filter not set' }
+
+        if not self._save_checker()['result']:
+            return ret
+
+        self.mongo.delete_many(self._FILT)
+
+        return self.mongo.write_many(self.to_mongo())
+
+
+    def load(self):
+        ret = self.mongo.read(self._FILT)
 
         if not ret['out']:
             self.data = {}
@@ -127,7 +180,7 @@ class netdbColumn:
         return { 'result': True, 'comment': 'data set loaded' }
 
 
-    def fetch(self, filt = {}):
-        self.load(filt)
+    def fetch(self):
+        self.load()
 
         return { 'result': True, 'out': self.data }

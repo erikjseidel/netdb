@@ -22,8 +22,8 @@ class netdbIgp(netdbColumn):
         if not isinstance(self.data, dict) or not self.data:
             return { 'result': False, 'comment': 'invalid dataset' }
 
-        devices     = netdbDevice().fetch( filt = {} )['out']
-        config_sets = netdbIgp().fetch( filt = {} )['out']
+        devices     = netdbDevice().fetch()['out']
+        config_sets = netdbIgp().fetch()['out']
 
         for top_id, config_data in self.data.items():
             if top_id in config_sets.keys():

@@ -24,39 +24,43 @@ def base():
 def api_entry(column, top_id = None, opt = None):
 
     if column not in netdb.COLUMNS or opt not in [ None, 'config']:
-        return Response(response=json.dumps({"result": False, "comment": "Invalid endpoint"}),
-                        status=400,
-                        mimetype='application/json')
+        return Response(response = json.dumps({ "result": False, "comment": "Invalid endpoint"} ),
+                        status = 400, mymetype = 'application/json')
 
-    if request.method in ['POST']:
+    if request.data:
         data = request.json
-        if data is None or data == {}:
-            return Response(response=json.dumps({"Error": "No input data"}),
-                            status=400,
-                            mimetype='application/json')
+
+    if request.method in ['POST', 'PUT', 'DELETE']:
+        if not request.data:
+            return Response(response = json.dumps({ "result": False, "comment": "No input data" }),
+                            status = 400, mimetype = 'application/json')
+
+    status = 200
 
     if request.method == 'GET':
-        if not top_id:
-            query = {}
-        elif column in ['device']:
-            query = { "id": top_id }
-        else:
-            query = { "set_id": top_id }
+        if request.data:
+            response = netdb.newColumn(column).filter(data).fetch()
 
-        if opt == 'config':
+        elif opt == 'config':
             response = builder.newBuilder(column, top_id).build()
+
         else:
-            response = netdb.newColumn(column).fetch(query)
+            response = netdb.newColumn(column).filter(top_id).fetch()
 
     elif request.method == 'POST':
         response = netdb.newColumn(column).set(data).save()
 
-    else:
-        response = netdb.newColumn(column).delete({ 'id': top_id })
+    elif request.method == 'PUT':
+        response = netdb.newColumn(column).set(data['content']).filter(data['filter']).update()
 
-    return Response(response=json.dumps(response),
-                    status=200,
-                    mimetype='application/json')
+    elif request.method == 'DELETE':
+        response = netdb.newColumn(column).filter(data).delete()
+
+    else:
+        status = 400
+        response = {"result": False, "comment": "Invalid method"}
+
+    return Response(response = json.dumps(response), status = status, mimetype = 'application/json')
 
 
 if __name__ == '__main__':

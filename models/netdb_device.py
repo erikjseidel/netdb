@@ -11,6 +11,19 @@ class netdbDevice(netdbColumn):
         self.mongo = MongoAPI( netdbColumn.DB_NAME, self._COLUMN )
 
 
+    def filter(self, filt):
+        if not filt:
+            pass
+
+        elif isinstance(filt, dict):
+            self._FILT = filt
+
+        else:
+            self._FILT = { 'id': filt }
+
+        return self
+
+
     def to_mongo(self):
         out = []
 
@@ -37,7 +50,7 @@ class netdbDevice(netdbColumn):
         if not isinstance(self.data, dict) or not self.data:
             return { 'result': False, 'comment': 'invalid dataset' }
 
-        devices = netdbDevice().fetch( filt = {} )['out']
+        devices = netdbDevice().fetch()['out']
 
         for top_id, device in self.data.items():
             if top_id.upper() in devices.keys():
