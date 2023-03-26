@@ -1,5 +1,32 @@
 
+from marshmallow import Schema, fields, validate, INCLUDE, ValidationError
+
 from .netdb_column      import netdbColumn
+
+class cvarsSchema(Schema):
+    class Meta:
+        unknown = INCLUDE
+
+    # defined cvars
+    ibgp_ipv4 = fields.IPv4()
+    ibgp_ipv6 = fields.IPv6()
+    iso       = fields.String()
+    router_id = fields.IPv4(required=True)
+    local_asn = fields.Integer(required=True, validate=validate.Range(min=1, max=2**32))
+
+
+class deviceSchema(Schema):
+    location  = fields.String(required = True)
+    providers = fields.List(fields.String(), required = True, validate=validate.Length(min=1))
+    roles     = fields.List(fields.String(), required = True, validate=validate.Length(min=1))
+    cvars     = fields.Nested(cvarsSchema)
+
+    downstream_asns = fields.List(fields.Integer(), validate=validate.Length(min=1))
+    ibgp_ipv4       = fields.IPv4()
+    ibgp_ipv6       = fields.IPv6()
+    iso             = fields.String()
+    local_asn       = fields.Integer()
+
 
 class netdbDevice(netdbColumn):
 
@@ -44,16 +71,10 @@ class netdbDevice(netdbColumn):
         if not isinstance(self.data, dict) or not self.data:
             return { 'result': False, 'comment': 'invalid dataset' }
 
-        devices = netdbDevice().fetch()['out']
-
         for top_id, device in self.data.items():
-            if top_id.upper() in devices.keys():
-                return { 'result': False, 'comment': "%s: already registered" % top_id }
-
-            top_id = top_id.upper()
-
-            if 'local_asn' not in device or not ( 1 <= int(device['local_asn']) <= 4000000000):
-                return { 'result': False, 'comment': "%s - invalid local_asn" % top_id }
+            try:
+                deviceSchema().load(device)
+            except ValidationError as error:
+                return { 'result': False, 'comment': '%s: invalid data' % top_id, 'out': error.messages }
 
         return { 'result': True, 'comment': '%s - all checks passed' }
-

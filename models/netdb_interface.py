@@ -1,6 +1,56 @@
 
+from marshmallow import Schema, fields, validate, INCLUDE, ValidationError
+
 from .netdb_column      import netdbColumn
-from .netdb_device      import netdbDevice
+
+IFACE_TYPES = ['ethernet', 'vlan', 'lacp', 'dummy', 'gre', 'l2gre']
+
+class addressMetaSchema(Schema):
+    meta = fields.Dict(keys = fields.String(required=True))
+
+
+class lacpOptionsSchema(Schema):
+    hash_policy = fields.String(required=True, validate=validate.OneOf(['layer2+3','layer3+4']))
+    rate        = fields.String(required=True, validate=validate.OneOf(['fast','slow']))
+    members     = fields.List(fields.String())
+    min_links   = fields.Integer(required=True, validate=validate.Range(min=1, max=5))
+
+
+class vlanOptionsSchema(Schema):
+    class Meta:
+        include = {
+                'id': fields.Integer(required=True, validate=validate.Range(min=1, max=4096))
+                }
+
+    parent = fields.String(required=True)
+
+
+class interfaceSchema(Schema):
+    class Meta:
+        include = {
+                'type': fields.String(required=True, validate=validate.OneOf(IFACE_TYPES))
+                }
+
+    address     = fields.Dict(keys = fields.IPInterface(), values = fields.Nested(addressMetaSchema))
+    description = fields.String()
+    interface   = fields.String()
+
+    mtu = fields.Integer(validate=validate.Range(min=1280,max=9192))
+    ttl = fields.Integer(validate=validate.Range(min=1,max=255))
+
+    remote = fields.IP()
+    source = fields.IP()
+
+    firewall = fields.Dict(keys = fields.String(required=True, validate=validate.OneOf(['local','ingress','egress'])),
+                values = fields.Dict(keys = fields.String(required=True, validate=validate.OneOf(['ipv4','ipv6'])),
+                    values = fields.String(required=True) ))
+
+    policy = fields.Dict(keys = fields.String(required=True, validate=validate.OneOf(['ipv4','ipv6'])),
+                            values = fields.String(required=True))
+
+    lacp = fields.Nested(lacpOptionsSchema)
+    vlan = fields.Nested(vlanOptionsSchema)
+
 
 class netdbInterface(netdbColumn):
 
@@ -12,7 +62,6 @@ class netdbInterface(netdbColumn):
             'type_3'   :  [],
             }
 
-    IFACE_TYPES = ['ethernet', 'vlan', 'lacp', 'dummy', 'gre', 'l2gre']
 
     def _save_checker(self):
         if not isinstance(self.data, dict) or not self.data:
@@ -22,38 +71,14 @@ class netdbInterface(netdbColumn):
             if 'interfaces' not in interfaces:
                 return { 'result': False, 'comment': "%s: interfaces set not found" % top_id }
 
-            for iface, ifd in interfaces['interfaces'].items():
-                if top_id in current_ifaces and iface in current_ifaces[top_id].keys():
-                    return { 'result': False, 'comment': "%s - already exists" % iface }
+            if top_id.startswith('_'):
+                if 'roles' not in config_data:
+                    return { 'result': False, 'comment': "%s: roles required for shared config set" % top_id }
 
-                if 'type' not in ifd or ifd['type'] not in self.IFACE_TYPES:
-                    return { 'result': False, 'comment': "%s - invalid type" % iface }
+            for iface, iface_data in interfaces['interfaces'].items():
+                try:
+                    interfaceSchema().load(iface_data)
+                except ValidationError as error:
+                    return { 'result': False, 'comment': '%s: invalid data' % top_id, 'out': error.messages }
 
-                if ifd['type'] in ['gre', 'l2gre'] and not iface.startswith('tun'):
-                    return { 'result': False, 'comment': "%s - tunnel iface invalid name" % iface }
-
-                if ifd['type'] in ['ethernet'] and not iface.startswith('eth'):
-                    return { 'result': False, 'comment': "%s - ethernet iface invalid name" % iface }
-
-                if ifd['type'] in ['dummy'] and not iface.startswith('dum'):
-                    return { 'result': False, 'comment': "%s - loopback iface invalid name" % iface }
-
-                if ifd['type'] in ['lacp'] and not iface.startswith('bond'):
-                    return { 'result': False, 'comment': "%s - lacp bundle invalid name" % iface }
-
-                if ifd['type'] == 'vlan':
-                    if 'vlan' not in ifd or 'id' not in ifd['vlan'] or 'parent' not in ifd['vlan']:
-                        return { 'result': False, 'comment': "%s requires a vlan id and parent" % iface }
-
-                if ifd['type'] == 'lacp':
-                    if 'lacp' not in ifd:
-                        return { 'result': False, 'comment': "%s is missing lacp settings" }
-                    if 'hash_policy' not in ifd['lacp'] or ifd['lacp']['hash_policy'] not in ['layer3+4' or 'layer2+3']:
-                        return { 'result': False, 'comment': "%s - invalid hash policy " }
-                    if 'rate' not in ifd['lacp'] or ifd['lacp']['rate'] not in ['fast' or 'slow']:
-                        return { 'result': False, 'comment': "%s - invalid hash policy" }
-                    if 'members' not in ifd['lacp']:
-                        return { 'result': False, 'comment': "%s - no lacp members found" }
-
-        return { 'result': True, 'comment': '%s - all checks passed' }
-
+        return { 'result': True, 'comment': '%s: all checks passed' % top_id }

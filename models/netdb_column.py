@@ -169,9 +169,10 @@ class netdbColumn:
 
 
     def save(self):
-        ret = self._is_registered()
-        if not ret['result']:
-            return ret
+        if self._COLUMN != 'device':
+            ret = self._is_registered()
+            if not ret['result']:
+                return ret
 
         ret = self._save_checker()
         if not ret['result']:
@@ -205,7 +206,7 @@ class netdbColumn:
 
         for document in documents:
             if 'id' in document:
-                filt = { 'id' = document['id'] }
+                filt = { 'id' : document['id'] }
 
             else:
                 filt = { 'set_id': document['set_id'] }
