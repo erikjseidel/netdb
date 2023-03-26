@@ -6,4 +6,4 @@ class igpConfigBuilder(configBuilder):
 
     def __init__(self, device_id):
         configBuilder.__init__(self, device_id)
-        self.data = netdbIgp().fetch(self._DATA_FILT)['out']
+        self.data = netdbIgp().filter(self._DATA_FILT).fetch()['out']

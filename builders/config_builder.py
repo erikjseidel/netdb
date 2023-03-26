@@ -16,10 +16,10 @@ class configBuilder:
                 }
 
         self.device_id = device_id
-        devices        = netdbDevice().fetch({ "id": device_id})['out']
+        devices        = netdbDevice().filter(device_id).fetch()['out']
 
         if device_id in devices:
-            self.device    = netdbDevice().fetch({ "id": device_id})['out'][device_id]
+            self.device    = devices[device_id]
         else:
             self._DEV_AVAIL = False
             return

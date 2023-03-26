@@ -16,18 +16,18 @@ class firewallStateSchema(Schema):
 class firewallOptionsSchema(Schema):
     class Meta:
         include = {
-            'all-ping':                 fields.Bool(),
-            'broadcast-ping':           fields.Bool(),
-            'config-trap':              fields.Bool(),
-            'ipv6-receive-redirects':   fields.Bool(),
-            'ipv6-src-route':           fields.Bool(),
-            'log-martians':             fields.Bool(),
-            'send-redirects':           fields.Bool(),
-            'source-validation':        fields.Bool(),
-            'syn-cookies':              fields.Bool(),
-            'twa-hazards-protection':   fields.Bool(),
-            'ip-src-route':             fields.Bool(),
-            'receive-redirect':         fields.Bool(),
+            'all-ping':                 fields.String(),
+            'broadcast-ping':           fields.String(),
+            'config-trap':              fields.String(),
+            'ipv6-receive-redirects':   fields.String(),
+            'ipv6-src-route':           fields.String(),
+            'log-martians':             fields.String(),
+            'send-redirects':           fields.String(),
+            'source-validation':        fields.String(),
+            'syn-cookies':              fields.String(),
+            'twa-hazards-protection':   fields.String(),
+            'ip-src-route':             fields.String(),
+            'receive-redirect':         fields.String(),
             }
 
 class firewallZoneRulesSchema(Schema):
@@ -39,7 +39,7 @@ class firewallZoneRulesSchema(Schema):
 class firewallZoneSchema(Schema):
     class Meta:
         include = {
-                'from': fields.Nested(firewallZoneRulesSchema())
+                'from': fields.List(fields.Nested(firewallZoneRulesSchema()), validate=validate.Length(min=1))
                 }
 
     interfaces = fields.List(fields.String())

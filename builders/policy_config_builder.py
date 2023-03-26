@@ -6,4 +6,4 @@ class policyConfigBuilder(configBuilder):
 
     def __init__(self, device_id):
         configBuilder.__init__(self, device_id)
-        self.data = netdbPolicy().fetch(self._DATA_FILT)['out']
+        self.data = netdbPolicy().filter(self._DATA_FILT).fetch()['out']

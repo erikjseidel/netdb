@@ -6,4 +6,4 @@ class firewallConfigBuilder(configBuilder):
 
     def __init__(self, device_id):
         configBuilder.__init__(self, device_id)
-        self.data = netdbFirewall().fetch(self._DATA_FILT)['out']
+        self.data = netdbFirewall().filter(self._DATA_FILT).fetch()['out']

@@ -14,4 +14,4 @@ class interfaceConfigBuilder(configBuilder):
                 'loopback' :    { 'set_id': device_id, 'type': 'dummy' },
                }
 
-        self.data = netdbInterface().fetch(filt[group])['out']
+        self.data = netdbInterface().filter(filt[group]).fetch()['out']
