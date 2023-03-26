@@ -1,0 +1,108 @@
+
+from marshmallow import Schema, fields, validate, INCLUDE, ValidationError
+
+class firewallMssSchema(Schema):
+    ipv4 = fields.Integer(required=True, validate=validate.Range(min=556, max=9172))
+    ipv6 = fields.Integer(validate=validate.Range(min=1280, max=9172))
+
+    interfaces = fields.List(fields.String())
+
+
+class firewallStateSchema(Schema):
+    established = fields.String(validate=validate.OneOf(['accept', 'drop']))
+    related     = fields.String(validate=validate.OneOf(['accept', 'drop']))
+
+
+class firewallOptionsSchema(Schema):
+    class Meta:
+        include = {
+            'all-ping':                 fields.Bool(),
+            'broadcast-ping':           fields.Bool(),
+            'config-trap':              fields.Bool(),
+            'ipv6-receive-redirects':   fields.Bool(),
+            'ipv6-src-route':           fields.Bool(),
+            'log-martians':             fields.Bool(),
+            'send-redirects':           fields.Bool(),
+            'source-validation':        fields.Bool(),
+            'syn-cookies':              fields.Bool(),
+            'twa-hazards-protection':   fields.Bool(),
+            'ip-src-route':             fields.Bool(),
+            'receive-redirect':         fields.Bool(),
+            }
+
+class firewallZoneRulesSchema(Schema):
+    ipv4_ruleset = fields.String()
+    ipv6_ruleset = fields.String()
+
+    zone = fields.String(required=True)
+
+class firewallZoneSchema(Schema):
+    class Meta:
+        include = {
+                'from': fields.Nested(firewallZoneRulesSchema())
+                }
+
+    interfaces = fields.List(fields.String())
+
+    default_action = fields.String(validate=validate.OneOf(['accept','drop']))
+
+
+class firewallGroup4NamesSchema(Schema):
+    class Meta:
+        include = {
+                'type': fields.String(required=True, validate=validate.OneOf(['network']))
+                }
+    
+    networks = fields.List(fields.IPv4Interface(), validate=validate.Length(min=1))
+
+
+class firewallGroup6NamesSchema(Schema):
+    class Meta:
+        include = {
+                'type': fields.String(required=True, validate=validate.OneOf(['network']))
+                }
+    
+    networks = fields.List(fields.IPv6Interface(), validate=validate.Length(min=1))
+
+
+class firewallGroupSchema(Schema):
+    ipv4 = fields.Dict(keys=fields.String(required=True), values=fields.Nested(firewallGroup4NamesSchema()))
+    ipv6 = fields.Dict(keys=fields.String(required=True), values=fields.Nested(firewallGroup6NamesSchema()))
+
+
+class firewallPolicyTargetSchema(Schema):
+    network_group = fields.String()
+    port = fields.List(fields.Integer(), validate=validate.Length(min=1))
+
+
+class firewallPolicyRulesSchema(Schema):
+    action = fields.String(required=True, validate=validate.OneOf(['accept','drop']))
+    source = fields.List(fields.Nested(firewallPolicyTargetSchema()))
+    destination = fields.List(fields.Nested(firewallPolicyTargetSchema()))
+
+    state    = fields.List(fields.String(validate=validate.OneOf(['established', 'related'])), validate=validate.Length(min=1,max=2))
+    protocol = fields.String()
+
+
+class firewallPolicyNamesSchema(Schema):
+    default_action = fields.String(required=True, validate=validate.OneOf(['accept','drop']))
+    
+    rules = fields.List(fields.Nested(firewallPolicyRulesSchema()))
+
+
+class firewallPolicySchema(Schema):
+    ipv4 = fields.Dict(keys=fields.String(required=True), values=fields.Nested(firewallPolicyNamesSchema()))
+    ipv6 = fields.Dict(keys=fields.String(required=True), values=fields.Nested(firewallPolicyNamesSchema()))
+
+
+class firewallSchema(Schema):
+    roles        = fields.List(fields.String(), validate=validate.Length(min=1))
+
+    policies     = fields.Nested(firewallPolicySchema())
+    groups       = fields.Nested(firewallGroupSchema())
+    options      = fields.Nested(firewallOptionsSchema())
+    state_policy = fields.Nested(firewallStateSchema())
+    mss_clamp    = fields.Nested(firewallMssSchema())
+
+    zone_policy  = fields.Dict( keys=fields.String(required=True), values=fields.Nested(firewallZoneSchema()) )
+
