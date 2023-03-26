@@ -1,5 +1,8 @@
 
+from marshmallow        import ValidationError
 from util.mongo_api     import MongoAPI
+
+import schema.schema as schema
 
 class netdbColumn:
 
@@ -133,6 +136,24 @@ class netdbColumn:
             ret = { 'result': True, 'comment': 'all devices registered' }
 
         return ret
+
+
+    def _save_checker(self):
+        if not isinstance(self.data, dict) or not self.data:
+            return { 'result': False, 'comment': 'invalid dataset' }
+
+        for top_id, categories in self.data.items():
+
+            if top_id.startswith('_'):
+                if 'roles' not in categories.keys():
+                    return { 'result': False, 'comment': "%s: roles required for shared config set" % top_id }
+
+            try:
+                schema.newSchema(self._COLUMN).load(categories)
+            except ValidationError as error:
+                return { 'result': False, 'comment': '%s: invalid data' % top_id, 'out': error.messages }
+
+        return { 'result': True, 'comment': "%s: all checks passed" % top_id }
 
 
     def filter(self, filt):
