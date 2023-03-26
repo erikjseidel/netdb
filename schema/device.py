@@ -20,8 +20,3 @@ class deviceSchema(Schema):
     cvars     = fields.Nested(cvarsSchema)
 
     downstream_asns = fields.List(fields.Integer(), validate=validate.Length(min=1))
-    ibgp_ipv4       = fields.IPv4()
-    ibgp_ipv6       = fields.IPv6()
-    iso             = fields.String()
-    local_asn       = fields.Integer()
-
