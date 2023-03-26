@@ -1,16 +1,16 @@
 
-from .igp       import *
-from .bgp       import *
-from .firewall  import *
-from .policy    import *
-from .interface import *
+from .igp       import igpSchema
+from .bgp       import bgpSchema
+from .firewall  import firewallSchema
+from .policy    import policySchema
+from .interface import interfacesSchema
 
 SCHEMAS = {
-        'interface'  : interfacesSchema,
         'igp'        : igpSchema,
-        'firewall'   : firewallSchema,
         'bgp'        : bgpSchema,
+        'firewall'   : firewallSchema,
         'policy'     : policySchema,
+        'interface'  : interfacesSchema,
         } 
 
 def newSchema(column):
