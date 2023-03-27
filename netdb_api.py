@@ -25,7 +25,7 @@ def api_entry(column, top_id = None, opt = None):
 
     if column not in netdb.COLUMNS or opt not in [ None, 'config']:
         return Response(response = json.dumps({ "result": False, "comment": "Invalid endpoint"} ),
-                        status = 400, mymetype = 'application/json')
+                        status = 200, mimetype = 'application/json')
 
     if request.data:
         data = request.json
