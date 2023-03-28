@@ -252,10 +252,8 @@ class netdbColumn:
             return { 'result': False, 'comment': 'empty data set' }
 
         self.data = self._from_mongo(ret['out'])
-        return { 'result': True, 'comment': 'data set loaded' }
+        return { 'result': True, 'comment': 'data set loaded', 'out': self.data }
 
 
     def fetch(self):
-        self.load()
-
-        return { 'result': True, 'out': self.data }
+        return self.load()
