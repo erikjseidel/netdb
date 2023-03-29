@@ -239,9 +239,8 @@ class netdbColumn:
                 count += 1
 
         if count > 0:
-            doc = "document"
-            if count > 1:
-                doc = "documents"
+            doc = "document" if count == 1 else "documents"
+
             return { 'result': True, 'comment': '%s %s updated' % (str(count), doc) }
 
         return { 'result': False, 'comment': 'no documents updated' }

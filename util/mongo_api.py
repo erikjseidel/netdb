@@ -33,7 +33,10 @@ class MongoAPI:
         except BulkWriteError:
             return { 'result': True, 'comment':  'warning: duplicates were found. not all documents added' }
 
-        return { 'result': True, 'comment': str(len(response.inserted_ids)) + ' documents created' }
+        length = len(response.inserted_ids)
+        doc = "document" if length == 1 else "documents"
+
+        return { 'result': True, 'comment': '%s %s created' % (length, doc) }
 
 
     def update_one(self, filt, document):
@@ -48,7 +51,9 @@ class MongoAPI:
     def delete_many(self, filt):
         response = self.collection.delete_many(filt)
         if response.deleted_count > 0:
-            ret = { 'result': True, 'comment': '%s records deleted' % response.deleted_count }
+            doc = "document" if response.deleted_count == 1 else "documents"
+
+            ret = { 'result': True, 'comment': '%s %s deleted' % (response.deleted_count, doc) }
         else:
             ret = { 'result': False, 'comment': 'Nothing deleted' }
 
