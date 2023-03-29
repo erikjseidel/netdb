@@ -29,6 +29,8 @@ class interfaceSchema(Schema):
                 'type': fields.String(required=True, validate=validate.OneOf(IFACE_TYPES))
                 }
 
+    disabled    = fields.Bool()
+
     address     = fields.Dict(keys = fields.IPInterface(), values = fields.Nested(addressMetaSchema))
     description = fields.String()
     interface   = fields.String()

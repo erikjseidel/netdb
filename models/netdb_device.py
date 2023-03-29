@@ -10,6 +10,11 @@ class netdbDevice(netdbColumn):
         if not filt:
             pass
 
+        elif isinstance(filt, list):
+            if len(filt) == 4:
+                if filt[0]:
+                    self._FILT = { 'id': filt[0] }
+
         elif isinstance(filt, dict):
             self._FILT = filt
 
