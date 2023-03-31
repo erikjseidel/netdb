@@ -52,7 +52,7 @@ def api_entry(column, top_id = None, opt = None):
             response = netdb.newColumn(column).filter(top_id).fetch()
 
     # POST / PUT methods supported for 'validate' endpoint only, not
-    # supported for regulare (i.e. device / set id) top_ids.
+    #     supported for regulare (i.e. device / set id) top_ids.
     elif request.method == 'POST':
         if top_id == 'validate':
             response = netdb.newColumn(column).set(data).validate()
