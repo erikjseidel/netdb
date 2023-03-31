@@ -46,10 +46,8 @@ def api_entry(column, top_id = None, opt = None):
     if request.method == 'GET':
         if request.data:
             response = netdb.newColumn(column).filter(data).fetch()
-
         elif opt == 'config':
             response = builder.newBuilder(column, top_id).build()
-
         else:
             response = netdb.newColumn(column).filter(top_id).fetch()
 
