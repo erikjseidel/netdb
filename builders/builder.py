@@ -15,4 +15,3 @@ BUILDERS = {
 
 def newBuilder(column, device_id):
     return BUILDERS[column](device_id)
-

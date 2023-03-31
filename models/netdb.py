@@ -14,7 +14,5 @@ COLUMNS = {
         'policy'     : netdbPolicy,
         } 
 
-
 def newColumn(column = "device"):
     return COLUMNS[column]()
-
