@@ -4,6 +4,9 @@ import models, builders
 import models.netdb     as netdb
 import builders.builder as builder
 
+
+import pprint
+
 app = Flask(__name__)
 
 def handle_bad_request(e):
@@ -63,6 +66,7 @@ def api_entry(column, top_id = None, opt = None):
         status = 400
         response = {"result": False, "comment": "Invalid method"}
 
+    pprint.pprint (response)
     return Response(response = json.dumps(response), status = status, mimetype = 'application/json')
 
 

@@ -17,7 +17,11 @@ class configBuilder:
                 }
 
         self.device_id = device_id
-        devices        = netdbDevice().filter(device_id).fetch()['out']
+        netdb_answer = netdbDevice().filter(device_id).fetch()
+
+        devices = {}
+        if netdb_answer['result']:
+            devices = netdb_answer['out']
 
         if device_id in devices:
             self.device    = devices[device_id]
@@ -65,7 +69,7 @@ class configBuilder:
     @salty
     def build(self):
         if not self._DEV_AVAIL:
-            return False, False, None, 'Device not found.'
+            return False, None, 'Device not found.'
 
         config = {}
 
@@ -91,4 +95,4 @@ class configBuilder:
         # Set the cvars
         out = self._dict_replace_values(config, self.cvars)
 
-        return True, False, out, 'config column generated for %s' % device_id
+        return True, out, 'config column generated for %s' % device_id

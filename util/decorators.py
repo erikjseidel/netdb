@@ -1,4 +1,7 @@
 
+import traceback
+import sys
+
 def netdb_internal(func):
     """
     Checks / enforces regular returns for netdb internal methods. Wrapped 
@@ -28,31 +31,42 @@ def netdb_internal(func):
 def salty(func):
     """
     Enforces four tuple return and converts it to salt style output. Wrapped 
-    functions must return four vars:
+    functions must return three vars:
 
     result:  (bool) whether or not result was given
-    error:   (bool) whether or not there was an error
     out:     (dict) dictionary containing netdb data
     comment: (str)  a brief message describing operation / result
 
     This becomes: {
             'result' : bool,
-            'error'  : bool,
             'out'    : dict,
             'comment': str,
             }
 
+    If incoming 'out' is None, out will not be returned in the resulting dict.
+
+    If an excecption is caught, an {'error': True} item will be appended and
+    either the exception message (in the case of exceptions that have messages
+    or a traceback will be loaded into the 'comment' key.
+
     """
     def decorator(*args, **kwargs):
-        result, error, out, comment = func(*args, **kwargs)
+        try:
+            result, out, comment = func(*args, **kwargs)
+        except Exception as e:
+            ret = { 'result': False, 'error': True }
+
+            if hasattr(e, 'message'):
+                ret.update({ 'comment': e.message })
+            else:
+                exc_info = sys.exc_info()
+                ret.update({ 'comment': ''.join(traceback.format_exception(*exc_info)) })
+
+            return ret
 
         if not isinstance(result, bool):
             return { 'result': False, 'error': True,
                     'comment': 'API EXCEPTION: %s: first return (result) must be boolean.' % func.__name__ }
-
-        if not isinstance(error, bool):
-            return { 'result': False, 'error': True,
-                    'comment': 'APIEXCEPTION: %s: second return (error) must be boolean.' % func.__name__ }
 
         if out and not isinstance(out, dict):
             return { 'result': False, 'error': True,
@@ -62,5 +76,9 @@ def salty(func):
             return { 'result': False, 'error': True,
                     'comment': 'API EXCEPTION: %s: fourth return (comment) must be a string.' % func.__name__ }
 
-        return { 'result': result, 'error': error, 'out': out, 'comment': comment }
+        ret = { 'result': result, 'error': False, 'comment': comment }
+
+        if out: ret.update({ 'out': out })
+
+        return ret
     return decorator

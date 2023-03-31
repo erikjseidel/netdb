@@ -213,24 +213,24 @@ class netdbColumn:
         if self._COLUMN != 'device':
             result, out, comment  = self._is_registered()
             if not result: 
-                return result, False, out, comment
+                return result, out, comment
 
         result, out, comment  = self._save_checker()
         if not result: 
-            return result, False, out, comment
+            return result, out, comment
 
         result, out, comment = self.mongo.write_many(self._to_mongo(self.data))
-        return result, False, out, comment
+        return result, out, comment
 
 
     @salty
     def delete(self):
         # We don't want to try a delete with an empty filter.
         if not self._FILT:
-            return False, True, None, 'filter not set'
+            return False, None, 'filter not set'
 
         result, out, comment = self.mongo.delete_many(self._FILT)
-        return result, False, out, comment
+        return result, out, comment
 
 
     @salty
@@ -238,15 +238,15 @@ class netdbColumn:
         if self._COLUMN != 'device':
             result, out, comment  = self._is_registered()
             if not result: 
-                return result, False, out, comment
+                return result, out, comment
 
         result, out, comment  = self._save_checker()
         if not result: 
-            return result, False, out, comment
+            return result, out, comment
 
         result, out, comment = self._update(self._to_mongo(self.data))
 
-        return result, False, out, comment
+        return result, out, comment
 
 
     @salty
@@ -255,8 +255,8 @@ class netdbColumn:
 
         if not result:
             self.data = {}
-            return False, False, out, comment
+            return False, out, comment
 
         self.data = self._from_mongo(out)
 
-        return True, False, self.data, 'data set loaded'
+        return True, self.data, 'data set loaded'

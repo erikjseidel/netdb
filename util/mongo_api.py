@@ -20,9 +20,10 @@ class MongoAPI:
 
         out = [{item: data[item] for item in data if item != '_id'} for data in documents]
 
-        result = True if len(out) > 0 else False
+        if len(out) == 0:
+            return False, None, 'No documents found'
 
-        return result, out, '%s documents read' % len(out)
+        return True, out, '%s documents read' % len(out)
 
 
     @netdb_internal
