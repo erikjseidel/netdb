@@ -30,7 +30,7 @@ def netdb_internal(func):
 
 def salty(func):
     """
-    Enforces four tuple return and converts it to salt style output. Wrapped 
+    Enforces three tuple return and converts it to salt style output. Wrapped 
     functions must return three vars:
 
     result:  (bool) whether or not result was given
