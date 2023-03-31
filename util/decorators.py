@@ -39,13 +39,14 @@ def salty(func):
 
     This becomes: {
             'result' : bool,
+            'error'  : bool,
             'out'    : dict,
             'comment': str,
             }
 
-    If incoming 'out' is None, out will not be returned in the resulting dict.
+    If incoming 'out' is None, 'out' will not be returned in the resulting dict.
 
-    If an excecption is caught, an {'error': True} item will be appended and
+    If an excecption is caught, the 'error' key will be set to 'True' and
     either the exception message (in the case of exceptions that have messages
     or a traceback will be loaded into the 'comment' key.
 
@@ -53,6 +54,7 @@ def salty(func):
     def decorator(*args, **kwargs):
         try:
             result, out, comment = func(*args, **kwargs)
+
         except Exception as e:
             ret = { 'result': False, 'error': True }
 

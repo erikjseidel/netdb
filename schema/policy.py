@@ -1,5 +1,6 @@
 
 from marshmallow import Schema, fields, validate, INCLUDE, ValidationError
+from util        import netdb_fields
 
 class policyAspathListSchema(Schema):
     """ Not yet implemented. """
@@ -13,7 +14,7 @@ class policyList4RulesSchema(Schema):
     le = fields.Integer(validate=validate.Range(min=0, max=32))
     ge = fields.Integer(validate=validate.Range(min=0, max=32))
 
-    prefix = fields.IPv4Interface(required=True)
+    prefix = netdb_fields.netdbIPv4Interface(required=True)
 
 
 class policyList4NamesSchema(Schema):
@@ -24,7 +25,7 @@ class policyList6RulesSchema(Schema):
     le = fields.Integer(validate=validate.Range(min=0, max=128))
     ge = fields.Integer(validate=validate.Range(min=0, max=128))
 
-    prefix = fields.IPv6Interface(required=True)
+    prefix = netdb_fields.netdbIPv6Interface(required=True)
 
 
 class policyList6NamesSchema(Schema):
@@ -46,7 +47,7 @@ class policyMapMatchSchema(Schema):
 
 class policyMapSetSchema(Schema):
     local_pref = fields.Integer(validate=validate.Range(min=0, max=255))
-    next_hop   = fields.String()
+    next_hop   = netdb_fields.netdbIP()
     origin     = fields.String()
 
     community        = fields.String()

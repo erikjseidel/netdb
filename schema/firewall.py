@@ -1,5 +1,6 @@
 
 from marshmallow import Schema, fields, validate, INCLUDE, ValidationError
+from util        import netdb_fields
 
 class firewallMssSchema(Schema):
     ipv4 = fields.Integer(required=True, validate=validate.Range(min=556, max=9172))
@@ -53,7 +54,7 @@ class firewallGroup4NamesSchema(Schema):
                 'type': fields.String(required=True, validate=validate.OneOf(['network']))
                 }
     
-    networks = fields.List(fields.IPv4Interface(), validate=validate.Length(min=1))
+    networks = fields.List(netdb_fields.netdbIPv4Interface(), validate=validate.Length(min=1))
 
 
 class firewallGroup6NamesSchema(Schema):
@@ -62,7 +63,7 @@ class firewallGroup6NamesSchema(Schema):
                 'type': fields.String(required=True, validate=validate.OneOf(['network']))
                 }
     
-    networks = fields.List(fields.IPv6Interface(), validate=validate.Length(min=1))
+    networks = fields.List(netdb_fields.netdbIPv6Interface(), validate=validate.Length(min=1))
 
 
 class firewallGroupSchema(Schema):

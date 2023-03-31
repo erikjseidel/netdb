@@ -1,9 +1,10 @@
 
 from marshmallow import Schema, fields, validate, INCLUDE, ValidationError
+from util        import netdb_fields
 
 class bgpOptionsSchema(Schema):
     asn       = fields.String(required=True)
-    router_id = fields.String(required=True)
+    router_id = netdb_fields.netdbIPv4(required=True)
 
     hold_time      = fields.Integer(validate=validate.Range(min=15,max=180))
     keepalive_time = fields.Integer(validate=validate.Range(min=5,max=60))
@@ -50,7 +51,7 @@ class bgpPeerGroupSchema(Schema):
         include = {
                 'type':      fields.String(validate=validate.OneOf(['ibgp', 'ebgp'])),
                 }
-    source = fields.String()
+    source = netdb_fields.netdbIP()
     family = fields.Nested(bgpPeerFamilySchema())
 
     multihop = fields.Integer(validate=validate.Range(min=1,max=255))

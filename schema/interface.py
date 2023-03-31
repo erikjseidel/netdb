@@ -1,5 +1,6 @@
 
 from marshmallow import Schema, fields, validate, INCLUDE, ValidationError
+from util        import netdb_fields
 
 IFACE_TYPES = ['ethernet', 'vlan', 'lacp', 'dummy', 'gre', 'l2gre']
 
@@ -31,15 +32,15 @@ class interfaceSchema(Schema):
 
     disabled    = fields.Bool()
 
-    address     = fields.Dict(keys = fields.IPInterface(), values = fields.Nested(addressMetaSchema))
+    address     = fields.Dict(keys = netdb_fields.netdbIPInterface(), values = fields.Nested(addressMetaSchema))
     description = fields.String()
     interface   = fields.String()
 
     mtu = fields.Integer(validate=validate.Range(min=1280,max=9192))
     ttl = fields.Integer(validate=validate.Range(min=1,max=255))
 
-    remote = fields.IP()
-    source = fields.IP()
+    remote = netdb_fields.netdbIP()
+    source = netdb_fields.netdbIP()
 
     firewall = fields.Dict(keys = fields.String(required=True, validate=validate.OneOf(['local','ingress','egress'])),
                 values = fields.Dict(keys = fields.String(required=True, validate=validate.OneOf(['ipv4','ipv6'])),

@@ -95,4 +95,7 @@ class configBuilder:
         # Set the cvars
         out = self._dict_replace_values(config, self.cvars)
 
+        if not out:
+            return False, None, 'No IGP configration found for %s' % device_id
+
         return True, out, 'config column generated for %s' % device_id
