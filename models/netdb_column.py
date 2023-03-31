@@ -211,11 +211,11 @@ class netdbColumn:
     @salty
     def save(self):
         if self._COLUMN != 'device':
-            result, out, comment  = self._is_registered()
+            result, out, comment = self._is_registered()
             if not result: 
                 return result, out, comment
 
-        result, out, comment  = self._save_checker()
+        result, out, comment = self._save_checker()
         if not result: 
             return result, out, comment
 
@@ -236,11 +236,11 @@ class netdbColumn:
     @salty
     def update(self):
         if self._COLUMN != 'device':
-            result, out, comment  = self._is_registered()
+            result, out, comment = self._is_registered()
             if not result: 
                 return result, out, comment
 
-        result, out, comment  = self._save_checker()
+        result, out, comment = self._save_checker()
         if not result: 
             return result, out, comment
 
@@ -252,7 +252,7 @@ class netdbColumn:
     @salty
     def validate(self):
         if self._COLUMN != 'device':
-            result, out, comment  = self._is_registered()
+            result, out, comment = self._is_registered()
             if not result: 
                 return result, out, comment
 
@@ -261,7 +261,7 @@ class netdbColumn:
 
     @salty
     def fetch(self):
-        result, out, comment  = self.mongo.read(self._FILT)
+        result, out, comment = self.mongo.read(self._FILT)
 
         if not result:
             self.data = {}
