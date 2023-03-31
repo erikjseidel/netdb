@@ -53,26 +53,33 @@ def api_entry(column, top_id = None, opt = None):
         else:
             response = netdb.newColumn(column).filter(top_id).fetch()
 
+    # POST / PUT methods supported for 'validate' endpoint only, not
+    # supported for regulare (i.e. device / set id) top_ids.
     elif request.method == 'POST':
         if top_id == 'validate':
             response = netdb.newColumn(column).set(data).validate()
-        else:
+        elif not top_id:
             response = netdb.newColumn(column).set(data).save()
+        else:
+            status = 400
 
     elif request.method == 'PUT':
         if top_id == 'validate':
             response = netdb.newColumn(column).set(data).validate()
-        else:
+        elif not top_id:
             response = netdb.newColumn(column).set(data).update()
+        else:
+            status = 400
 
     elif request.method == 'DELETE':
         response = netdb.newColumn(column).filter(data).delete()
 
     else:
         status = 400
+
+    if status == 400:
         response = {"result": False, "comment": "Invalid method"}
 
-    pprint.pprint (response)
     return Response(response = json.dumps(response), status = status, mimetype = 'application/json')
 
 
