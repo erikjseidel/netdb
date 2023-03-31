@@ -47,7 +47,7 @@ def salty(func):
     If incoming 'out' is None, 'out' will not be returned in the resulting dict.
 
     If an excecption is caught, the 'error' key will be set to 'True' and
-    either the exception message (in the case of exceptions that have messages
+    either the exception message (in the case of exceptions that have messages)
     or a traceback will be loaded into the 'comment' key.
 
     """
