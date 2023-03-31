@@ -21,8 +21,8 @@ def base():
                     mimetype='application/json')
   
 
-@app.route('/api/<column>',                methods=['GET', 'POST', 'DELETE', 'PUT'])
-@app.route('/api/<column>/<top_id>',       methods=['GET'])
+@app.route('/api/<column>',                methods=['GET', 'POST', 'PUT', 'DELETE'])
+@app.route('/api/<column>/<top_id>',       methods=['GET', 'POST', 'PUT'])
 @app.route('/api/<column>/<top_id>/<opt>', methods=['GET'])
 def api_entry(column, top_id = None, opt = None):
 
@@ -54,10 +54,16 @@ def api_entry(column, top_id = None, opt = None):
             response = netdb.newColumn(column).filter(top_id).fetch()
 
     elif request.method == 'POST':
-        response = netdb.newColumn(column).set(data).save()
+        if top_id == 'validate':
+            response = netdb.newColumn(column).set(data).validate()
+        else:
+            response = netdb.newColumn(column).set(data).save()
 
     elif request.method == 'PUT':
-        response = netdb.newColumn(column).set(data).update()
+        if top_id == 'validate':
+            response = netdb.newColumn(column).set(data).validate()
+        else:
+            response = netdb.newColumn(column).set(data).update()
 
     elif request.method == 'DELETE':
         response = netdb.newColumn(column).filter(data).delete()

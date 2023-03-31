@@ -147,7 +147,7 @@ class netdbColumn:
             except ValidationError as error:
                 return False, error.messages, '%s: invalid data' % top_id
 
-        return True, None, '%s: all checks passed' % top_id
+        return True, None, 'netdb says: dry run. all checks passed for all elements.'
 
 
     @netdb_internal
@@ -247,6 +247,16 @@ class netdbColumn:
         result, out, comment = self._update(self._to_mongo(self.data))
 
         return result, out, comment
+
+
+    @salty
+    def validate(self):
+        if self._COLUMN != 'device':
+            result, out, comment  = self._is_registered()
+            if not result: 
+                return result, out, comment
+
+        return self._save_checker()
 
 
     @salty

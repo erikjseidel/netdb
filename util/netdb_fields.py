@@ -36,7 +36,7 @@ class netdbIPv4(netdbIP):
 
     .. versionadded:: 3.8.0
     """
-    default_error_messages = {"invalid_ip": "Not a valid IPv4 address."}
+    default_error_messages = {"invalid_ip": "Requires a valid IPv4 address, router id, GRE key or netdb cvar."}
 
     DESERIALIZATION_CLASS = ipaddress.IPv4Address
 
@@ -47,7 +47,7 @@ class netdbIPv6(netdbIP):
     .. versionadded:: 3.8.0
     """
 
-    default_error_messages = {"invalid_ip": "Not a valid IPv6 address."}
+    default_error_messages = {"invalid_ip": "Requires a valid IPv6 address or a netdb cvar."}
 
     DESERIALIZATION_CLASS = ipaddress.IPv6Address
 
@@ -80,7 +80,7 @@ class netdbIPInterface(IPInterface):
 class netdbIPv4Interface(netdbIPInterface):
     """A IPv4 Network Interface field."""
 
-    default_error_messages = {"invalid_ip_interface": "Not a valid IPv4 interface."}
+    default_error_messages = {"invalid_ip_interface": "Requires a valid IPv4 interface (prefix) or a netdb cvar."}
 
     DESERIALIZATION_CLASS = ipaddress.IPv4Interface
 
@@ -88,6 +88,6 @@ class netdbIPv4Interface(netdbIPInterface):
 class netdbIPv6Interface(netdbIPInterface):
     """A IPv6 Network Interface field."""
 
-    default_error_messages = {"invalid_ip_interface": "Not a valid IPv6 interface."}
+    default_error_messages = {"invalid_ip_interface": "Requires a valid IPv6 interface (prefix) or a netdb cvar."}
 
     DESERIALIZATION_CLASS = ipaddress.IPv6Interface
