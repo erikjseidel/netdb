@@ -1,6 +1,7 @@
 
 from marshmallow        import ValidationError
 from util.mongo_api     import MongoAPI
+from util.decorators    import salty, netdb_internal
 
 import schema.schema as schema
 
@@ -115,45 +116,72 @@ class netdbColumn:
         return out
 
 
+    @netdb_internal
     def _is_registered(self):
-        mongo_answer = MongoAPI(netdbColumn.DB_NAME, 'device').read()['out']
+        result, out, comment  = MongoAPI(netdbColumn.DB_NAME, 'device').read()
         devices = []
-        for device in mongo_answer:
+        for device in out:
             devices.append(device.pop('id'))
 
         top_ids = self.data.keys()
 
-        name = None
-
-        registered = True
         for top_id in top_ids:
             if not top_id.startswith('_') and top_id not in devices:
-                ret = { 'result': False, 'comment': '%s: device not registered' % top_id }
-                registered = False
-                break
+                return False, None, '%s: device not registered'
 
-        if registered:
-            ret = { 'result': True, 'comment': 'all devices registered' }
-
-        return ret
+        return True, None, 'all devices registered'
 
 
+    @netdb_internal
     def _save_checker(self):
         if not isinstance(self.data, dict) or not self.data:
-            return { 'result': False, 'comment': 'invalid dataset' }
+            return False, None, 'invalid dataset'
 
         for top_id, categories in self.data.items():
-
             if top_id.startswith('_'):
                 if 'roles' not in categories.keys():
-                    return { 'result': False, 'comment': "%s: roles required for shared config set" % top_id }
+                    return False, None, '%s: roles required for shared config set' % top_id
 
             try:
                 schema.newSchema(self._COLUMN).load(categories)
             except ValidationError as error:
-                return { 'result': False, 'comment': '%s: invalid data' % top_id, 'out': error.messages }
+                return False, error.messages, '%s: invalid data' % top_id
 
-        return { 'result': True, 'comment': "%s: all checks passed" % top_id }
+        return True, None, '%s: all checks passed' % top_id
+
+
+    @netdb_internal
+    def _update(self, documents):
+        count = 0
+
+        for document in documents:
+            if 'id' in document:
+                filt = { 'id' : document['id'] }
+
+            else:
+                filt = { 'set_id': document['set_id'] }
+                for key in ['category', 'family', 'element_id']:
+                    if key in document:
+                        filt.update({ key : document[key] })
+ 
+            result, out, comment = self.mongo.update_one(filt, document)
+            if result: count += 1
+
+        if count > 0:
+            doc = "document" if count == 1 else "documents"
+
+            return True, None, '%s %s updated' % (str(count), doc)
+
+        return False, None, 'no documents updated'
+
+
+    def set(self, data):
+        self.data = data
+        return self
+
+
+    def get(self):
+        return self.data
 
 
     def filter(self, filt):
@@ -180,82 +208,55 @@ class netdbColumn:
         return self
 
 
-    def set(self, data):
-        self.data = data
-        return self
-
-
-    def get(self):
-        return self.data
-
-
+    @salty
     def save(self):
         if self._COLUMN != 'device':
-            ret = self._is_registered()
-            if not ret['result']:
-                return ret
+            result, out, comment  = self._is_registered()
+            if not result: 
+                return result, False, out, comment
 
-        ret = self._save_checker()
-        if not ret['result']:
-            return ret
+        result, out, comment  = self._save_checker()
+        if not result: 
+            return result, False, out, comment
 
-        return self.mongo.write_many(self._to_mongo(self.data))
+        result, out, comment = self.mongo.write_many(self._to_mongo(self.data))
+        return result, False, out, comment
 
 
+    @salty
     def delete(self):
         # We don't want to try a delete with an empty filter.
         if not self._FILT:
-            return { 'result': False, 'error': True, 'comment': 'filter not set' }
-           
-        return self.mongo.delete_many(self._FILT)
-        
+            return False, True, None, 'filter not set'
 
+        result, out, comment = self.mongo.delete_many(self._FILT)
+        return result, False, out, comment
+
+
+    @salty
     def update(self):
-        ret = self._is_registered()
-        if not ret['result']:
-            return ret
+        if self._COLUMN != 'device':
+            result, out, comment  = self._is_registered()
+            if not result: 
+                return result, False, out, comment
 
-        ret = self._save_checker()
-        if not ret['result']:
-            return ret
+        result, out, comment  = self._save_checker()
+        if not result: 
+            return result, False, out, comment
 
-        return self._update(self._to_mongo(self.data))
+        result, out, comment = self._update(self._to_mongo(self.data))
 
-
-    def _update(self, documents):
-        count = 0
-
-        for document in documents:
-            if 'id' in document:
-                filt = { 'id' : document['id'] }
-
-            else:
-                filt = { 'set_id': document['set_id'] }
-                for key in ['category', 'family', 'element_id']:
-                    if key in document:
-                        filt.update({ key : document[key] })
-
-            if self.mongo.update_one(filt, document)['result']:
-                count += 1
-
-        if count > 0:
-            doc = "document" if count == 1 else "documents"
-
-            return { 'result': True, 'comment': '%s %s updated' % (str(count), doc) }
-
-        return { 'result': False, 'comment': 'no documents updated' }
+        return result, False, out, comment
 
 
-    def load(self):
-        ret = self.mongo.read(self._FILT)
-
-        if not ret['out']:
-            self.data = {}
-            return { 'result': False, 'comment': 'empty data set' }
-
-        self.data = self._from_mongo(ret['out'])
-        return { 'result': True, 'comment': 'data set loaded', 'out': self.data }
-
-
+    @salty
     def fetch(self):
-        return self.load()
+        result, out, comment  = self.mongo.read(self._FILT)
+
+        if not result:
+            self.data = {}
+            return False, False, out, comment
+
+        self.data = self._from_mongo(out)
+
+        return True, False, self.data, 'data set loaded'

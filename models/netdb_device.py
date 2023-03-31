@@ -1,6 +1,7 @@
 
 from .netdb_column      import netdbColumn
 from schema.device      import *
+from util.decorators    import netdb_internal
 
 class netdbDevice(netdbColumn):
 
@@ -46,14 +47,15 @@ class netdbDevice(netdbColumn):
         return out
 
 
+    @netdb_internal
     def _save_checker(self):
         if not isinstance(self.data, dict) or not self.data:
-            return { 'result': False, 'comment': 'invalid dataset' }
+            return False, None, 'invalid dataset'
 
         for top_id, device in self.data.items():
             try:
                 deviceSchema().load(device)
             except ValidationError as error:
-                return { 'result': False, 'comment': '%s: invalid data' % top_id, 'out': error.messages }
+                return False, error.messages, '%s: invalid data' % top_id
 
-        return { 'result': True, 'comment': '%s - all checks passed' }
+        return True, None, '%s - all checks passed'

@@ -27,15 +27,11 @@ def api_entry(column, top_id = None, opt = None):
         return Response(response = json.dumps({ "result": False, "comment": "Invalid endpoint"} ),
                         status = 200, mimetype = 'application/json')
 
-    # Device names should remain uppercase
-    if top_id and not top_id.startswith('_'):
-        top_id = top_id.upper()
-
     if request.data:
         data = request.json
-        if isinstance(data, list):
-            if data[0] and not data[0].startswith('_'):
-                data[0] = data[0].upper()
+        if not ( isinstance(data, list) or isinstance(data, dict) ):
+            return Response(response = json.dumps({ "result": False, "comment": "Invalid input data" }),
+                            status = 400, mimetype = 'application/json')
 
     if request.method in ['POST', 'PUT', 'DELETE']:
         if not request.data:
