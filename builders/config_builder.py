@@ -1,5 +1,6 @@
 
-from models.netdb_device     import netdbDevice
+from models.netdb_device import netdbDevice
+from util.decorators     import salty
 
 class configBuilder:
 
@@ -61,9 +62,10 @@ class configBuilder:
         return x
 
 
+    @salty
     def build(self):
         if not self._DEV_AVAIL:
-            return { 'result': False, 'comment': 'Device not found.' }
+            return False, False, None, 'Device not found.'
 
         config = {}
 
@@ -89,4 +91,4 @@ class configBuilder:
         # Set the cvars
         out = self._dict_replace_values(config, self.cvars)
 
-        return { 'result': True, 'comment': 'config column generated for %s' % device_id, 'out': out }
+        return True, False, out, 'config column generated for %s' % device_id
