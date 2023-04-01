@@ -15,14 +15,8 @@ def netdb_internal(func):
     def decorator(*args, **kwargs):
         result, out, comment = func(*args, **kwargs)
 
-        if not isinstance(result, bool):
-            return False, None, 'API EXCEPTION: %s: first return (result) must be boolean.' % func.__name__
-
-        if out and not isinstance(out, dict) and not isinstance(out, list):
-            return False, None, 'API EXCEPTION: %s: second return (out) must be a dict, list or NoneType.' % func.__name__
-
-        if not isinstance(comment, str):
-            return False, None, 'API EXCEPTION: %s: third return (comment) must be a string.' % func.__name__
+        assert isinstance(result, bool)
+        assert (out == None) or isinstance(out, (list, dict)), isinstance(comment, str)
 
         return result, out, comment
     return decorator
@@ -55,6 +49,9 @@ def salty(func):
         try:
             result, out, comment = func(*args, **kwargs)
 
+            assert isinstance(result, bool)
+            assert (out == None) or isinstance(out, dict), isinstance(comment, str)
+
         except Exception as e:
             ret = { 'result': False, 'error': True }
 
@@ -65,18 +62,6 @@ def salty(func):
                 ret.update({ 'comment': ''.join(traceback.format_exception(*exc_info)) })
 
             return ret
-
-        if not isinstance(result, bool):
-            return { 'result': False, 'error': True,
-                    'comment': 'API EXCEPTION: %s: first return (result) must be boolean.' % func.__name__ }
-
-        if out and not isinstance(out, dict):
-            return { 'result': False, 'error': True,
-                    'comment': 'API EXCEPTION: %s: third return (out) must be a dict or NoneType.' % func.__name__ }
-
-        if not isinstance(comment, str):
-            return { 'result': False, 'error': True,
-                    'comment': 'API EXCEPTION: %s: fourth return (comment) must be a string.' % func.__name__ }
 
         ret = { 'result': result, 'error': False, 'comment': comment }
 

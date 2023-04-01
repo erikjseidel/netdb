@@ -53,7 +53,7 @@ class MongoAPI:
         response = self.collection.replace_one(filt, document)
 
         if response.modified_count > 0:
-            return True, str(response.modified_count), 'document modified'
+            return True, None, 'document modified'
 
         return False, None, 'nothing updated. %s matched' % response.matched_count
 

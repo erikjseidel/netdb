@@ -169,7 +169,6 @@ class netdbColumn:
 
         if count > 0:
             doc = "document" if count == 1 else "documents"
-
             return True, None, '%s %s updated' % (str(count), doc)
 
         return False, None, 'no documents updated'
