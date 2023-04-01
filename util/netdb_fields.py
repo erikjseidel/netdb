@@ -46,7 +46,6 @@ class netdbIPv6(netdbIP):
 
     .. versionadded:: 3.8.0
     """
-
     default_error_messages = {"invalid_ip": "Requires a valid IPv6 address or a netdb cvar."}
 
     DESERIALIZATION_CLASS = ipaddress.IPv6Address
