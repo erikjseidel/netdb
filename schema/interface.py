@@ -38,6 +38,9 @@ class interfaceSchema(Schema):
 
     mtu = fields.Integer(validate=validate.Range(min=1280,max=9192))
     ttl = fields.Integer(validate=validate.Range(min=1,max=255))
+    key = netdb_fields.netdbIPv4()
+
+    offload = fields.Bool()
 
     remote = netdb_fields.netdbIP()
     source = netdb_fields.netdbIP()
