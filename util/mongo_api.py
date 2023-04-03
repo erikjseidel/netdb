@@ -3,7 +3,7 @@ from pymongo.errors import *
 
 from .decorators import netdb_internal
 
-class MongoAPI:
+class mongoAPI:
 
     def __init__(self, database, collection):
         self.client = MongoClient("mongodb://localhost:27017/")  

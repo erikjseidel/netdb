@@ -1,6 +1,6 @@
 
 from marshmallow        import ValidationError
-from util.mongo_api     import MongoAPI
+from util.mongo_api     import mongoAPI
 from util.decorators    import salty, netdb_internal
 
 import schema.schema as schema
@@ -13,7 +13,7 @@ class netdbColumn:
 
     def __init__(self, data = {}):
         self.data = data
-        self.mongo = MongoAPI(netdbColumn.DB_NAME, self._COLUMN)
+        self.mongo = mongoAPI(netdbColumn.DB_NAME, self._COLUMN)
 
 
     def _get_type(category):
@@ -118,7 +118,7 @@ class netdbColumn:
 
     @netdb_internal
     def _is_registered(self):
-        result, out, comment  = MongoAPI(netdbColumn.DB_NAME, 'device').read()
+        result, out, comment  = mongoAPI(netdbColumn.DB_NAME, 'device').read()
         devices = []
         for device in out:
             devices.append(device.pop('id'))
