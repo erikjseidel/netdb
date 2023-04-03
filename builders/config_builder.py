@@ -7,7 +7,6 @@ class configBuilder:
     _DEV_AVAIL = True
 
     def __init__(self, device_id):
-
         self._DATA_FILT = { 
                 '$or': [ 
                     { 'set_id':     device_id }, 

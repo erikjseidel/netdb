@@ -4,9 +4,6 @@ import models, builders
 import models.netdb     as netdb
 import builders.builder as builder
 
-
-import pprint
-
 app = Flask(__name__)
 
 def handle_bad_request(e):
