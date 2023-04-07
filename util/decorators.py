@@ -19,10 +19,10 @@ def netdb_internal(func):
     return decorator
 
 
-def salty(func):
+def netdb_provider(func):
     """
-    Enforces three tuple return and converts it to salt style output. Wrapped 
-    functions must return three vars:
+    Enforces three tuple return and converts it to four key dict style output. 
+    Wrapped functions must return three vars:
 
     result:  (bool) whether or not result was given
     out:     (dict) dictionary containing netdb data

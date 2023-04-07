@@ -1,6 +1,6 @@
 
 from models.netdb_device import netdbDevice
-from util.decorators     import salty
+from util.decorators     import netdb_provider
 
 class configBuilder:
 
@@ -65,7 +65,7 @@ class configBuilder:
         return x
 
 
-    @salty
+    @netdb_provider
     def build(self):
         if not self._DEV_AVAIL:
             return False, None, 'Device not found.'

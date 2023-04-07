@@ -1,7 +1,7 @@
 
 from marshmallow        import ValidationError
 from util.mongo_api     import mongoAPI
-from util.decorators    import salty, netdb_internal
+from util.decorators    import netdb_provider, netdb_internal
 
 import schema.schema as schema
 
@@ -207,7 +207,7 @@ class netdbColumn:
         return self
 
 
-    @salty
+    @netdb_provider
     def save(self):
         if self._COLUMN != 'device':
             result, out, comment = self._is_registered()
@@ -222,7 +222,7 @@ class netdbColumn:
         return result, out, comment
 
 
-    @salty
+    @netdb_provider
     def delete(self):
         # We don't want to try a delete with an empty filter.
         if not self._FILT:
@@ -232,7 +232,7 @@ class netdbColumn:
         return result, out, comment
 
 
-    @salty
+    @netdb_provider
     def update(self):
         if self._COLUMN != 'device':
             result, out, comment = self._is_registered()
@@ -248,7 +248,7 @@ class netdbColumn:
         return result, out, comment
 
 
-    @salty
+    @netdb_provider
     def validate(self):
         if self._COLUMN != 'device':
             result, out, comment = self._is_registered()
@@ -258,7 +258,7 @@ class netdbColumn:
         return self._save_checker()
 
 
-    @salty
+    @netdb_provider
     def fetch(self):
         result, out, comment = self.mongo.read(self._FILT)
 
