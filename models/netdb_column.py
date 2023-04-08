@@ -10,6 +10,7 @@ class netdbColumn:
     DB_NAME = 'netdb'
 
     _FILT = {}
+    _PROJ = {}
 
     def __init__(self, data = {}):
         self.data = data
@@ -207,6 +208,16 @@ class netdbColumn:
         return self
 
 
+    def project(self, project_dict):
+        if 'projection' in project_dict:
+            self._PROJ = project_dict['projection']
+
+        if 'filter' in project_dict:
+            self._FILT = project_dict['filter']
+
+        return self
+
+
     @netdb_provider
     def save(self):
         if self._COLUMN != 'device':
@@ -260,7 +271,7 @@ class netdbColumn:
 
     @netdb_provider
     def fetch(self):
-        result, out, comment = self.mongo.read(self._FILT)
+        result, out, comment = self.mongo.read(self._FILT, self._PROJ)
 
         if not result:
             self.data = {}

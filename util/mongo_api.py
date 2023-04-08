@@ -15,8 +15,8 @@ class mongoAPI:
 
 
     @netdb_internal
-    def read(self, query = {}):
-        documents = self.collection.find(query)
+    def read(self, query = {}, projection = {}):
+        documents = self.collection.find(query, projection)
 
         out = [{item: data[item] for item in data if item != '_id'} for data in documents]
 
