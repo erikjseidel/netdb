@@ -42,7 +42,7 @@ def api_entry(column, top_id = None, opt = None):
 
     if request.method == 'GET':
         if request.data:
-            if opt == 'project':
+            if top_id == 'project':
                 response = netdb.newColumn(column).project(data).fetch()
             else:
                 response = netdb.newColumn(column).filter(data).fetch()
