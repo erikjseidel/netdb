@@ -212,6 +212,15 @@ class netdbColumn:
         if 'projection' in project_dict:
             self._PROJ = project_dict['projection']
 
+            # These should always be returned.
+            self._PROJ.update({
+                "set_id"     : 1,
+                "category"   : 1,
+                "family"     : 1,
+                "element_id" : 1,
+                "id"         : 1,
+                })
+
         if 'filter' in project_dict:
             self._FILT = project_dict['filter']
 
