@@ -20,3 +20,7 @@ class deviceSchema(Schema):
     cvars     = fields.Nested(cvarsSchema)
 
     downstream_asns = fields.List(fields.Integer(), validate=validate.Length(min=1))
+
+    meta        = fields.Dict()
+    weight     = fields.Integer(validate=validate.Range(min=50, max=1001))
+    datasource = fields.String()

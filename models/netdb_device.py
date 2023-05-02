@@ -42,8 +42,11 @@ class netdbDevice(netdbColumn):
 
         for device in data:
             device_id  = device.pop('id')
-            out[device_id] = device
+            if device_id in out:
+                if out[device_id].get('weight', 0) > device.get('weight', 0):
+                    continue
 
+            out[device_id] = device
         return out
 
 
