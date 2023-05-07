@@ -55,6 +55,7 @@ class interfaceSchema(Schema):
     lacp = fields.Nested(lacpOptionsSchema)
     vlan = fields.Nested(vlanOptionsSchema)
 
-
-class interfacesSchema(Schema):
-    interfaces  = fields.Dict( required=True, keys=fields.String(required=True), values=fields.Nested(interfaceSchema()) )
+    # netdb metadata and control
+    meta       = fields.Dict()
+    weight     = fields.Integer(validate=validate.Range(min=50, max=1001))
+    datasource = fields.String()

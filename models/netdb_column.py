@@ -128,7 +128,7 @@ class netdbColumn:
 
         for top_id in top_ids:
             if not top_id.startswith('_') and top_id not in devices:
-                return False, None, '%s: device not registered'
+                return False, self.data[top_id], '%s: device not registered' % top_id
 
         return True, None, 'all devices registered'
 
@@ -164,6 +164,9 @@ class netdbColumn:
                 for key in ['category', 'family', 'element_id']:
                     if key in document:
                         filt.update({ key : document[key] })
+
+            if 'datasource' in document:
+                filt.update({ 'datasource' : document['datasource'] })
  
             result, out, comment = self.mongo.update_one(filt, document)
             if result: count += 1

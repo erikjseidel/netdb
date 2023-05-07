@@ -29,8 +29,8 @@ class netdbInterface(netdbColumn):
                 out[config_set] = {}
 
             elem = element.pop('element_id')
-            if config_id in out and elem in out[config_id]:
-                if out[config_id][elem].get('weight', 0) > element.get('weight', 0):
+            if config_set in out and elem in out[config_set]:
+                if out[config_set][elem].get('weight', 0) > element.get('weight', 0):
                     continue
             out[config_set][elem] = element
         return out
@@ -46,6 +46,6 @@ class netdbInterface(netdbColumn):
                 try:
                     interfaceSchema().load(contents)
                 except ValidationError as error:
-                    return False, error.messages, '%s: invalid data' % top_id
+                    return False, error.messages, '%s: invalid data' % device_id
 
         return True, None, '%s - all checks passed'
