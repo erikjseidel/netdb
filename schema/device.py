@@ -15,7 +15,7 @@ class cvarsSchema(Schema):
 
 class deviceSchema(Schema):
     location  = fields.String(required = True)
-    providers = fields.List(fields.String(), required = True, validate=validate.Length(min=1))
+    providers = fields.List(fields.String(), validate=validate.Length(min=1))
     roles     = fields.List(fields.String(), required = True, validate=validate.Length(min=1))
     cvars     = fields.Nested(cvarsSchema)
 

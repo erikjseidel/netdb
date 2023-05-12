@@ -47,7 +47,8 @@ def api_entry(column, top_id = None, opt = None):
             else:
                 response = netdb.newColumn(column).filter(data).fetch()
 
-        elif opt == 'config':
+        # device and interface columns do not need config builders.
+        elif column not in ['device', 'interface'] and opt == 'config':
             response = builder.newBuilder(column, top_id).build()
         else:
             response = netdb.newColumn(column).filter(top_id).fetch()

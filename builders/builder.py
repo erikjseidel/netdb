@@ -6,7 +6,7 @@ from .policy_config_builder    import policyConfigBuilder
 from .interface_config_builder import interfaceConfigBuilder
 
 BUILDERS = {
-        'interface'  : interfaceConfigBuilder,
+#        'interface'  : interfaceConfigBuilder,
         'igp'        : igpConfigBuilder,
         'firewall'   : firewallConfigBuilder,
         'bgp'        : bgpConfigBuilder,

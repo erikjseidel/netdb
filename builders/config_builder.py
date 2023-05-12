@@ -70,13 +70,41 @@ class configBuilder:
         if not self._DEV_AVAIL:
             return False, None, 'Device not found.'
 
-        config = {}
-
         device_id = self.device_id
+        config = { device_id : {} }
 
         roles = []
         if 'roles' in self.device:
             roles = self.device['roles']
+
+
+        def merge_config(data):
+            for category, contents in data.items():
+                if category in self._COLUMN_CAT['type_1']:
+                    for family in ['ipv4', 'ipv6']:
+                        if family in contents:
+                            for element, elem_data in contents[family].items():
+                                unwind = config[device_id]
+                                for i in [ category, family ]:
+                                    if not unwind.get(i):
+                                        unwind[i] = {}
+                                    unwind = unwind[i]
+                                config[device_id][category][family][element] = elem_data
+
+                elif category in self._COLUMN_CAT['type_2']:
+                    for element, elem_data in contents.items():
+                        if category not in config[device_id]:
+                            config[device_id][category] = {}
+
+                        config[device_id][category][element] = elem_data
+
+                # type_3 categories are merged.
+                elif category in self._COLUMN_CAT['type_3']:
+                    if category in config[device_id]:
+                        config[device_id][category].update(contents)
+                    else:
+                        config[device_id][category] = contents
+
 
         for config_set, set_data in self.data.items():
             if not config_set.startswith('_'):
@@ -85,11 +113,11 @@ class configBuilder:
             for role in set_data['roles']:
                 if role in roles or role == '*':
                     set_data.pop('roles', None)
-                    config.update({ config_set: set_data })
+                    merge_config(set_data)
                     break
 
         if device_id in self.data:
-            config.update({ device_id: self.data[device_id] })
+            merge_config(self.data[device_id])
 
         # Set the cvars
         out = self._dict_replace_values(config, self.cvars)

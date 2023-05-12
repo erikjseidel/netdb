@@ -2,7 +2,7 @@
 from builders.config_builder import configBuilder
 from models.netdb_policy     import netdbPolicy
 
-class policyConfigBuilder(configBuilder):
+class policyConfigBuilder(configBuilder, netdbPolicy):
 
     def __init__(self, device_id):
         configBuilder.__init__(self, device_id)
