@@ -6,10 +6,30 @@ import builders.builder as builder
 
 app = Flask(__name__)
 
+
+ERR_INVALID_EP = Response(response = json.dumps({ "result": False, "comment": "Invalid endpoint"} ),
+                        status = 200, mimetype = 'application/json')
+
+ERR_INVALID_DATA = Response(response = json.dumps({ "result": False, "comment": "Invalid input data" }),
+                        status = 400, mimetype = 'application/json')
+
+
 def handle_bad_request(e):
     return json.dumps({ 'result': False, 'comment': 'bad request' }), 400
 
 app.register_error_handler(400, handle_bad_request)
+
+
+def get_data(request):
+    if not request.data:
+        return None
+
+    data = request.json
+    if not ( isinstance(data, list) or isinstance(data, dict) ):
+        return None
+
+    return data
+
 
 @app.route('/')
 def base():
@@ -18,67 +38,88 @@ def base():
                     mimetype='application/json')
   
 
-@app.route('/api/<column>',                methods=['GET', 'POST', 'PUT', 'DELETE'])
-@app.route('/api/<column>/<top_id>',       methods=['GET', 'POST', 'PUT'])
-@app.route('/api/<column>/<top_id>/<opt>', methods=['GET'])
-def api_entry(column, top_id = None, opt = None):
-
-    if column not in netdb.COLUMNS or opt not in [ None, 'config']:
-        return Response(response = json.dumps({ "result": False, "comment": "Invalid endpoint"} ),
-                        status = 200, mimetype = 'application/json')
-
-    if request.data:
-        data = request.json
-        if not ( isinstance(data, list) or isinstance(data, dict) ):
-            return Response(response = json.dumps({ "result": False, "comment": "Invalid input data" }),
-                            status = 400, mimetype = 'application/json')
-
-    if request.method in ['POST', 'PUT', 'DELETE']:
-        if not request.data:
-            return Response(response = json.dumps({ "result": False, "comment": "No input data" }),
-                            status = 400, mimetype = 'application/json')
+@app.route('/api/<column>/<top_id>/config', methods=['GET'])
+def builder_route(column, top_id):
+    if column not in netdb.COLUMNS:
+        return ERR_INVALID_EP
 
     status = 200
 
-    if request.method == 'GET':
-        if request.data:
-            if top_id == 'project':
-                response = netdb.newColumn(column).project(data).fetch()
-            else:
-                response = netdb.newColumn(column).filter(data).fetch()
+    # device and interface columns do not need config builders.
+    if column not in ['device', 'interface']:
+        response = builder.newBuilder(column, top_id).build()
+    else:
+        response = netdb.newColumn(column).filter(top_id).fetch()
 
-        # device and interface columns do not need config builders.
-        elif column not in ['device', 'interface'] and opt == 'config':
-            response = builder.newBuilder(column, top_id).build()
-        else:
-            response = netdb.newColumn(column).filter(top_id).fetch()
+    return Response(response = json.dumps(response), status = status, mimetype = 'application/json')
 
-    # POST / PUT methods supported for 'validate' endpoint only, not
-    #     supported for regulare (i.e. device / set id) top_ids.
-    elif request.method == 'POST':
-        if top_id == 'validate':
-            response = netdb.newColumn(column).set(data).validate()
-        elif not top_id:
-            response = netdb.newColumn(column).set(data).save()
-        else:
-            status = 400
+
+@app.route('/api/<column>/validate', methods=['POST', 'PUT'])
+def validator_route(column):
+    if column not in netdb.COLUMNS:
+        return ERR_INVALID_EP
+
+    if not ( data := get_data(request) ):
+        return ERR_INVALID_DATA
+
+    status = 200
+
+    response = netdb.newColumn(column).set(data).validate()
+
+    return Response(response = json.dumps(response), status = status, mimetype = 'application/json')
+
+
+@app.route('/api/<column>/project', methods=['GET'])
+def projector_route(column):
+    if column not in netdb.COLUMNS:
+        return ERR_INVALID_EP
+
+    if not ( data := get_data(request) ):
+        return ERR_INVALID_DATA
+
+    status = 200
+
+    response = netdb.newColumn(column).project(data).fetch()
+
+    return Response(response = json.dumps(response), status = status, mimetype = 'application/json')
+
+
+@app.route('/api/<column>', methods=['POST', 'PUT', 'DELETE'])
+def alter_route(column, top_id):
+    if column not in netdb.COLUMNS:
+        return ERR_INVALID_EP
+
+    if not ( data := get_data(request) ):
+        return ERR_INVALID_DATA
+
+    status = 200
+
+    if request.method == 'POST':
+        response = netdb.newColumn(column).set(data).save()
 
     elif request.method == 'PUT':
-        if top_id == 'validate':
-            response = netdb.newColumn(column).set(data).validate()
-        elif not top_id:
-            response = netdb.newColumn(column).set(data).update()
-        else:
-            status = 400
+        response = netdb.newColumn(column).set(data).update()
 
     elif request.method == 'DELETE':
         response = netdb.newColumn(column).filter(data).delete()
 
-    else:
-        status = 400
+    return Response(response = json.dumps(response), status = status, mimetype = 'application/json')
 
-    if status == 400:
-        response = {"result": False, "comment": "Invalid method"}
+
+@app.route('/api/<column>',          methods=['GET'])
+@app.route('/api/<column>/<top_id>', methods=['GET'])
+def fetcher_route(column, top_id = None):
+    if column not in netdb.COLUMNS:
+        return ERR_INVALID_EP
+
+    data = get_data(request)
+
+    status = 200
+
+    if data:
+        response = netdb.newColumn(column).filter(data).fetch()
+    else:
+        response = netdb.newColumn(column).filter(top_id).fetch()
 
     return Response(response = json.dumps(response), status = status, mimetype = 'application/json')
 
