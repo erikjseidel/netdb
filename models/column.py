@@ -1,4 +1,3 @@
-
 from marshmallow        import ValidationError
 from util.mongo_api     import mongoAPI
 from util.decorators    import netdb_provider, netdb_internal
@@ -6,7 +5,6 @@ from util.decorators    import netdb_provider, netdb_internal
 import schema.schema as schema
 
 class netdbColumn:
-
     DB_NAME = 'netdb'
 
     _FILT = {}
