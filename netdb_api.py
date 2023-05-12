@@ -79,7 +79,7 @@ def projector_route(column):
 
 
 @app.route('/api/<column>', methods=['POST', 'PUT', 'DELETE'])
-def alter_route(column, top_id):
+def alter_route(column):
     if column not in netdb.COLUMNS:
         return ERR_INVALID_EP
 
