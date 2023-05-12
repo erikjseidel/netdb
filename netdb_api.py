@@ -62,7 +62,7 @@ def validator_route(column):
 
     response = netdb.newColumn(column).set(data).validate()
 
-    return Response(response=json.dumps(response), status=status, mimetype='application/json')
+    return Response(response=json.dumps(response), status=200, mimetype='application/json')
 
 
 @app.route('/api/<column>/project', methods=['GET'])
