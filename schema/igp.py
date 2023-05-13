@@ -17,8 +17,12 @@ class igpIsisSchema(Schema):
             values = fields.Dict(required=True, keys = fields.String(required=True, validate=validate.OneOf(['level_1','level_2'])),
                 values = fields.Dict(requires=True, keys = fields.String(required=True), values = fields.String() )))
 
+    # netdb metadata and control
+    meta       = fields.Dict()
+    weight     = fields.Integer(validate=validate.Range(min=50, max=1001))
+    datasource = fields.String()
+
 class igpSchema(Schema):
     isis = fields.Nested(igpIsisSchema())
 
     roles = fields.List(fields.String(), validate=validate.Length(min=1))
-

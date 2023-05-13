@@ -58,9 +58,9 @@ class netdbColumn:
                 elif category in self._COLUMN_CAT['type_3']:
                     entry = {
                             'set_id'      : [config_set, category],
+                            **contents
                             }
 
-                    entry.update(contents)
                     out.append(entry)
 
         return out
