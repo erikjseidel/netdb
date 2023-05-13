@@ -103,27 +103,10 @@ class netdbInterface(netdbColumn):
         for device_id, interfaces in data.items():
             for interface, contents in interfaces.items():
                 entry = {
-                        'set_id'     : device_id,
-                        'element_id' : interface,
+                        'set_id'     : [ device_id, interface ],
                         }
                 entry.update(contents)
                 out.append(entry)
-        return out
-
-
-    def _from_mongo(self, data):
-        out = {}
-
-        for element in data:
-            config_set = element.pop('set_id')
-            if config_set not in out:
-                out[config_set] = {}
-
-            elem = element.pop('element_id')
-            if config_set in out and elem in out[config_set]:
-                if out[config_set][elem].get('weight', 0) > element.get('weight', 0):
-                    continue
-            out[config_set][elem] = element
         return out
 
 

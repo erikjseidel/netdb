@@ -49,7 +49,7 @@ def builder_route(column, top_id):
     else:
         response = netdb.newColumn(column).filter(top_id).fetch()
 
-    return Response(response=json.dumps(response), status=status, mimetype='application/json')
+    return Response(response=json.dumps(response), status=200, mimetype='application/json')
 
 
 @app.route('/api/<column>/validate', methods=['POST', 'PUT'])

@@ -71,7 +71,7 @@ class configBuilder:
             return False, None, 'Device not found.'
 
         device_id = self.device_id
-        config = { device_id : {} }
+        config = {}
 
         roles = []
         if 'roles' in self.device:
@@ -84,26 +84,26 @@ class configBuilder:
                     for family in ['ipv4', 'ipv6']:
                         if family in contents:
                             for element, elem_data in contents[family].items():
-                                unwind = config[device_id]
+                                unwind = config
                                 for i in [ category, family ]:
                                     if not unwind.get(i):
                                         unwind[i] = {}
                                     unwind = unwind[i]
-                                config[device_id][category][family][element] = elem_data
+                                config[category][family][element] = elem_data
 
                 elif category in self._COLUMN_CAT['type_2']:
                     for element, elem_data in contents.items():
-                        if category not in config[device_id]:
-                            config[device_id][category] = {}
+                        if category not in config:
+                            config[category] = {}
 
-                        config[device_id][category][element] = elem_data
+                        config[category][element] = elem_data
 
                 # type_3 categories are merged.
                 elif category in self._COLUMN_CAT['type_3']:
-                    if category in config[device_id]:
-                        config[device_id][category].update(contents)
+                    if category in config:
+                        config[category].update(contents)
                     else:
-                        config[device_id][category] = contents
+                        config[category] = contents
 
 
         for config_set, set_data in self.data.items():
@@ -125,4 +125,4 @@ class configBuilder:
         if not out:
             return False, None, 'No IGP configration found for %s' % device_id
 
-        return True, out, 'config column generated for %s' % device_id
+        return True, { device_id : out }, 'config column generated for %s' % device_id

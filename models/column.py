@@ -29,8 +29,7 @@ class netdbColumn:
         for config_set, categories in data.items():
             if config_set.startswith('_'):
                 entry = {
-                        'set_id'     : config_set,
-                        'category'   : 'roles',
+                        'set_id'     : [ config_set ],
                         'roles'      : categories['roles'],
                         }
                 out.append(entry)
@@ -41,10 +40,7 @@ class netdbColumn:
                         if family in contents:
                             for element, elem_data in contents[family].items():
                                 entry = {
-                                        'set_id'      : config_set,
-                                        'category'    : category,
-                                        'family'      : family,
-                                        'element_id'  : element,
+                                        'set_id'      : [config_set, category, family, element],
                                         }
 
                                 entry.update(elem_data)
@@ -53,9 +49,7 @@ class netdbColumn:
                 elif category in self._COLUMN_CAT['type_2']:
                     for element, elem_data in contents.items():
                         entry = {
-                                'set_id'      : config_set,
-                                'category'    : category,
-                                'element_id'  : element,
+                                'set_id'      : [config_set, category, element],
                                 }
 
                         entry.update(elem_data)
@@ -63,8 +57,7 @@ class netdbColumn:
 
                 elif category in self._COLUMN_CAT['type_3']:
                     entry = {
-                            'set_id'      : config_set,
-                            'category'    : category,
+                            'set_id'      : [config_set, category],
                             }
 
                     entry.update(contents)
@@ -77,40 +70,20 @@ class netdbColumn:
         out = {}
 
         for element in data:
-            config_set = element.pop('set_id')
-            if config_set not in out:
-                out[config_set] = {}
+            set_id  = element.pop('set_id')
+            elem_id = set_id.pop()
 
-            category = element.pop('category')
+            unwind = out
+            for i in set_id:
+                if not unwind.get(i):
+                    unwind[i] = {}
+                unwind = unwind[i]
 
-            if category in self._COLUMN_CAT['type_1']:
-                family = element.pop('family')
-                elem   = element.pop('element_id')
+            if elem_id in unwind:
+                if unwind[elem_id].get('weight', 0) > element.get('weight', 0):
+                    continue
 
-                if category not in out[config_set]:
-                    out[config_set][category] = {}
-
-                if family not in out[config_set][category]:
-                    out[config_set][category][family] = {}
-
-                out[config_set][category][family][elem] = element
-
-            elif category in self._COLUMN_CAT['type_2']:
-                elem   = element.pop('element_id')
-
-                if category not in out[config_set]:
-                    out[config_set][category] = {}
-
-                out[config_set][category][elem] = element
-
-            elif category in self._COLUMN_CAT['type_3']:
-                out[config_set][category] = element
-
-            elif category == 'roles':
-                out[config_set]['roles'] = element['roles']
-
-            else:
-                out = {}
+            unwind[elem_id] = element
 
         return out
 
@@ -159,13 +132,10 @@ class netdbColumn:
 
             else:
                 filt = { 'set_id': document['set_id'] }
-                for key in ['category', 'family', 'element_id']:
-                    if key in document:
-                        filt.update({ key : document[key] })
 
             if 'datasource' in document:
                 filt.update({ 'datasource' : document['datasource'] })
- 
+
             result, out, comment = self.mongo.update_one(filt, document)
             if result: count += 1
 
@@ -189,17 +159,6 @@ class netdbColumn:
         if not filt:
             self._FILT = {}
 
-        elif isinstance(filt, list):
-            if len(filt) == 4:
-
-                # the four tuple 'mask' filter. works similar to what one might see
-                # in juniper config mode.
-                keys = ['set_id', 'category', 'family', 'element_id']
-
-                d = dict(zip(keys, filt))
-
-                self._FILT = {k: v for k, v in d.items() if v }
-
         elif isinstance(filt, dict):
             self._FILT = filt
 
@@ -216,10 +175,8 @@ class netdbColumn:
             # These should always be returned.
             self._PROJ.update({
                 "set_id"     : 1,
-                "category"   : 1,
-                "family"     : 1,
-                "element_id" : 1,
                 "id"         : 1,
+                "datasource" : 1,
                 })
 
         if 'filter' in project_dict:
