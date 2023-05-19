@@ -35,6 +35,7 @@ class interfaceSchema(Schema):
     address     = fields.Dict(keys = netdb_fields.netdbIPInterface(), values = fields.Nested(addressMetaSchema))
     description = fields.String()
     interface   = fields.String()
+    mac_address = fields.String()
 
     mtu = fields.Integer(validate=validate.Range(min=1280,max=9192))
     ttl = fields.Integer(validate=validate.Range(min=1,max=255))
