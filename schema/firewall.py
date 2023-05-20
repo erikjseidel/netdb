@@ -78,8 +78,8 @@ class firewallPolicyTargetSchema(Schema):
 
 class firewallPolicyRulesSchema(Schema):
     action = fields.String(required=True, validate=validate.OneOf(['accept','drop']))
-    source = fields.List(fields.Nested(firewallPolicyTargetSchema()))
-    destination = fields.List(fields.Nested(firewallPolicyTargetSchema()))
+    source = fields.Nested(firewallPolicyTargetSchema())
+    destination = fields.Nested(firewallPolicyTargetSchema())
 
     state    = fields.List(fields.String(validate=validate.OneOf(['established', 'related'])), validate=validate.Length(min=1,max=2))
     protocol = fields.String()
