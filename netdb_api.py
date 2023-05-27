@@ -38,6 +38,20 @@ def base():
                     mimetype='application/json')
   
 
+@app.route('/api/columns', methods=['GET'])
+def columns_route():
+    columns = list(netdb.COLUMNS.keys())
+
+    response = {
+            'result'  : True,
+            'error'   : False,
+            'out'     : columns,
+            'comment' : 'available netdb columns',
+            }
+
+    return Response(response=json.dumps(response), status=200, mimetype='application/json')
+
+
 @app.route('/api/<column>/<top_id>/config', methods=['GET'])
 def builder_route(column, top_id):
     if column not in netdb.COLUMNS:
