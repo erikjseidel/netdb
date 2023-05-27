@@ -72,6 +72,7 @@ class configBuilder:
 
         device_id = self.device_id
         config = {}
+        out = None
 
         roles = []
         if 'roles' in self.device:
@@ -106,23 +107,24 @@ class configBuilder:
                         config[category] = contents
 
 
-        for config_set, set_data in self.data.items():
-            if not config_set.startswith('_'):
-                continue
+        if self.data:
+            for config_set, set_data in self.data.items():
+                if not config_set.startswith('_'):
+                    continue
 
-            for role in set_data['roles']:
-                if role in roles or role == '*':
-                    set_data.pop('roles', None)
-                    merge_config(set_data)
-                    break
+                for role in set_data['roles']:
+                    if role in roles or role == '*':
+                        set_data.pop('roles', None)
+                        merge_config(set_data)
+                        break
 
-        if device_id in self.data:
-            merge_config(self.data[device_id])
+            if device_id in self.data:
+                merge_config(self.data[device_id])
 
-        # Set the cvars
-        out = self._dict_replace_values(config, self.cvars)
+            # Set the cvars
+            out = self._dict_replace_values(config, self.cvars)
 
         if not out:
-            return False, None, 'No IGP configration found for %s' % device_id
+            return False, None, 'No column data found for %s' % device_id
 
         return True, { device_id : out }, 'config column generated for %s' % device_id

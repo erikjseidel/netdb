@@ -6,8 +6,7 @@ import builders.builder as builder
 
 app = Flask(__name__)
 
-
-ERR_INVALID_EP = Response(response = json.dumps({ "result": False, "comment": "Invalid endpoint"} ),
+ERR_NO_COLUMN = Response(response = json.dumps({ "result": False, "comment": "Column does not exist"} ),
                         status = 200, mimetype = 'application/json')
 
 ERR_INVALID_DATA = Response(response = json.dumps({ "result": False, "comment": "Invalid input data" }),
@@ -55,7 +54,7 @@ def columns_route():
 @app.route('/api/<column>/<top_id>/config', methods=['GET'])
 def builder_route(column, top_id):
     if column not in netdb.COLUMNS:
-        return ERR_INVALID_EP
+        return ERR_NO_COLUMN
 
     # device and interface columns do not need config builders.
     if column not in ['device', 'interface']:
@@ -69,7 +68,7 @@ def builder_route(column, top_id):
 @app.route('/api/<column>/validate', methods=['POST', 'PUT'])
 def validator_route(column):
     if column not in netdb.COLUMNS:
-        return ERR_INVALID_EP
+        return ERR_NO_COLUMN
 
     if not ( data := get_data(request) ):
         return ERR_INVALID_DATA
@@ -82,7 +81,7 @@ def validator_route(column):
 @app.route('/api/<column>/project', methods=['GET'])
 def projector_route(column):
     if column not in netdb.COLUMNS:
-        return ERR_INVALID_EP
+        return ERR_NO_COLUMN
 
     if not ( data := get_data(request) ):
         return ERR_INVALID_DATA
@@ -95,7 +94,7 @@ def projector_route(column):
 @app.route('/api/<column>', methods=['POST', 'PUT', 'DELETE'])
 def alter_route(column):
     if column not in netdb.COLUMNS:
-        return ERR_INVALID_EP
+        return ERR_NO_COLUMN
 
     if not ( data := get_data(request) ):
         return ERR_INVALID_DATA
@@ -116,7 +115,7 @@ def alter_route(column):
 @app.route('/api/<column>/<top_id>', methods=['GET'])
 def fetcher_route(column, top_id = None):
     if column not in netdb.COLUMNS:
-        return ERR_INVALID_EP
+        return ERR_NO_COLUMN
 
     data = get_data(request)
 
