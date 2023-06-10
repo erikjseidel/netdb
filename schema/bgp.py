@@ -45,6 +45,11 @@ class bgpNeighborSchema(Schema):
     peer_group = fields.String(required=True)
     remote_asn = fields.Integer()
 
+    timers = fields.Dict(
+            keys=fields.String(validate=validate.OneOf(['keepalive','holdtime'])), 
+            values=fields.Integer(validate=validate.Range(min=10,max=1000))
+            )
+
     # netdb metadata and control
     meta       = fields.Dict()
     weight     = fields.Integer(validate=validate.Range(min=50, max=1001))
@@ -63,6 +68,16 @@ class bgpPeerGroupSchema(Schema):
     password = fields.String()
 
     remote_asn = fields.Integer()
+
+    timers = fields.Dict(
+            keys=fields.String(validate=validate.OneOf(['keepalive','holdtime'])), 
+            values=fields.Integer(validate=validate.Range(min=10,max=1000))
+            )
+
+    # netdb metadata and control
+    meta       = fields.Dict()
+    weight     = fields.Integer(validate=validate.Range(min=50, max=1001))
+    datasource = fields.String()
 
 
 class bgpAddressFamilyContentsSchema(Schema):
