@@ -3,13 +3,19 @@ from marshmallow import Schema, fields, validate, INCLUDE, ValidationError
 from util        import netdb_fields
 
 class bgpOptionsSchema(Schema):
-    asn       = fields.String(required=True)
-    router_id = netdb_fields.netdbIPv4(required=True)
+    asn        = fields.String(required=True)
+    router_id  = netdb_fields.netdbIPv4(required=True)
+    cluster_id = netdb_fields.netdbIPv4()
 
     hold_time      = fields.Integer(validate=validate.Range(min=15,max=180))
     keepalive_time = fields.Integer(validate=validate.Range(min=5,max=60))
 
     log_neighbor_changes = fields.Bool()
+
+    # netdb metadata and control
+    meta       = fields.Dict()
+    weight     = fields.Integer(validate=validate.Range(min=50, max=1001))
+    datasource = fields.String()
 
 
 class bgpPeerFamilyMapSchema(Schema):
@@ -23,6 +29,7 @@ class bgpPeerFamilyMapSchema(Schema):
 
 class bgpPeerFamilyOptSchema(Schema):
     nhs = fields.Bool()
+    route_reflector = fields.Bool()
     route_map = fields.Nested(bgpPeerFamilyMapSchema())
 
 
