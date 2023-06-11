@@ -42,7 +42,7 @@ class bgpNeighborSchema(Schema):
     multihop = fields.Integer(validate=validate.Range(min=1,max=255))
     password = fields.String()
 
-    peer_group = fields.String(required=True)
+    peer_group = fields.String()
     remote_asn = fields.Integer()
 
     timers = fields.Dict(
