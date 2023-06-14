@@ -1,4 +1,3 @@
-
 from schema.device import *
 from schema.interface import *
 from util.decorators import netdb_internal

@@ -1,7 +1,5 @@
-
 from builders.config_builder import configBuilder
 from models.models import netdbBgp, netdbFirewall, netdbIgp, netdbPolicy
-
 
 class bgpConfigBuilder(configBuilder, netdbBgp):
 

@@ -1,6 +1,5 @@
-
 from marshmallow import Schema, fields, validate, INCLUDE, ValidationError
-from util        import netdb_fields
+from util import netdb_fields
 
 class firewallMssSchema(Schema):
     ipv4 = fields.Integer(required=True, validate=validate.Range(min=556, max=9172))

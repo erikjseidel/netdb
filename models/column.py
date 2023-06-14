@@ -1,11 +1,12 @@
-from marshmallow        import ValidationError
-from util.mongo_api     import mongoAPI
-from util.decorators    import netdb_provider, netdb_internal
+from marshmallow import ValidationError
+from util.mongo_api import mongoAPI
+from util.decorators import netdb_provider, netdb_internal
+from config.defaults import DB_NAME
 
 import schema.schema as schema
 
 class netdbColumn:
-    DB_NAME = 'netdb'
+    DB_NAME = DB_NAME
 
     _FILT = {}
     _PROJ = {}

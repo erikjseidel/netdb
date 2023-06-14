@@ -66,3 +66,13 @@ class mongoAPI:
 
         doc = "document" if response.deleted_count == 1 else "documents"
         return True, None, '%s %s deleted' % (response.deleted_count, doc)
+
+
+    @netdb_internal
+    def create_index(self, index):
+        try:
+            response = self.collection.create_index(index, unique=True)
+        except OperationFailure:
+            return False, None, 'incompatible index found'
+
+        return True, None, response

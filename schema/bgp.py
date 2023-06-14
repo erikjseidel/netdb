@@ -1,6 +1,5 @@
-
 from marshmallow import Schema, fields, validate, INCLUDE, ValidationError
-from util        import netdb_fields
+from util import netdb_fields
 
 class bgpOptionsSchema(Schema):
     asn        = fields.String(required=True)

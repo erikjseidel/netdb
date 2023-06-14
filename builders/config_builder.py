@@ -1,6 +1,5 @@
-
 from models.models import netdbDevice
-from util.decorators     import netdb_provider
+from util.decorators import netdb_provider
 
 class configBuilder:
 

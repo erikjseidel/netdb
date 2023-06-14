@@ -1,6 +1,5 @@
-
 from marshmallow import Schema, fields, validate, INCLUDE, ValidationError
-from util        import netdb_fields
+from util import netdb_fields
 
 class policyAspathListSchema(Schema):
     """ Not yet implemented. """

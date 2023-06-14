@@ -1,4 +1,3 @@
-
 from marshmallow import Schema, fields, validate, INCLUDE, ValidationError
 
 class igpIsisInterfaceSchema(Schema):

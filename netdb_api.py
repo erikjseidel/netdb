@@ -1,10 +1,18 @@
 from flask import Flask, Response, request, json
 
 import models, builders
-import models.netdb     as netdb
+import models.netdb as netdb
 import builders.builder as builder
+import util.initialize as init
 
-app = Flask(__name__)
+def create_app(test_config=None):
+    app = Flask(__name__)
+
+    # Initialize the databese (i.e. create / re-create required indexes)
+    init.initialize()
+    return app
+
+app = create_app()
 
 ERR_NO_COLUMN = Response(response = json.dumps({ "result": False, "comment": "Column does not exist"} ),
                         status = 200, mimetype = 'application/json')
@@ -17,7 +25,6 @@ def handle_bad_request(e):
     return json.dumps({ 'result': False, 'comment': 'bad request' }), 400
 
 app.register_error_handler(400, handle_bad_request)
-
 
 def get_data(request):
     if not request.data:

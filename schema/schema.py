@@ -1,8 +1,7 @@
-
-from .igp       import igpSchema
-from .bgp       import bgpSchema
-from .firewall  import firewallSchema
-from .policy    import policySchema
+from .igp import igpSchema
+from .bgp import bgpSchema
+from .firewall import firewallSchema
+from .policy import policySchema
 from .interface import interfaceSchema
 
 SCHEMAS = {
@@ -10,7 +9,6 @@ SCHEMAS = {
         'bgp'        : bgpSchema,
         'firewall'   : firewallSchema,
         'policy'     : policySchema,
-#        'interface'  : interfacesSchema,
         'interface'  : interfaceSchema,
         } 
 
