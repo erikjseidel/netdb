@@ -1,6 +1,6 @@
 The netdb project. Requires mongodb and flask.
 
-WARNING: Thar be dragons here:
+WARNING: Thar be dragons here!
 
 This current version of netdb is somewhat a rough draft. Its data model has been changed on several occasions based on learnings gleaned from various stages of the SoT integration process. 
 
