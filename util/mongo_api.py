@@ -1,5 +1,6 @@
 from pymongo import MongoClient, errors
 from pymongo.errors import *
+from config.defaults import TRANSACTIONS
 
 from .decorators import netdb_internal
 
@@ -24,6 +25,20 @@ class mongoAPI:
             return False, None, 'No documents found'
 
         return True, out, '%s documents read' % len(out)
+
+
+    @netdb_internal
+    def reload(self, documents, filt):
+        if TRANSACTIONS:
+            with self.client.start_session() as session:
+                with session.start_transaction():
+                    self.collection.delete_many(filt, session=session)
+                    self.collection.insert_many(documents, ordered = False, session=session)
+        else:
+            self.collection.delete_many(filt)
+            self.collection.insert_many(documents, ordered = False)
+
+        return True, None, 'Reload complete'
 
 
     @netdb_internal

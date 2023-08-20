@@ -26,6 +26,9 @@ class netdbColumn:
 
     def _to_mongo(self, data):
         out = []
+        
+        weight = data.pop('weight', None)
+        datasource = data.pop('datasource', None)
 
         for config_set, categories in data.items():
             if config_set.startswith('_'):
@@ -45,6 +48,12 @@ class netdbColumn:
                                         }
 
                                 entry.update(elem_data)
+                                if weight and datasource:
+                                    entry.update({
+                                        'weight'    : weight,
+                                        'datasource' : datasource,
+                                    })
+
                                 out.append(entry)
 
                 elif category in self._COLUMN_CAT['type_2']:
@@ -54,6 +63,12 @@ class netdbColumn:
                                 }
 
                         entry.update(elem_data)
+                        if weight and datasource:
+                            entry.update({
+                                'weight'    : weight,
+                                'datasource' : datasource,
+                            })
+
                         out.append(entry)
 
                 elif category in self._COLUMN_CAT['type_3']:
@@ -61,6 +76,12 @@ class netdbColumn:
                             'set_id'      : [config_set, category],
                             **contents
                             }
+
+                    if weight and datasource:
+                        entry.update({
+                            'weight'    : weight,
+                            'datasource' : datasource,
+                        })
 
                     out.append(entry)
 
@@ -99,8 +120,8 @@ class netdbColumn:
         top_ids = self.data.keys()
 
         for top_id in top_ids:
-            if not top_id.startswith('_') and top_id not in devices:
-                return False, self.data[top_id], '%s: device not registered' % top_id
+            if not top_id.startswith('_') and top_id not in ['datasource', 'weight'] and top_id not in devices:
+                return False, None, '%s: device not registered' % top_id
 
         return True, None, 'all devices registered'
 
@@ -114,6 +135,9 @@ class netdbColumn:
             if top_id.startswith('_'):
                 if 'roles' not in categories.keys():
                     return False, None, '%s: roles required for shared config set' % top_id
+
+            if top_id in ['datasource', 'weight']:
+                continue
 
             try:
                 schema.newSchema(self._COLUMN).load(categories)
@@ -198,6 +222,25 @@ class netdbColumn:
             return result, out, comment
 
         result, out, comment = self.mongo.write_many(self._to_mongo(self.data))
+        return result, out, comment
+
+
+    @netdb_provider
+    def reload(self):
+        # We don't want to try a delete with an empty filter.
+        if not self._FILT or 'datasource' not in self._FILT:
+            return False, None, 'filter not set'
+
+        if self._COLUMN != 'device':
+            result, out, comment = self._is_registered()
+            if not result: 
+                return result, out, comment
+
+        result, out, comment = self._save_checker()
+        if not result: 
+            return result, out, comment
+
+        result, out, comment = self.mongo.reload(self._to_mongo(self.data), self._FILT)
         return result, out, comment
 
 

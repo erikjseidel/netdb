@@ -118,6 +118,21 @@ def alter_route(column):
     return Response(response=json.dumps(response), status=200, mimetype='application/json')
 
 
+@app.route('/api/<column>/reload/<datasource>', methods=['POST'])
+def reload_column(column, datasource):
+    if column not in netdb.COLUMNS:
+        return ERR_NO_COLUMN
+
+    if not ( data := get_data(request) ):
+        return ERR_INVALID_DATA
+
+    filt = { 'datasource' : datasource }
+
+    response = netdb.newColumn(column).filter(filt).set(data).reload()
+
+    return Response(response=json.dumps(response), status=200, mimetype='application/json')
+
+
 @app.route('/api/<column>',          methods=['GET'])
 @app.route('/api/<column>/<top_id>', methods=['GET'])
 def fetcher_route(column, top_id = None):
@@ -135,4 +150,4 @@ def fetcher_route(column, top_id = None):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001, host='0.0.0.0')
+    app.run(debug=True, port=8001, host='0.0.0.0')
