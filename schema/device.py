@@ -17,6 +17,7 @@ class deviceSchema(Schema):
     providers = fields.List(fields.String(), validate=validate.Length(min=1))
     roles     = fields.List(fields.String(), required = True, validate=validate.Length(min=1))
     cvars     = fields.Nested(cvarsSchema)
+    node_name = fields.String()
 
     downstream_asns = fields.List(fields.Integer(), validate=validate.Length(min=1))
 

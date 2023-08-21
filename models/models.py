@@ -37,9 +37,17 @@ class netdbDevice(netdbColumn):
     def _to_mongo(self, data):
         out = []
 
+        datasource = data.pop('datasource', None)
+        weight     = data.pop('weight', None)
+
         for device, elements in data.items():
             entry = { 'id' : device }
             entry.update(elements)
+
+            if datasource:
+                entry['datasource'] = datasource
+            if weight:
+                entry['weight'] = weight
 
             out.append(entry)
 
@@ -65,6 +73,9 @@ class netdbDevice(netdbColumn):
             return False, None, 'invalid dataset'
 
         for top_id, device in self.data.items():
+            if top_id in ['datasource', 'weight']:
+                continue
+
             try:
                 deviceSchema().load(device)
             except ValidationError as error:
@@ -99,12 +110,21 @@ class netdbInterface(netdbColumn):
     def _to_mongo(self, data):
         out = []
 
+        datasource = data.pop('datasource', None)
+        weight     = data.pop('weight', None)
+
         for device_id, interfaces in data.items():
             for interface, contents in interfaces.items():
                 entry = {
                         'set_id'     : [ device_id, interface ],
                         }
                 entry.update(contents)
+
+                if datasource:
+                    entry['datasource'] = datasource
+                if weight:
+                    entry['weight'] = weight
+
                 out.append(entry)
         return out
 
@@ -115,6 +135,9 @@ class netdbInterface(netdbColumn):
             return False, None, 'invalid dataset'
 
         for device_id, device in self.data.items():
+            if device_id in ['datasource', 'weight']:
+                continue
+
             for interface, contents in device.items():
                 try:
                     interfaceSchema().load(contents)
