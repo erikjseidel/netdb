@@ -31,6 +31,7 @@ class bgpPeerFamilyOptSchema(Schema):
     max_prefixes = fields.Integer()
     route_reflector = fields.Bool()
     route_map = fields.Nested(bgpPeerFamilyMapSchema())
+    default_originate = fields.Bool()
 
 
 class bgpPeerFamilySchema(Schema):
