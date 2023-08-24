@@ -1,12 +1,20 @@
 from marshmallow import Schema, fields, validate, INCLUDE, ValidationError
 from util import netdb_fields
 
+class policyCommAspathListRulesSchema(Schema):
+    description = fields.String()
+    action = fields.String(validate=validate.OneOf(['permit', 'deny']))
+    regex = fields.String(required=True)
+
+
 class policyAspathListSchema(Schema):
-    """ Not yet implemented. """
+    description = fields.String()
+    rules = fields.List(fields.Nested(policyCommAspathListRulesSchema()), required=True, validate=validate.Length(min=1))
 
 
 class policyCommunityListSchema(Schema):
-    """ Not yet implemented. """
+    description = fields.String()
+    rules = fields.List(fields.Nested(policyCommAspathListRulesSchema()), required=True, validate=validate.Length(min=1))
 
 
 class policyList4RulesSchema(Schema):
