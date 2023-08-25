@@ -17,7 +17,7 @@ class netdbColumn:
 
     def __init__(self, data = {}):
         self.data = data
-        self.mongo = mongoAPI(netdbColumn.DB_NAME, self._COLUMN)
+        self.mongo = mongoAPI(netdbColumn.DB_NAME, self.COLUMN)
 
 
     def _get_type(category):
@@ -60,7 +60,6 @@ class netdbColumn:
                                         'weight'     : weight,
                                         'data'       : family_element_data,
                                         }
-                                #pprint(entry)
                                 out.append(entry)
                         else:
                             entry = {
@@ -129,37 +128,45 @@ class netdbColumn:
         for device in out:
             devices.append(device.pop('set_id'))
 
-        top_ids = self.data.keys()
+        set_ids = self.data.keys()
 
-        for top_id in top_ids:
-            if top_id not in ['datasource', 'weight'] and top_id not in devices:
-                return False, None, '%s: device not registered' % top_id
+        for set_id in set_ids:
+            if set_id not in ['datasource', 'weight'] and set_id not in devices:
+                return False, None, f'{set_id}: device not registered.'
 
-        return True, None, 'all devices registered'
+        return True, None, 'All devices registered.'
 
 
     @netdb_internal
     def _save_checker(self):
-        if not isinstance(self.data, dict) or not self.data:
-            return False, None, 'invalid dataset'
+        data = self.data
 
-        for top_id, categories in self.data.items():
-            if top_id in ['datasource', 'weight']:
+        if not ( data or isinstance(data, dict) ):
+            return False, None, 'Invalid dataset.'
+
+        if not data.get('datasource') or not isinstance(data['datasource'], str):
+            return False, None, 'A valid datasource string is required.'
+
+        if not data.get('weight') or not isinstance(data['weight'], int):
+            return False, None, 'A valid weight integer is required.'
+
+        for set_id, set_elements in data.items():
+            if set_id in ['datasource', 'weight']:
                 continue
 
             if self.ELEMENTS_ONLY:
-                for element, contents in categories.items():
+                for element, contents in set_elements.items():
                     try:
-                        schema.newSchema(self._COLUMN).load(contents)
+                        schema.newSchema(self.COLUMN).load(contents)
                     except ValidationError as error:
-                        return False, error.messages, '{}: invalid data'.format(top_id)
+                        return False, error.messages, f'{set_id}: {element} contains invalid data.'
             else:
                 try:
-                    schema.newSchema(self._COLUMN).load(categories)
+                    schema.newSchema(self.COLUMN).load(set_elements)
                 except ValidationError as error:
-                    return False, error.messages, '%s: invalid data' % top_id
+                    return False, error.messages, f'{set_id}: Invalid data.'
 
-        return True, None, 'netdb says: dry run. all checks passed for all elements.'
+        return True, None, 'netdb says: Dry run. All checks passed.'
 
 
     @netdb_internal
@@ -167,11 +174,7 @@ class netdbColumn:
         count = 0
 
         for document in documents:
-            if 'id' in document:
-                filt = { 'id' : document['id'] }
-
-            else:
-                filt = { 'set_id': document['set_id'] }
+            filt = { 'set_id': document['set_id'] }
 
             if 'datasource' in document:
                 filt.update({ 'datasource' : document['datasource'] })
@@ -180,10 +183,10 @@ class netdbColumn:
             if result: count += 1
 
         if count > 0:
-            doc = "document" if count == 1 else "documents"
-            return True, None, '%s %s updated' % (str(count), doc)
+            doc_word = "document" if count == 1 else "documents"
+            return True, None, f'{count} {doc_word} updated.'
 
-        return False, None, 'no documents updated'
+        return False, None, 'No documents updated.'
 
 
     def set(self, data):
@@ -226,7 +229,7 @@ class netdbColumn:
 
     @netdb_provider
     def save(self):
-        if self._COLUMN != 'device':
+        if self.COLUMN != 'device':
             result, out, comment = self._is_registered()
             if not result: 
                 return result, out, comment
@@ -245,7 +248,7 @@ class netdbColumn:
         if not self._FILT or 'datasource' not in self._FILT:
             return False, None, 'filter not set'
 
-        if self._COLUMN != 'device':
+        if self.COLUMN != 'device':
             result, out, comment = self._is_registered()
             if not result: 
                 return result, out, comment
@@ -270,7 +273,7 @@ class netdbColumn:
 
     @netdb_provider
     def update(self):
-        if self._COLUMN != 'device':
+        if self.COLUMN != 'device':
             result, out, comment = self._is_registered()
             if not result: 
                 return result, out, comment
@@ -286,7 +289,7 @@ class netdbColumn:
 
     @netdb_provider
     def validate(self):
-        if self._COLUMN != 'device':
+        if self.COLUMN != 'device':
             result, out, comment = self._is_registered()
             if not result: 
                 return result, out, comment
@@ -304,4 +307,4 @@ class netdbColumn:
 
         self.data = self._from_mongo(out)
 
-        return True, self.data, 'data set loaded'
+        return True, self.data, 'Data set loaded.'

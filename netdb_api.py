@@ -1,9 +1,7 @@
 from flask import Flask, Response, request, json
 
-#import models, builders
 import models
 import models.netdb as netdb
-#import builders.builder as builder
 import util.initialize as init
 
 def create_app(test_config=None):
