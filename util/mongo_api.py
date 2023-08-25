@@ -64,7 +64,15 @@ class mongoAPI:
 
 
     @netdb_internal
-    def update_one(self, filt, document):
+    def update_one(self, document):
+        filt = {
+                'set_id'     : document.get('set_id'),
+                'category'   : document.get('category'),
+                'family'     : document.get('family'),
+                'element_id' : document.get('element_id'),
+                'datasource' : document['datasource'],
+                }
+
         response = self.collection.replace_one(filt, document)
 
         if response.modified_count > 0:

@@ -174,12 +174,7 @@ class netdbColumn:
         count = 0
 
         for document in documents:
-            filt = { 'set_id': document['set_id'] }
-
-            if 'datasource' in document:
-                filt.update({ 'datasource' : document['datasource'] })
-
-            result, out, comment = self.mongo.update_one(filt, document)
+            result, out, comment = self.mongo.update_one(document)
             if result: count += 1
 
         if count > 0:
