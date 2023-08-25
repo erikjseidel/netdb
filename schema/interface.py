@@ -57,5 +57,3 @@ class interfaceSchema(Schema):
 
     # netdb metadata and control
     meta       = fields.Dict()
-    weight     = fields.Integer(validate=validate.Range(min=50, max=1001))
-    datasource = fields.String()

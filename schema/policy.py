@@ -89,6 +89,3 @@ class policySchema(Schema):
 
     aspath_lists    = fields.Dict(keys=fields.String(required=True), values=fields.Nested(policyAspathListSchema()))
     community_lists = fields.Dict(keys=fields.String(required=True), values=fields.Nested(policyCommunityListSchema()))
-
-    roles = fields.List(fields.String(), validate=validate.Length(min=1))
-

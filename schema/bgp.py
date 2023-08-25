@@ -13,8 +13,6 @@ class bgpOptionsSchema(Schema):
 
     # netdb metadata and control
     meta       = fields.Dict()
-    weight     = fields.Integer(validate=validate.Range(min=50, max=1001))
-    datasource = fields.String()
 
 
 class bgpPeerFamilyMapSchema(Schema):
@@ -60,8 +58,6 @@ class bgpNeighborSchema(Schema):
 
     # netdb metadata and control
     meta       = fields.Dict()
-    weight     = fields.Integer(validate=validate.Range(min=50, max=1001))
-    datasource = fields.String()
 
 
 class bgpPeerGroupSchema(Schema):
@@ -84,8 +80,6 @@ class bgpPeerGroupSchema(Schema):
 
     # netdb metadata and control
     meta       = fields.Dict()
-    weight     = fields.Integer(validate=validate.Range(min=50, max=1001))
-    datasource = fields.String()
 
 
 class bgpAddressFamilyContentsSchema(Schema):
@@ -104,6 +98,3 @@ class bgpSchema(Schema):
 
     peer_groups = fields.Dict(keys=fields.String(required=True), values=fields.Nested(bgpPeerGroupSchema()))
     neighbors   = fields.Dict(keys=fields.String(required=True), values=fields.Nested(bgpNeighborSchema()))
-
-    roles = fields.List(fields.String(), validate=validate.Length(min=1))
-

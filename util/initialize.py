@@ -2,15 +2,15 @@ from .mongo_api import mongoAPI
 from config.defaults import DB_NAME
 
 DEFAULT_INDEX = [
-    ('set_id.0', 1),
-    ('set_id.1', 1),
-    ('set_id.2', 1),
-    ('set_id.3', 1),
+    ('set_id', 1),
+    ('category', 1),
+    ('family', 1),
+    ('element_id', 1),
     ('datasource', 1),
     ]
 
 INDEXES = {
-    'device'     : [('id', 1), ('datasource', 1)],
+    'device'     : DEFAULT_INDEX,
     'interface'  : DEFAULT_INDEX,
     'firewall'   : DEFAULT_INDEX,
     'policy'     : DEFAULT_INDEX,

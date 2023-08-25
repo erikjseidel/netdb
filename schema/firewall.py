@@ -96,8 +96,6 @@ class firewallPolicySchema(Schema):
 
 
 class firewallSchema(Schema):
-    roles        = fields.List(fields.String(), validate=validate.Length(min=1))
-
     policies     = fields.Nested(firewallPolicySchema())
     groups       = fields.Nested(firewallGroupSchema())
     options      = fields.Nested(firewallOptionsSchema())
@@ -105,4 +103,3 @@ class firewallSchema(Schema):
     mss_clamp    = fields.Nested(firewallMssSchema())
 
     zone_policy  = fields.Dict( keys=fields.String(required=True), values=fields.Nested(firewallZoneSchema()) )
-

@@ -1,8 +1,9 @@
 from flask import Flask, Response, request, json
 
-import models, builders
+#import models, builders
+import models
 import models.netdb as netdb
-import builders.builder as builder
+#import builders.builder as builder
 import util.initialize as init
 
 def create_app(test_config=None):
@@ -63,11 +64,7 @@ def builder_route(column, top_id):
     if column not in netdb.COLUMNS:
         return ERR_NO_COLUMN
 
-    # device and interface columns do not need config builders.
-    if column not in ['device', 'interface']:
-        response = builder.newBuilder(column, top_id).build()
-    else:
-        response = netdb.newColumn(column).filter(top_id).fetch()
+    response = netdb.newColumn(column).filter(top_id).fetch()
 
     return Response(response=json.dumps(response), status=200, mimetype='application/json')
 

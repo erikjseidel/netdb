@@ -8,6 +8,10 @@ import schema.schema as schema
 class netdbColumn:
     DB_NAME = DB_NAME
 
+    FLAT = False
+    ELEMENTS_ONLY = False
+    CATEGORIES = []
+
     _FILT = {}
     _PROJ = {}
 
@@ -26,63 +30,56 @@ class netdbColumn:
 
     def _to_mongo(self, data):
         out = []
-        
-        weight = data.pop('weight', None)
-        datasource = data.pop('datasource', None)
 
-        for config_set, categories in data.items():
-            if config_set.startswith('_'):
-                entry = {
-                        'set_id'     : [ config_set ],
-                        'roles'      : categories['roles'],
+        datasource = data.pop('datasource')
+        weight     = data.pop('weight')
+
+        for set_id, set_data in data.items():
+            if self.FLAT:
+                entry = { 
+                        'set_id'     : set_id,
+                        'datasource' : datasource,
+                        'weight'     : weight,
+                        'data'       : set_data,
                         }
                 out.append(entry)
 
-            for category, contents in categories.items():
-                if category in self._COLUMN_CAT['type_1']:
-                    for family in ['ipv4', 'ipv6']:
-                        if family in contents:
-                            for element, elem_data in contents[family].items():
+                continue
+
+            for set_element_id, set_element_data in set_data.items():
+                if set_element_id in self.CATEGORIES:
+                    for element_id, element_data in set_element_data.items():
+                        if element_id in ['ipv4', 'ipv6']:
+                            for family_element_id, family_element_data in element_data.items():
                                 entry = {
-                                        'set_id'      : [config_set, category, family, element],
-                                        }
-
-                                entry.update(elem_data)
-                                if weight and datasource:
-                                    entry.update({
-                                        'weight'    : weight,
+                                        'set_id'     : set_id,
+                                        'category'   : set_element_id,
+                                        'family'     : element_id,
+                                        'element_id' : family_element_id,
                                         'datasource' : datasource,
-                                    })
-
+                                        'weight'     : weight,
+                                        'data'       : family_element_data,
+                                        }
+                                #pprint(entry)
                                 out.append(entry)
-
-                elif category in self._COLUMN_CAT['type_2']:
-                    for element, elem_data in contents.items():
-                        entry = {
-                                'set_id'      : [config_set, category, element],
-                                }
-
-                        entry.update(elem_data)
-                        if weight and datasource:
-                            entry.update({
-                                'weight'    : weight,
-                                'datasource' : datasource,
-                            })
-
-                        out.append(entry)
-
-                elif category in self._COLUMN_CAT['type_3']:
+                        else:
+                            entry = {
+                                    'set_id'     : set_id,
+                                    'category'   : set_element_id,
+                                    'element_id' : element_id,
+                                    'datasource' : datasource,
+                                    'weight'     : weight,
+                                    'data'       : element_data,
+                                    }
+                            out.append(entry)
+                else:
                     entry = {
-                            'set_id'      : [config_set, category],
-                            **contents
-                            }
-
-                    if weight and datasource:
-                        entry.update({
-                            'weight'    : weight,
+                            'set_id'     : set_id,
+                            'element_id' : set_element_id,
                             'datasource' : datasource,
-                        })
-
+                            'weight'     : weight,
+                            'data'       : set_element_data,
+                            }
                     out.append(entry)
 
         return out
@@ -92,20 +89,35 @@ class netdbColumn:
         out = {}
 
         for element in data:
-            set_id  = element.pop('set_id')
-            elem_id = set_id.pop()
+            if self.FLAT:
+                element_id = element.pop('set_id')
+            else:
+                element_id = element.pop('element_id')
+
+            element_data = element.pop('data')
+
+            if not element_data.get('meta'):
+                element_data['meta'] = {}
+
+            element_data['meta']['netdb'] = {
+                    'datasource' : element['datasource'],
+                    'weight'     : element['weight'],
+                    }
 
             unwind = out
-            for i in set_id:
-                if not unwind.get(i):
-                    unwind[i] = {}
-                unwind = unwind[i]
 
-            if elem_id in unwind:
-                if unwind[elem_id].get('weight', 0) > element.get('weight', 0):
+            if not self.FLAT:
+                for i in ['set_id', 'category', 'family']:
+                    if name := element.get(i):
+                        if not unwind.get(name):
+                            unwind[name] = {}
+                        unwind = unwind[name]
+
+            if element_id in unwind:
+                if unwind[element_id]['meta']['netdb'].get('weight', 0) > element.get('weight', 0):
                     continue
 
-            unwind[elem_id] = element
+            unwind[element_id] = element_data
 
         return out
 
@@ -115,12 +127,12 @@ class netdbColumn:
         result, out, comment  = mongoAPI(netdbColumn.DB_NAME, 'device').read()
         devices = []
         for device in out:
-            devices.append(device.pop('id'))
+            devices.append(device.pop('set_id'))
 
         top_ids = self.data.keys()
 
         for top_id in top_ids:
-            if not top_id.startswith('_') and top_id not in ['datasource', 'weight'] and top_id not in devices:
+            if top_id not in ['datasource', 'weight'] and top_id not in devices:
                 return False, None, '%s: device not registered' % top_id
 
         return True, None, 'all devices registered'
@@ -132,17 +144,20 @@ class netdbColumn:
             return False, None, 'invalid dataset'
 
         for top_id, categories in self.data.items():
-            if top_id.startswith('_'):
-                if 'roles' not in categories.keys():
-                    return False, None, '%s: roles required for shared config set' % top_id
-
             if top_id in ['datasource', 'weight']:
                 continue
 
-            try:
-                schema.newSchema(self._COLUMN).load(categories)
-            except ValidationError as error:
-                return False, error.messages, '%s: invalid data' % top_id
+            if self.ELEMENTS_ONLY:
+                for element, contents in categories.items():
+                    try:
+                        schema.newSchema(self._COLUMN).load(contents)
+                    except ValidationError as error:
+                        return False, error.messages, '{}: invalid data'.format(top_id)
+            else:
+                try:
+                    schema.newSchema(self._COLUMN).load(categories)
+                except ValidationError as error:
+                    return False, error.messages, '%s: invalid data' % top_id
 
         return True, None, 'netdb says: dry run. all checks passed for all elements.'
 
@@ -200,7 +215,6 @@ class netdbColumn:
             # These should always be returned.
             self._PROJ.update({
                 "set_id"     : 1,
-                "id"         : 1,
                 "datasource" : 1,
                 })
 
