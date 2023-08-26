@@ -10,7 +10,8 @@ def create_app(test_config=None):
     app = Flask(__name__)
 
     # Initialize the databese (i.e. create / re-create required indexes)
-    init.initialize()
+    if not READ_ONLY:
+        init.initialize()
     return app
 
 app = create_app()
