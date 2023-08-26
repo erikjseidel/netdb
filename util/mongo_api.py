@@ -1,4 +1,4 @@
-from pymongo import MongoClient, errors
+from pymongo import MongoClient, ReadPreference, errors
 from pymongo.errors import *
 from config.defaults import TRANSACTIONS
 
@@ -7,7 +7,11 @@ from .decorators import netdb_internal
 class mongoAPI:
 
     def __init__(self, database, collection):
-        self.client = MongoClient("mongodb://localhost:27017/")  
+        if TRANSACTIONS:
+            # Transactions implies a replica set. Read from first available (which should just be local instance)
+            self.client = MongoClient("mongodb://localhost:27017/", read_preference=ReadPreference.NEAREST)  
+        else:
+            self.client = MongoClient("mongodb://localhost:27017/")
 
         database = database
         collection = collection
