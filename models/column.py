@@ -12,7 +12,7 @@ RESERVED_WORDS = [
         'config',
         ]
 
-class netdbColumn:
+class Column:
 
     FLAT = False
     ELEMENTS_ONLY = False

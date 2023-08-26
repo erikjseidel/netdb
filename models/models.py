@@ -1,34 +1,34 @@
-from .column import netdbColumn
+from .column import Column
 
-class netdbBgp(netdbColumn):
+class BgpColumn(Column):
     COLUMN = 'bgp'
 
     CATEGORIES = ['peer_groups', 'neighbors']
 
 
-class netdbDevice(netdbColumn):
+class DeviceColumn(Column):
     COLUMN = 'device'
 
     FLAT = True
 
 
-class netdbFirewall(netdbColumn):
+class FirewallColumn(Column):
     COLUMN = 'firewall'
 
     CATEGORIES = ['policies', 'groups', 'zone_policy']
 
 
-class netdbIgp(netdbColumn):
+class IgpColumn(Column):
     COLUMN = 'igp'
 
 
-class netdbInterface(netdbColumn):
+class InterfaceColumn(Column):
     COLUMN = 'interface'
 
     ELEMENTS_ONLY = True
 
 
-class netdbPolicy(netdbColumn):
+class PolicyColumn(Column):
     COLUMN = 'policy'
 
     CATEGORIES = ['prefix_lists', 'route_maps', 'aspath_lists', 'community_lists']

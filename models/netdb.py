@@ -1,13 +1,13 @@
 from .models import *
 
 COLUMNS = {
-        'device'     : netdbDevice,
-        'interface'  : netdbInterface,
-        'igp'        : netdbIgp,
-        'firewall'   : netdbFirewall,
-        'bgp'        : netdbBgp,
-        'policy'     : netdbPolicy,
+        'device'     : DeviceColumn,
+        'interface'  : InterfaceColumn,
+        'igp'        : IgpColumn,
+        'firewall'   : FirewallColumn,
+        'bgp'        : BgpColumn,
+        'policy'     : PolicyColumn,
         } 
 
-def newColumn(column = "device"):
+def newColumn(column="device"):
     return COLUMNS[column]()
