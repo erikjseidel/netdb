@@ -86,6 +86,16 @@ def validator_route(column):
     return Response(response=json.dumps(response), status=200, mimetype='application/json')
 
 
+@app.route('/api/<column>/source/<datasource>', methods=['GET'])
+def datasource_route(column, datasource):
+    if column not in netdb.COLUMNS:
+        return ERR_NO_COLUMN
+
+    response = netdb.newColumn(column).datasource(datasource).fetch()
+
+    return Response(response=json.dumps(response), status=200, mimetype='application/json')
+
+
 @app.route('/api/<column>/project', methods=['GET'])
 def projector_route(column):
     if column not in netdb.COLUMNS:

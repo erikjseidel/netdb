@@ -5,11 +5,20 @@ from config.defaults import DB_NAME
 
 import schema.schema as schema
 
+#  Used as url endpoints. Should not overlap with set_ids.
+RESERVED_WORDS = [
+        'validate',
+        'source',
+        'config',
+        ]
+
 class netdbColumn:
 
     FLAT = False
     ELEMENTS_ONLY = False
     CATEGORIES = []
+
+    _PROVIDE_ALL = False
 
     _FILT = {}
     _PROJ = {}
@@ -24,6 +33,7 @@ class netdbColumn:
 
         datasource = data.pop('datasource')
         weight     = data.pop('weight')
+
 
         for set_id, set_data in data.items():
             if self.FLAT:
@@ -79,6 +89,9 @@ class netdbColumn:
         out = {}
 
         for element in data:
+            if element['weight'] < 1 and not _PROVIDE_ALL:
+                continue
+
             if self.FLAT:
                 element_id = element.pop('set_id')
             else:
@@ -140,6 +153,9 @@ class netdbColumn:
             return False, None, 'A valid weight integer is required.'
 
         for set_id, set_elements in data.items():
+            if set_id in RESERVED_WORDS:
+                return False, None, f'set_id {set_id} is a reserved word.'
+
             if set_id in ['datasource', 'weight']:
                 continue
 
@@ -207,6 +223,16 @@ class netdbColumn:
 
         if 'filter' in project_dict:
             self._FILT = project_dict['filter']
+
+        return self
+
+
+    def datasource(self, datasource):
+        self._PROVIDE_ALL = True
+
+        self._FILT = {
+                'datasource' : datasource,
+                }
 
         return self
 
