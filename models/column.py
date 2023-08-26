@@ -6,7 +6,6 @@ from config.defaults import DB_NAME
 import schema.schema as schema
 
 class netdbColumn:
-    DB_NAME = DB_NAME
 
     FLAT = False
     ELEMENTS_ONLY = False
@@ -17,15 +16,7 @@ class netdbColumn:
 
     def __init__(self, data = {}):
         self.data = data
-        self.mongo = mongoAPI(netdbColumn.DB_NAME, self.COLUMN)
-
-
-    def _get_type(category):
-        for d_type, categories in self.COLUMN_CAT.items():
-            if category in categories:
-                return d_type
-
-        return None
+        self.mongo = mongoAPI(DB_NAME, self.COLUMN)
 
 
     def _to_mongo(self, data):
@@ -123,18 +114,16 @@ class netdbColumn:
 
     @netdb_internal
     def _is_registered(self):
-        result, out, comment  = mongoAPI(netdbColumn.DB_NAME, 'device').read()
+        result, out, comment = mongoAPI(DB_NAME, 'device').read()
         devices = []
         for device in out:
             devices.append(device.pop('set_id'))
 
-        set_ids = self.data.keys()
-
-        for set_id in set_ids:
+        for set_id in self.data.keys():
             if set_id not in ['datasource', 'weight'] and set_id not in devices:
                 return False, None, f'{set_id}: device not registered.'
 
-        return True, None, 'All devices registered.'
+        return True, None, 'Parent device is registered.'
 
 
     @netdb_internal

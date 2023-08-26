@@ -4,6 +4,8 @@ import models
 import models.netdb as netdb
 import util.initialize as init
 
+from config.defaults import READ_ONLY
+
 def create_app(test_config=None):
     app = Flask(__name__)
 
@@ -17,6 +19,9 @@ ERR_NO_COLUMN = Response(response = json.dumps({ "result": False, "comment": "Co
                         status = 200, mimetype = 'application/json')
 
 ERR_INVALID_DATA = Response(response = json.dumps({ "result": False, "comment": "Invalid input data" }),
+                        status = 400, mimetype = 'application/json')
+
+ERR_READ_ONLY = Response(response = json.dumps({ "result": False, "comment": "Invalid input data" }),
                         status = 400, mimetype = 'application/json')
 
 
@@ -95,6 +100,9 @@ def projector_route(column):
 
 @app.route('/api/<column>', methods=['POST', 'PUT', 'DELETE'])
 def alter_route(column):
+    if READ_ONLY:
+        return ERR_READ_ONLY
+
     if column not in netdb.COLUMNS:
         return ERR_NO_COLUMN
 
@@ -115,6 +123,9 @@ def alter_route(column):
 
 @app.route('/api/<column>/reload/<datasource>', methods=['POST'])
 def reload_column(column, datasource):
+    if READ_ONLY:
+        return ERR_READ_ONLY
+
     if column not in netdb.COLUMNS:
         return ERR_NO_COLUMN
 
