@@ -1,4 +1,4 @@
-from .mongo_api import mongoAPI
+from .mongo_api import MongoAPI
 from config.defaults import DB_NAME
 
 DEFAULT_INDEX = [
@@ -22,10 +22,6 @@ WARNING = "Incompatible index found. Recommend removing this index manually."
 
 def initialize():
     for column, index in INDEXES.items():
-        result, _, comment = mongoAPI('netdb', column).create_index(index)
+        result = MongoAPI('netdb', column).create_index(index)
 
-        # Needs to be replaced with proper logging.
-        if result:
-            print(f'{column}: created index {comment}')
-        else:
-            print(f'{column}: {WARNING}')
+        # Needs proper logging.

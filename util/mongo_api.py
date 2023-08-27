@@ -1,10 +1,9 @@
 from pymongo import MongoClient, ReadPreference, errors
 from pymongo.errors import *
 from config.defaults import TRANSACTIONS
+from util.exception import NetDBException
 
-from .decorators import netdb_internal
-
-class mongoAPI:
+class MongoAPI:
 
     def __init__(self, database, collection):
         if TRANSACTIONS:
@@ -19,19 +18,12 @@ class mongoAPI:
         self.collection = cursor[collection]
 
 
-    @netdb_internal
-    def read(self, query = {}, projection = {}):
-        documents = self.collection.find(query, projection)
+    def read(self, query={}):
+        documents = self.collection.find(query)
 
-        out = [{item: data[item] for item in data if item != '_id'} for data in documents]
-
-        if len(out) == 0:
-            return False, None, 'No documents found'
-
-        return True, out, '%s documents read' % len(out)
+        return [{item: data[item] for item in data if item != '_id'} for data in documents]
 
 
-    @netdb_internal
     def reload(self, documents, filt):
         if TRANSACTIONS:
             with self.client.start_session() as session:
@@ -42,33 +34,14 @@ class mongoAPI:
             self.collection.delete_many(filt)
             self.collection.insert_many(documents, ordered = False)
 
-        return True, None, 'Reload complete'
+        return True
 
 
-    @netdb_internal
     def write_one(self, document):
-        response = self.collection.insert_one(document)
-
-        return True, None, str(response.inserted_id) + ' created'
+        return str(self.collection.insert_one(document).inserted_id)
 
 
-    @netdb_internal
-    def write_many(self, documents):
-        response = None
-
-        try:
-            response = self.collection.insert_many(documents, ordered = False)
-        except BulkWriteError:
-            return True, None, 'warning: duplicates were found. not all documents added'
-
-        length = len(response.inserted_ids)
-        doc = "document" if length == 1 else "documents"
-
-        return True, None, '%s %s created' % (length, doc)
-
-
-    @netdb_internal
-    def update_one(self, document):
+    def replace_one(self, document):
         filt = {
                 'set_id'     : document.get('set_id'),
                 'category'   : document.get('category'),
@@ -77,29 +50,14 @@ class mongoAPI:
                 'datasource' : document['datasource'],
                 }
 
-        response = self.collection.replace_one(filt, document)
-
-        if response.modified_count > 0:
-            return True, None, 'document modified'
-
-        return False, None, 'nothing updated. %s matched' % response.matched_count
+        return bool(self.collection.replace_one(filt, document).modified_count)
 
 
-    @netdb_internal
     def delete_many(self, filt):
-        response = self.collection.delete_many(filt)
-        if response.deleted_count == 0:
-            return False, None, 'Nothing deleted'
-
-        doc = "document" if response.deleted_count == 1 else "documents"
-        return True, None, '%s %s deleted' % (response.deleted_count, doc)
+        return self.collection.delete_many(filt).deleted_count
 
 
-    @netdb_internal
     def create_index(self, index):
-        try:
-            response = self.collection.create_index(index, unique=True)
-        except OperationFailure:
-            return False, None, 'incompatible index found'
+        self.collection.create_index(index, unique=True)
 
-        return True, None, response
+        return True
