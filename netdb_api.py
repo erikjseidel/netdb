@@ -17,19 +17,36 @@ def create_app(test_config=None):
 app = create_app()
 
 ERR_NO_COLUMN = Response(response = json.dumps({ "result": False, "comment": "Column does not exist"} ),
-                        status = 200, mimetype = 'application/json')
+                        status = 404, mimetype = 'application/json')
 
 ERR_INVALID_DATA = Response(response = json.dumps({ "result": False, "comment": "Invalid input data" }),
-                        status = 400, mimetype = 'application/json')
+                        status = 422, mimetype = 'application/json')
 
-ERR_READ_ONLY = Response(response = json.dumps({ "result": False, "comment": "Invalid input data" }),
-                        status = 400, mimetype = 'application/json')
+ERR_READ_ONLY = Response(response = json.dumps({ "result": False, "comment": "Not Allowed: Read only mode." }),
+                        status = 405, mimetype = 'application/json')
 
 
 def handle_bad_request(e):
-    return json.dumps({ 'result': False, 'comment': 'bad request' }), 400
+    ret = {
+            'result'  : False,
+            'comment' : 'Bad Request',
+            }
+
+    return json.dumps(ret), 400
+
+
+def handle_not_found(e):
+    ret = {
+            'result'  : False,
+            'comment' : 'Endpoint not found.',
+            }
+
+    return json.dumps(ret), 404
+
 
 app.register_error_handler(400, handle_bad_request)
+
+app.register_error_handler(404, handle_not_found)
 
 def get_data(request):
     if not request.data:
