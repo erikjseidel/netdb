@@ -32,12 +32,6 @@ ERR_READONLY = {
         'comment' : 'NetDB API is running in read only mode.',
         }
 
-class NetDBContainer(BaseModel):
-    datasource: str
-    weight: int
-
-    data: dict
-
 
 class NetDBReturn(BaseModel):
     result: bool = True
