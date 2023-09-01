@@ -49,7 +49,8 @@ async def not_found_exception_handler(request: Request, exc: HTTPException):
                result=False,
                error=True,
                comment='NetDB resource not found.',
-               )
+               ),
+           exclude_none=True,
            )
 
    return JSONResponse(content=response, status_code=status.HTTP_404_NOT_FOUND)
@@ -62,10 +63,11 @@ async def netdb__exception_handler(request: Request, exc: NetDBException):
                result=False,
                error=True,
                comment=exc.message,
-               )
+               ),
+           exclude_none=True,
            )
 
-   return JSONResponse(content=response, status_code=e.code)
+   return JSONResponse(content=response, status_code=exc.code)
 
 
 @app.get("/")
