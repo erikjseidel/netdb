@@ -31,7 +31,7 @@ app = FastAPI(
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
    errors = exc.errors()
-   restponse = jsonable_encoder(
+   response = jsonable_encoder(
            NetDBReturn(
                result=False,
                out={ 'detail': errors },
@@ -57,7 +57,7 @@ async def not_found_exception_handler(request: Request, exc: HTTPException):
 
 @app.exception_handler(NetDBException)
 async def netdb__exception_handler(request: Request, exc: NetDBException):
-   restponse = jsonable_encoder(
+   response = jsonable_encoder(
            NetDBReturn(
                result=False,
                error=True,
