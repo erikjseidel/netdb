@@ -1,12 +1,12 @@
 from typing import Annotated, Union
 from fastapi import Body
 
-from .containers.device import DeviceContainer
-from .containers.firewall import FirewallContainer
-from .containers.policy import PolicyContainer
-from .containers.interface import InterfaceContainer
-from .containers.bgp import BGPContainer
-from .containers.igp import IGPContainer
+from .columns.device import DeviceContainer
+from .columns.firewall import FirewallContainer
+from .columns.policy import PolicyContainer
+from .columns.interface import InterfaceContainer
+from .columns.bgp import BGPContainer
+from .columns.igp import IGPContainer
 
 COLUMN_TYPES = [
         'device',
