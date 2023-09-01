@@ -1,18 +1,17 @@
 import util.initialize as init
 import util.api_resources as resources
 
-from models.root import RootContainer, COLUMN_TYPES
-from odm.column_odm import ColumnODM
 from typing import Union
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, Response, status
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError, HTTPException
 from fastapi.encoders import jsonable_encoder
-from pydantic import BaseModel
+from config.defaults import READ_ONLY
+from models.root import RootContainer, COLUMN_TYPES
+from odm.column_odm import ColumnODM
 from util.exception import NetDBException
 from util.api_resources import NetDBReturn, generate_filter, ERR_READONLY
-from config.defaults import READ_ONLY
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -32,10 +31,12 @@ app = FastAPI(
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
    errors = exc.errors()
-   restponse = NetDBReturn(
-           result=False,
-           out={ 'detail': errors }, 
-           comment='NetDB says: FastAPI returned a validation error.',
+   restponse = jsonable_encoder(
+           NetDBReturn(
+               result=False,
+               out={ 'detail': errors },
+               comment='NetDB says: FastAPI returned a validation error.',
+               )
            )
 
    return JSONResponse(content=response, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
@@ -56,10 +57,12 @@ async def not_found_exception_handler(request: Request, exc: HTTPException):
 
 @app.exception_handler(NetDBException)
 async def netdb__exception_handler(request: Request, exc: NetDBException):
-   restponse = NetDBReturn(
-           result=False,
-           error=True,
-           comment=exc.message,
+   restponse = josnable_encoder(
+           NetDBReturn(
+               result=False,
+               error=True,
+               comment=exc.message,
+               )
            )
 
    return JSONResponse(content=response, status_code=e.code)
