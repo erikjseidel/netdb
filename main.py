@@ -57,7 +57,7 @@ async def not_found_exception_handler(request: Request, exc: HTTPException):
 
 @app.exception_handler(NetDBException)
 async def netdb__exception_handler(request: Request, exc: NetDBException):
-   restponse = josnable_encoder(
+   restponse = jsonable_encoder(
            NetDBReturn(
                result=False,
                error=True,
