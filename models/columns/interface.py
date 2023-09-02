@@ -1,5 +1,5 @@
 from ..base import BaseContainer, BaseColumnModel
-from typing import Literal, Union, Annotated, Dict, List
+from typing import Literal, Optional, Dict, List
 from pydantic import BaseModel, RootModel, Field, IPvAnyInterface, IPvAnyAddress, Extra
 from ipaddress import IPv4Address
 
@@ -20,34 +20,34 @@ class InterfaceLACPOptions(BaseColumnModel):
 
 
 class InterfacePolicy(BaseColumnModel):
-    ipv4: Union[str, None] = None
-    ipv6: Union[str, None] = None
+    ipv4: Optional[str] = None
+    ipv6: Optional[str] = None
 
 
 class InterfaceFirewall(BaseColumnModel):
-    local: Union[InterfacePolicy, None] = None
-    egress: Union[InterfacePolicy, None] = None
-    ingress: Union[InterfacePolicy, None] = None
+    local: Optional[InterfacePolicy] = None
+    egress: Optional[InterfacePolicy] = None
+    ingress: Optional[InterfacePolicy] = None
 
 
 class Interface(BaseColumnModel):
     type: Literal['ethernet', 'vlan', 'lacp', 'dummy', 'gre', 'l2gre']
     disabled: bool = False
     offload: bool = False
-    description: Union[str, None] = None
-    interface: Union[str, None] = None
-    mac_address: Union[str, None] = None
-    mtu: Union[int, None] = Field(None, ge=1280, le=9192)
-    ttl: Union[int, None] = Field(None, ge=1, le=255)
-    key: Union[IPv4Address, None] = None
-    remote: Union[IPvAnyAddress, None] = None
-    source: Union[IPvAnyAddress, None] = None
-    address: Union[ Dict[ IPvAnyInterface, InterfaceAddress ], None ] = None
-    vlan: Union[InterfaceVLANOptions, None] = None
-    lacp: Union[InterfaceLACPOptions, None] = None
-    firewall: Union[InterfaceFirewall, None] = None
-    policy: Union[InterfacePolicy, None] = None
-    meta: Union[dict, None] = None
+    description: Optional[str] = None
+    interface: Optional[str] = None
+    mac_address: Optional[str] = None
+    mtu: Optional[int] = Field(None, ge=1280, le=9192)
+    ttl: Optional[int] = Field(None, ge=1, le=255)
+    key: Optional[IPv4Address] = None
+    remote: Optional[IPvAnyAddress] = None
+    source: Optional[IPvAnyAddress] = None
+    address: Optional[Dict[ IPvAnyInterface, InterfaceAddress ]] = None
+    vlan: Optional[InterfaceVLANOptions] = None
+    lacp: Optional[InterfaceLACPOptions] = None
+    firewall: Optional[InterfaceFirewall] = None
+    policy: Optional[InterfacePolicy] = None
+    meta: Optional[dict] = None
 
 
 class InterfaceRoot(RootModel):

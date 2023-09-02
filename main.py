@@ -1,7 +1,7 @@
 import util.initialize as init
 import util.api_resources as resources
 
-from typing import Union
+from typing import Optional
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, Response, status
 from fastapi.responses import JSONResponse
@@ -11,13 +11,18 @@ from config.defaults import READ_ONLY
 from models.root import RootContainer, COLUMN_TYPES
 from odm.column_odm import ColumnODM
 from util.exception import NetDBException
-from util.api_resources import NetDBReturn, generate_filter, ERR_READONLY
+
+from util.api_resources import (
+        NetDBReturn,
+        generate_filter,
+        PrettyJSONResponse,
+        ERR_READONLY,
+        )
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     if not READ_ONLY:
         init.initialize()
-
     yield
 
 
@@ -78,7 +83,11 @@ def read_root():
             }
 
 
-@app.get('/column', tags=['list_columns'])
+@app.get(
+        '/column',
+        tags=['list_columns'],
+        response_class=PrettyJSONResponse,
+        )
 def list_columns():
     return NetDBReturn(
            out=COLUMN_TYPES,
@@ -124,17 +133,26 @@ def reload_column(
             )
 
 
-@app.get('/column/{column}', tags=['column'])
+@app.get(
+        '/column/{column}',
+        tags=['column'],
+        response_class=PrettyJSONResponse,
+        )
 def get_column(
         column:      str, 
         response:    Response,
-        datasource:  Union[str, None] = None,
-        set_id:      Union[str, None] = None,
-        category:    Union[str, None] = None,
-        family:      Union[str, None] = None,
-        element_id:  Union[str, None] = None,
+        datasource:  Optional[str] = None,
+        set_id:      Optional[str] = None,
+        device:      Optional[str] = None,
+        category:    Optional[str] = None,
+        family:      Optional[str] = None,
+        element_id:  Optional[str] = None,
         show_hidden: bool = False,
         ):
+
+    # Shortcut for set_id. Only using uppercase device names for now.
+    if device:
+        set_id = str(device).upper()
 
     filt = generate_filter(datasource, set_id, category, family, element_id)
 
@@ -179,10 +197,10 @@ def delete_elements(
         column:      str, 
         datasource:  str,
         response:    Response,
-        set_id:      Union[str, None] = None,
-        category:    Union[str, None] = None,
-        family:      Union[str, None] = None,
-        element_id:  Union[str, None] = None,
+        set_id:      Optional[str] = None,
+        category:    Optional[str] = None,
+        family:      Optional[str] = None,
+        element_id:  Optional[str] = None,
         ):
 
     if READ_ONLY:
@@ -202,16 +220,27 @@ def delete_elements(
             )
 
 
-@app.get('/column/{column}/{set_id}', tags=['device'])
+@app.get(
+        '/column/{column}/{set_id}',
+        tags=['device'],
+        response_class=PrettyJSONResponse,
+        )
 def get_column_set(
         column:   str, 
         set_id:   str,
         response: Response,
         ):
 
-    filt = {'set_id' : set_id }
+    filt = {'set_id' : set_id.upper() }
 
     out = ColumnODM(type=column).load_mongo(filt).fetch()
+    if not out:
+        response.status_code = status.HTTP_404_NOT_FOUND
+
+        return NetDBReturn(
+                result=False,
+                comment=f'No column data found for {set_id}'
+                )
 
     return NetDBReturn(
             out=out,

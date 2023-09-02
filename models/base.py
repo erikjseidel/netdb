@@ -1,5 +1,4 @@
 from pydantic import BaseModel, Extra
-from enum import Enum
 
 class BaseColumnModel(BaseModel):
     class Config:

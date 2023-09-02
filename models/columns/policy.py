@@ -1,11 +1,11 @@
 from ..base import BaseContainer, BaseColumnModel
-from typing import Literal, Union, Dict, List
+from typing import Literal, Optional, Dict, List
 from pydantic import Field, IPvAnyAddress, IPvAnyNetwork
 
 
 class PolicyBasicRule(BaseColumnModel):
     action: Literal['permit', 'deny']
-    description: Union[str, None] = None
+    description: Optional[str] = None
     regex: str
 
 
@@ -14,7 +14,7 @@ class PolicyCommunityRule(PolicyBasicRule):
 
 
 class PolicyCommunity(BaseColumnModel):
-    description: Union[str, None] = None
+    description: Optional[str] = None
     rules: List[PolicyCommunityRule]
 
 
@@ -23,32 +23,32 @@ class PolicyASPathRule(PolicyBasicRule):
 
 
 class PolicyASPath(BaseColumnModel):
-    description: Union[str, None] = None
+    description: Optional[str] = None
     rules: List[PolicyASPathRule]
 
 
 class PolicyRouteMapSet(BaseColumnModel):
-    local_pref: Union[int, None] = Field(None, ge=0, le=255)
-    as_path_exclude: Union[int, None] = Field(None, ge=1, lt=2**32)
-    next_hop: Union[IPvAnyAddress, None] = None
-    origin: Union[str, None] = None
-    community: Union[str, None] = None
-    large_community: Union[str, None] = None
+    local_pref: Optional[int] = Field(None, ge=0, le=255)
+    as_path_exclude: Optional[int] = Field(None, ge=1, lt=2**32)
+    next_hop: Optional[IPvAnyAddress] = None
+    origin: Optional[str] = None
+    community: Optional[str] = None
+    large_community: Optional[str] = None
 
 
 class PolicyRouteMapMatch(BaseColumnModel):
-    prefix_list: Union[str, None] = None
-    community_list: Union[str, None] = None
-    as_path: Union[str, None] = None
+    prefix_list: Optional[str] = None
+    community_list: Optional[str] = None
+    as_path: Optional[str] = None
     rpki: Literal['notfound', 'valid', 'invalid', None] = None
 
 
 class PolicyRouteMapRule(BaseColumnModel):
     action: Literal['permit', 'deny']
-    match: Union[PolicyRouteMapMatch, None] = None
-    set: Union[PolicyRouteMapSet, None] = None
+    match: Optional[PolicyRouteMapMatch] = None
+    set: Optional[PolicyRouteMapSet] = None
     number: int = Field(ge=0, le=999)
-    continue_: Union[int, None] = Field(None, ge=0, le=999, alias='continue')
+    continue_: Optional[int] = Field(None, ge=0, le=999, alias='continue')
 
 
 class PolicyRouteMap(BaseColumnModel):
@@ -56,13 +56,13 @@ class PolicyRouteMap(BaseColumnModel):
 
 
 class PolicyRouteMapBase(BaseColumnModel):
-    ipv4: Union[Dict[str, PolicyRouteMap], None] = None
-    ipv6: Union[Dict[str, PolicyRouteMap], None] = None
+    ipv4: Optional[Dict[str, PolicyRouteMap]] = None
+    ipv6: Optional[Dict[str, PolicyRouteMap]] = None
 
 
 class PolicyPrefixListRules(BaseColumnModel):
-    le: Union[int, None] = Field(None, ge=0, le=128)
-    ge: Union[int, None] = Field(None, ge=0, le=128)
+    le: Optional[int] = Field(None, ge=0, le=128)
+    ge: Optional[int] = Field(None, ge=0, le=128)
     prefix: IPvAnyNetwork
 
 
@@ -71,15 +71,15 @@ class PolicyPrefixList(BaseColumnModel):
 
 
 class PolicyPrefixListBase(BaseColumnModel):
-    ipv4: Union[Dict[str, PolicyPrefixList], None] = None
-    ipv6: Union[Dict[str, PolicyPrefixList], None] = None
+    ipv4: Optional[Dict[str, PolicyPrefixList]] = None
+    ipv6: Optional[Dict[str, PolicyPrefixList]] = None
 
 
 class Policy(BaseColumnModel):
-    prefix_lists: Union[PolicyPrefixListBase, None] = None
-    route_maps: Union[PolicyRouteMapBase, None] = None
-    aspath_lists: Union[Dict[str, PolicyASPath], None] = None
-    community_lists: Union[Dict[str, PolicyCommunity], None] = None
+    prefix_lists: Optional[PolicyPrefixListBase] = None
+    route_maps: Optional[PolicyRouteMapBase] = None
+    aspath_lists: Optional[Dict[str, PolicyASPath]] = None
+    community_lists: Optional[Dict[str, PolicyCommunity]] = None
 
 
 class PolicyContainer(BaseContainer):

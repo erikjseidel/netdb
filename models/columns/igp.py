@@ -1,5 +1,5 @@
 from ..base import BaseContainer, BaseColumnModel
-from typing import Literal, Dict, Union, List
+from typing import Literal, Dict, Optional, List
 from pydantic import Field
 
 class ISISInterface(BaseColumnModel):
@@ -8,18 +8,18 @@ class ISISInterface(BaseColumnModel):
 
 
 class ISISRedistributeMap(BaseColumnModel):
-    connected_map: Union[str, None] = None
-    static_map: Union[str, None] = None
+    connected_map: Optional[str] = None
+    static_map: Optional[str] = None
 
 
 class ISISRedistributeLevel(BaseColumnModel):
-    level_1: Union[ISISRedistributeMap, None] = None
-    level_2: Union[ISISRedistributeMap, None] = None
+    level_1: Optional[ISISRedistributeMap] = None
+    level_2: Optional[ISISRedistributeMap] = None
 
 
 class ISISRedistributePolicy(BaseColumnModel):
-    ipv4: Union[ISISRedistributeLevel, None] = None
-    ipv6: Union[ISISRedistributeLevel, None] = None
+    ipv4: Optional[ISISRedistributeLevel] = None
+    ipv6: Optional[ISISRedistributeLevel] = None
 
 
 class ISIS(BaseColumnModel):
@@ -27,8 +27,8 @@ class ISIS(BaseColumnModel):
     lsp_mtu: int = Field(1471, ge=1200, le=9200)
     iso: str
     interfaces: List[ISISInterface]
-    redistribute: Union[ISISRedistributePolicy, None] = None
-    meta: Union[dict, None] 
+    redistribute: Optional[ISISRedistributePolicy] = None
+    meta: Optional[dict]
 
 
 class IGPRoot(BaseColumnModel):

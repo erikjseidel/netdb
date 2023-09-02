@@ -1,5 +1,7 @@
+import json
 from pydantic import BaseModel
-from typing import Union
+from typing import Union, Any
+from starlette.responses import Response
 
 description = """
 Version 2 of the NetDB API. 🚀
@@ -62,3 +64,16 @@ def generate_filter(
         filt['element_id'] = element_id
 
     return filt
+
+
+class PrettyJSONResponse(Response):
+    media_type = "application/json"
+
+    def render(self, content: Any) -> bytes:
+        return json.dumps(
+            content,
+            ensure_ascii=False,
+            allow_nan=False,
+            indent=2,
+            separators=(", ", ": "),
+        ).encode("utf-8")
