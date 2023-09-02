@@ -1,4 +1,4 @@
 *.pyc
 *.pyo
-logs/
-config/defaults.py
+netdb/logs/
+netdb/config/defaults.py
