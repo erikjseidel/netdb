@@ -1,0 +1,4 @@
+fastapi==0.102.0
+gunicorn==20.1.0
+uvicorn==0.23.2
+pymongo==4.3.3
