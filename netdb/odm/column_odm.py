@@ -16,28 +16,22 @@ class ColumnODM:
         self.column_type = None
 
         if container:
-            try:
-                self.column_type = container.column_type
-                self.flat = container.flat
-                self.categories = container.categories
-                self.datasource = container.datasource
-                self.weight = container.weight
-                self.column = jsonable_encoder(container.column, exclude_none=True)
 
-            except KeyError:
-                raise NetDBException(
-                        code=422,
-                        message='required NetDBContainer fields missing',
-                        )
+            self.column_type = container.column_type
+            self.flat = container.flat
+            self.categories = container.categories
+            self.datasource = container.datasource
+            self.weight = container.weight
+            self.column = jsonable_encoder(container.column, exclude_none=True)
 
         elif type:
             self.column_type = type
 
         if not self.column_type or self.column_type not in COLUMN_TYPES:
-                raise NetDBException(
-                        code=422,
-                        message=f'Column {type} not available',
-                        )
+            raise NetDBException(
+                    code=422,
+                    message=f'Column {type} not available',
+                    )
 
         self.mongo = MongoAPI(DB_NAME, self.column_type)
 
