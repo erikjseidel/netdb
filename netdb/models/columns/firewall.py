@@ -2,19 +2,20 @@ from ..base import BaseContainer, BaseColumnModel
 from typing import Literal, Optional, Dict, List
 from pydantic import Field, IPvAnyInterface
 
+
 class FirewallOptions(BaseColumnModel):
-    all_ping: Optional[str]                = Field(None, alias='all-ping')
-    broadcast_ping: Optional[str]          = Field(None, alias='broadcast-ping')
-    config_trap: Optional[str]             = Field(None, alias='config-trap')
-    ipv6_receive_redirects: Optional[str]  = Field(None, alias='ipv6-receive-redirects')
-    ipv6_src_route: Optional[str]          = Field(None, alias='ipv6-src-route')
-    log_martians: Optional[str]            = Field(None, alias='log-martians')
-    send_redirects: Optional[str]          = Field(None, alias='send-redirects')
-    source_validation: Optional[str]       = Field(None, alias='source-validation')
-    syn_cookies: Optional[str]             = Field(None, alias='syn-cookies')
-    twa_hazards_protection: Optional[str]  = Field(None, alias='twa-hazards-protection')
-    ip_src_route: Optional[str]            = Field(None, alias='ip-src-route')
-    receive_redirect: Optional[str]        = Field(None, alias='receive-redirect')
+    all_ping: Optional[str] = Field(None, alias='all-ping')
+    broadcast_ping: Optional[str] = Field(None, alias='broadcast-ping')
+    config_trap: Optional[str] = Field(None, alias='config-trap')
+    ipv6_receive_redirects: Optional[str] = Field(None, alias='ipv6-receive-redirects')
+    ipv6_src_route: Optional[str] = Field(None, alias='ipv6-src-route')
+    log_martians: Optional[str] = Field(None, alias='log-martians')
+    send_redirects: Optional[str] = Field(None, alias='send-redirects')
+    source_validation: Optional[str] = Field(None, alias='source-validation')
+    syn_cookies: Optional[str] = Field(None, alias='syn-cookies')
+    twa_hazards_protection: Optional[str] = Field(None, alias='twa-hazards-protection')
+    ip_src_route: Optional[str] = Field(None, alias='ip-src-route')
+    receive_redirect: Optional[str] = Field(None, alias='receive-redirect')
 
 
 class FirewallMSSClamp(BaseColumnModel):
@@ -84,10 +85,10 @@ class Firewall(BaseColumnModel):
 
 class FirewallContainer(BaseContainer):
     __categories__ = [
-            'policies',
-            'groups',
-            'zone_policy',
-            ]
+        'policies',
+        'groups',
+        'zone_policy',
+    ]
 
     column_type: Literal['firewall']
     column: Dict[str, Firewall]

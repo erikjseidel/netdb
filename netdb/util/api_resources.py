@@ -30,9 +30,9 @@ tags = [
 ]
 
 ERR_READONLY = {
-        'result' : False,
-        'comment' : 'NetDB API is running in read only mode.',
-        }
+    'result': False,
+    'comment': 'NetDB API is running in read only mode.',
+}
 
 
 class NetDBReturn(BaseModel):
@@ -43,13 +43,8 @@ class NetDBReturn(BaseModel):
 
 
 def generate_filter(
-        datasource=None, 
-        set_id=None, 
-        category=None, 
-        family=None, 
-        element_id=None
-        ):
-
+    datasource=None, set_id=None, category=None, family=None, element_id=None
+):
     filt = {}
 
     if datasource:

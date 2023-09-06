@@ -3,6 +3,7 @@ from typing import Literal, Optional, Dict, List
 from pydantic import Field, IPvAnyAddress, IPvAnyNetwork
 from ipaddress import IPv4Address
 
+
 class BGPOptions(BaseColumnModel):
     asn: int = Field(ge=1, lt=2**32)
     hold_time: Optional[int] = Field(None, ge=15, le=180)
@@ -42,8 +43,8 @@ class BGPFamily(BaseColumnModel):
 
 
 class BGPTimers(BaseColumnModel):
-    holdtime: int = Field(ge=15,le=3000)
-    keepalive: int = Field(ge=5,le=1000)
+    holdtime: int = Field(ge=15, le=3000)
+    keepalive: int = Field(ge=5, le=1000)
 
 
 class BGPPeerGroup(BaseColumnModel):

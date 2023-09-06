@@ -3,6 +3,7 @@ from typing import Literal, Optional, Dict, List
 from pydantic import BaseModel, RootModel, Field, IPvAnyInterface, IPvAnyAddress, Extra
 from ipaddress import IPv4Address
 
+
 class InterfaceAddress(BaseColumnModel):
     meta: dict
 
@@ -13,8 +14,8 @@ class InterfaceVLANOptions(BaseColumnModel):
 
 
 class InterfaceLACPOptions(BaseColumnModel):
-    hash_policy: Literal['layer2+3','layer3+4']
-    rate: Literal['fast','slow']
+    hash_policy: Literal['layer2+3', 'layer3+4']
+    rate: Literal['fast', 'slow']
     min_links: int = Field(ge=1, le=5)
     members: List[str]
 
@@ -42,7 +43,7 @@ class Interface(BaseColumnModel):
     key: Optional[IPv4Address] = None
     remote: Optional[IPvAnyAddress] = None
     source: Optional[IPvAnyAddress] = None
-    address: Optional[Dict[ IPvAnyInterface, InterfaceAddress ]] = None
+    address: Optional[Dict[IPvAnyInterface, InterfaceAddress]] = None
     vlan: Optional[InterfaceVLANOptions] = None
     lacp: Optional[InterfaceLACPOptions] = None
     firewall: Optional[InterfaceFirewall] = None

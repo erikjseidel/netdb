@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Extra
 
+
 class BaseColumnModel(BaseModel):
     class Config:
         extra = Extra.forbid

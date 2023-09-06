@@ -84,11 +84,11 @@ class Policy(BaseColumnModel):
 
 class PolicyContainer(BaseContainer):
     __categories__ = [
-            'prefix_lists',
-            'route_maps',
-            'aspath_lists',
-            'community_lists',
-            ]
+        'prefix_lists',
+        'route_maps',
+        'aspath_lists',
+        'community_lists',
+    ]
 
     column_type: Literal['policy']
     column: Dict[str, Policy]

@@ -9,22 +9,22 @@ from .columns.bgp import BGPContainer
 from .columns.igp import IGPContainer
 
 COLUMN_TYPES = [
-        'device',
-        'firewall',
-        'policy',
-        'interface',
-        'bgp',
-        'igp',
-        ]
+    'device',
+    'firewall',
+    'policy',
+    'interface',
+    'bgp',
+    'igp',
+]
 
 RootContainer = Annotated[
-        Union[
-            DeviceContainer,     # device
-            FirewallContainer,   # firewall
-            PolicyContainer,     # policy
-            InterfaceContainer,  # interface
-            BGPContainer,        # bgp
-            IGPContainer,        # igp
-            ],
-            Body(discriminator='column_type')
-        ]
+    Union[
+        DeviceContainer,  # device
+        FirewallContainer,  # firewall
+        PolicyContainer,  # policy
+        InterfaceContainer,  # interface
+        BGPContainer,  # bgp
+        IGPContainer,  # igp
+    ],
+    Body(discriminator='column_type'),
+]

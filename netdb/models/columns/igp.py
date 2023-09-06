@@ -2,6 +2,7 @@ from ..base import BaseContainer, BaseColumnModel
 from typing import Literal, Dict, Optional, List
 from pydantic import Field
 
+
 class ISISInterface(BaseColumnModel):
     name: str
     passive: bool = False
