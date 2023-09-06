@@ -1,9 +1,9 @@
 import json
-from pydantic import BaseModel
 from typing import Union, Any
+from pydantic import BaseModel
 from starlette.responses import Response
 
-description = """
+DESCRIPTION = """
 Version 2 of the NetDB API. 🚀
 
 For more information visit [NetDB at Github](https://github.com/erikjseidel/netdb/)

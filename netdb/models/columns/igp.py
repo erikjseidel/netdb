@@ -1,6 +1,6 @@
-from ..base import BaseContainer, BaseColumnModel
 from typing import Literal, Dict, Optional, List
 from pydantic import Field
+from ..base import BaseContainer, BaseColumnModel
 
 
 class ISISInterface(BaseColumnModel):

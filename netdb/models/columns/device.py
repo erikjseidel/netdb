@@ -1,7 +1,7 @@
-from ..base import BaseContainer, BaseColumnModel
 from typing import Literal, Optional, Dict, List
-from pydantic import BaseModel, Field, Extra
 from ipaddress import IPv6Address, IPv4Address
+from pydantic import Field, Extra
+from ..base import BaseContainer, BaseColumnModel
 
 
 class DeviceCVars(BaseColumnModel):

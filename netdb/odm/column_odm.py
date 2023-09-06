@@ -6,9 +6,8 @@ from models.root import COLUMN_TYPES
 
 
 class ColumnODM:
-    _PROVIDE_ALL = False
-
-    _FILT = {}
+    __provide_all__ = False
+    __filter__ = {}
 
     def __init__(self, container=None, type=None):
         self.mongo_data = None
@@ -96,7 +95,7 @@ class ColumnODM:
         out = {}
 
         for element in self.mongo_data:
-            if element['weight'] < 1 and not _PROVIDE_ALL:
+            if element['weight'] < 1 and not self.__provide_all__:
                 continue
 
             flat = element.pop('flat', False)
@@ -161,13 +160,13 @@ class ColumnODM:
         return count
 
     def reload(self):
-        self._FILT = {'datasource': self.datasource}
+        self.__filter__ = {'datasource': self.datasource}
 
         if self.column_type != 'device':
             self._is_registered()
 
         self._to_mongo()
-        if self.mongo.reload(self.mongo_data, self._FILT):
+        if self.mongo.reload(self.mongo_data, self.__filter__):
             return self.column
 
         return None
@@ -180,7 +179,7 @@ class ColumnODM:
                 message='Invalid filter.',
             )
 
-        return self.mongo.delete_many(self._FILT)
+        return self.mongo.delete_many(self.__filter__)
 
     def replace(self):
         if self.column_type != 'device':
@@ -197,14 +196,14 @@ class ColumnODM:
 
     def load_mongo(self, filt=None):
         if filt:
-            self._FILT = filt
+            self.__filter__ = filt
 
-        self.mongo_data = self.mongo.read(self._FILT)
+        self.mongo_data = self.mongo.read(self.__filter__)
 
         return self
 
     def fetch(self, show_hidden=False):
-        self._PROVIDE_ALL = show_hidden
+        self.__provide_all__= show_hidden
         self._from_mongo()
 
         return self.column

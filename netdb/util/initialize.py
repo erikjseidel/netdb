@@ -1,5 +1,5 @@
-from .mongo_api import MongoAPI
 from config.defaults import DB_NAME
+from .mongo_api import MongoAPI
 
 DEFAULT_INDEX = [
     ('set_id', 1),
@@ -18,11 +18,8 @@ INDEXES = {
     'bgp': DEFAULT_INDEX,
 }
 
-WARNING = "Incompatible index found. Recommend removing this index manually."
-
-
 def initialize():
     for column, index in INDEXES.items():
-        result = MongoAPI('netdb', column).create_index(index)
+        MongoAPI(DB_NAME, column).create_index(index)
 
         # Needs proper logging.

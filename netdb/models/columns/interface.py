@@ -1,7 +1,7 @@
-from ..base import BaseContainer, BaseColumnModel
 from typing import Literal, Optional, Dict, List
-from pydantic import BaseModel, RootModel, Field, IPvAnyInterface, IPvAnyAddress, Extra
 from ipaddress import IPv4Address
+from pydantic import RootModel, Field, IPvAnyInterface, IPvAnyAddress
+from ..base import BaseContainer, BaseColumnModel
 
 
 class InterfaceAddress(BaseColumnModel):

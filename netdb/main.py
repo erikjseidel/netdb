@@ -1,12 +1,12 @@
-import util.initialize as init
-import util.api_resources as resources
-
 from typing import Optional
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, Response, status
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError, HTTPException
 from fastapi.encoders import jsonable_encoder
+
+import util.initialize as init
+import util.api_resources as resources
 from config.defaults import READ_ONLY
 from models.root import RootContainer, COLUMN_TYPES
 from odm.column_odm import ColumnODM
@@ -29,7 +29,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="NetDB API Version 2",
-    description=resources.description,
+    description=resources.DESCRIPTION,
     openapi_tags=resources.tags,
     lifespan=lifespan,
 )
@@ -102,7 +102,6 @@ def list_columns():
 @app.post('/validate', tags=['validate'])
 def validate_column(
     data: RootContainer,
-    response: Response,
 ):
     ColumnODM(data).validate()
 
@@ -136,7 +135,6 @@ def reload_column(
 )
 def get_column(
     column: str,
-    response: Response,
     datasource: Optional[str] = None,
     set_id: Optional[str] = None,
     device: Optional[str] = None,
@@ -172,12 +170,12 @@ def replace_elements(
             word = 'element'
 
         return NetDBReturn(
-            comment='{column} column: {count} {word} successfully replaced.'
+            comment=f'{data.column} column: {count} {word} successfully replaced.'
         )
 
     # Empty result. Nothing was replaced.
     response.status_code = status.HTTP_404_NOT_FOUND
-    return NetDBReturn(result=False, comment='{column} column: nothing replaced.')
+    return NetDBReturn(result=False, comment='{data.column} column: nothing replaced.')
 
 
 @app.delete('/column/{column}', tags=['column'])
@@ -202,7 +200,7 @@ def delete_elements(
     if count == 1:
         word = 'element'
 
-    return NetDBReturn(comment='{column} column: {count} {word} deleted.')
+    return NetDBReturn(comment=f'{column} column: {count} {word} deleted.')
 
 
 @app.get(

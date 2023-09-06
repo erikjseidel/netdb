@@ -1,19 +1,16 @@
-from pymongo import MongoClient, ReadPreference, errors
-from pymongo.errors import *
+from pymongo import MongoClient, ReadPreference
 from config.defaults import TRANSACTIONS, MONGO_URL
-from util.exception import NetDBException
 
 
 class MongoAPI:
     def __init__(self, database, collection):
         if TRANSACTIONS:
-            # Transactions implies a replica set. Read from first available (which should just be local instance)
+            # Transactions implies a replica set. Read from first available (which should
+            # just be local instance)
             self.client = MongoClient(MONGO_URL, read_preference=ReadPreference.NEAREST)
         else:
             self.client = MongoClient(MONGO_URL)
 
-        database = database
-        collection = collection
         cursor = self.client[database]
         self.collection = cursor[collection]
 

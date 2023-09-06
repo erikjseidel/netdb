@@ -1,7 +1,7 @@
-from ..base import BaseContainer, BaseColumnModel
 from typing import Literal, Optional, Dict, List
-from pydantic import Field, IPvAnyAddress, IPvAnyNetwork
 from ipaddress import IPv4Address
+from pydantic import Field, IPvAnyAddress, IPvAnyNetwork
+from ..base import BaseContainer, BaseColumnModel
 
 
 class BGPOptions(BaseColumnModel):
