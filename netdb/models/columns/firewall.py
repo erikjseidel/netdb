@@ -15,7 +15,7 @@ class FirewallOptions(BaseColumnModel):
     syn_cookies: Optional[str] = Field(None, alias='syn-cookies')
     twa_hazards_protection: Optional[str] = Field(None, alias='twa-hazards-protection')
     ip_src_route: Optional[str] = Field(None, alias='ip-src-route')
-    receive_redirect: Optional[str] = Field(None, alias='receive-redirect')
+    receive_redirects: Optional[str] = Field(None, alias='receive-redirects')
 
 
 class FirewallMSSClamp(BaseColumnModel):
