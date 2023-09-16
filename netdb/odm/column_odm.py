@@ -203,7 +203,7 @@ class ColumnODM:
         return self
 
     def fetch(self, show_hidden=False):
-        self.__provide_all__= show_hidden
+        self.__provide_all__ = show_hidden
         self._from_mongo()
 
         return self.column

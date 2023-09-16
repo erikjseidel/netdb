@@ -18,6 +18,7 @@ INDEXES = {
     'bgp': DEFAULT_INDEX,
 }
 
+
 def initialize():
     for column, index in INDEXES.items():
         MongoAPI(DB_NAME, column).create_index(index)

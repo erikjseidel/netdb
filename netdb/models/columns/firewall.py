@@ -41,6 +41,12 @@ class FirewallZonePolicy(BaseColumnModel):
     default_action: Literal['accept', 'drop']
 
 
+class InterfaceGroup(BaseColumnModel):
+    description: Optional[str] = None
+    interfaces: Optional[List[str]] = None
+    include: Optional[str] = None
+
+
 class FirewallGroup(BaseColumnModel):
     type: Literal['network']
     networks: List[IPvAnyInterface]
@@ -51,17 +57,26 @@ class FirewallGroupBase(BaseColumnModel):
     ipv6: Optional[Dict[str, FirewallGroup]] = None
 
 
+class FirewallPolicyInterfaces(BaseColumnModel):
+    ingress: Optional[str] = None
+    egress: Optional[str] = None
+
+
 class FirewallPolicyTarget(BaseColumnModel):
     network_group: Optional[str] = None
     port: Optional[List[int]] = None
 
 
 class FirewallPolicyRule(BaseColumnModel):
-    action: Literal['accept', 'drop']
+    action: Literal['accept', 'drop', 'jump']
     state: Optional[List[Literal['established', 'related']]] = None
     source: Optional[FirewallPolicyTarget] = None
     destination: Optional[FirewallPolicyTarget] = None
     protocol: Optional[str] = None
+
+    # Vyos 1.4
+    policy: Optional[str] = None
+    interfaces: Optional[FirewallPolicyInterfaces] = None
 
 
 class FirewallPolicy(BaseColumnModel):
@@ -81,6 +96,10 @@ class Firewall(BaseColumnModel):
     mss_clamp: Optional[FirewallMSSClamp] = None
     zone_policy: Optional[Dict[str, FirewallZonePolicy]] = None
     options: FirewallOptions
+
+    # Vyos 1.4
+    interfaces: Optional[Dict[str, InterfaceGroup]] = None
+    policy_base: Optional[FirewallGroupBase] = None
 
 
 class FirewallContainer(BaseContainer):
