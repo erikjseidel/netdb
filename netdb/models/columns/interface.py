@@ -35,9 +35,11 @@ class Interface(BaseColumnModel):
     type: Literal['ethernet', 'vlan', 'lacp', 'dummy', 'gre', 'l2gre']
     disabled: bool = False
     offload: bool = False
+    use_dhcp: bool = False
     description: Optional[str] = None
     interface: Optional[str] = None
     mac_address: Optional[str] = None
+    vrf: Optional[str] = None
     mtu: Optional[int] = Field(None, ge=1280, le=9192)
     ttl: Optional[int] = Field(None, ge=1, le=255)
     key: Optional[IPv4Address] = None
