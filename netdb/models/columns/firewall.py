@@ -99,7 +99,7 @@ class Firewall(BaseColumnModel):
 
     # Vyos 1.4
     interfaces: Optional[Dict[str, InterfaceGroup]] = None
-    policy_base: Optional[FirewallGroupBase] = None
+    policy_base: Optional[FirewallPolicyBase] = None
 
 
 class FirewallContainer(BaseContainer):
