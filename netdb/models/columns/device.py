@@ -1,5 +1,5 @@
 from typing import Literal, Optional, Dict, List
-from ipaddress import IPv6Address, IPv4Address
+from ipaddress import IPv6Address, IPv4Address, IPv4Network
 from pydantic import Field, Extra, IPvAnyAddress, IPvAnyNetwork
 from ..base import BaseContainer, BaseColumnModel
 
@@ -25,7 +25,8 @@ class DHCPRange(BaseColumnModel):
 
 
 class DHCPServer(BaseColumnModel):
-    server_ip: IPv4Address
+    router_ip: IPv4Address
+    network: IPv4Network
     ranges: List[DHCPRange]
 
 
