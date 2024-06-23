@@ -1,6 +1,6 @@
 from typing import Literal, Optional, Dict, List
 from ipaddress import IPv6Address, IPv4Address
-from pydantic import Field, Extra
+from pydantic import Field, Extra, IPvAnyAddress, IPvAnyNetwork
 from ..base import BaseContainer, BaseColumnModel
 
 
@@ -10,9 +10,23 @@ class DeviceCVars(BaseColumnModel):
     iso: Optional[str] = None
     router_id: IPv4Address
     local_asn: int = Field(ge=1, lt=2**32)
+    primary_ipv4: IPv4Address
+    primary_ipv6: IPv6Address
+    dns_servers: List[IPvAnyAddress]
+    znsl_prefixes: List[IPvAnyNetwork]
 
     class Config:
         extra = Extra.allow
+
+
+class DHCPRange(BaseColumnModel):
+    start_address: IPv4Address
+    end_address: IPv4Address
+
+
+class DHCPServer(BaseColumnModel):
+    server_ip: IPv4Address
+    ranges: List[DHCPRange]
 
 
 class Device(BaseColumnModel):
@@ -22,6 +36,7 @@ class Device(BaseColumnModel):
     node_name: str
     meta: Optional[dict] = None
     cvars: DeviceCVars
+    dhcp_servers: Optional[List[DHCPServer]] = None
 
 
 class DeviceContainer(BaseContainer):
