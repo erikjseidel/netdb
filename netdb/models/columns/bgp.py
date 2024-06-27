@@ -61,6 +61,8 @@ class BGPPeerGroup(BaseColumnModel):
 class BGPNeighbor(BGPPeerGroup):
     peer_group: Optional[str] = None
     timers: Optional[BGPTimers] = None
+    reject_in: Optional[bool] = None
+    reject_out: Optional[bool] = None
 
 
 class BGP(BaseColumnModel):
