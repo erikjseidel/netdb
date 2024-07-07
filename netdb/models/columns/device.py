@@ -1,6 +1,6 @@
 from typing import Literal, Optional, Dict, List
 from ipaddress import IPv6Address, IPv4Address, IPv4Network
-from pydantic import ConfigDict, Field, Extra, IPvAnyAddress, IPvAnyNetwork
+from pydantic import ConfigDict, Field, IPvAnyAddress, IPvAnyNetwork
 from ..base import BaseContainer, BaseColumnModel
 
 

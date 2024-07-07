@@ -1,4 +1,4 @@
-from typing import Union, Self
+from typing import Union
 from fastapi.encoders import jsonable_encoder
 from config.defaults import DB_NAME
 from models.root import RootContainer, COLUMN_TYPES
@@ -10,9 +10,6 @@ class ColumnODM:
 
     # If set then elements with weight < 1 are presented as well
     __provide_all__ = False
-
-    # In mongodb filter dict format. Used to filter mongodb queries.
-    __filter__ = {}
 
     def __init__(self, container: RootContainer = None, column_type: str = None):
         """
@@ -36,12 +33,10 @@ class ColumnODM:
         self.column_type = None
 
         if container:
+            self.container = container
             self.column_type = container.column_type
-            self.flat = container.flat
-            self.categories = container.categories
-            self.datasource = container.datasource
-            self.weight = container.weight
             self.column = jsonable_encoder(container.column, exclude_none=True)
+            self._generate_mongo_documents()
 
         elif column_type:
             self.column_type = column_type
@@ -55,18 +50,18 @@ class ColumnODM:
         # Initialize the MongoDB driver
         self.mongo = MongoAPI(DB_NAME, self.column_type)
 
-    def _to_mongo(self) -> None:
+    def _generate_mongo_documents(self) -> None:
         """
         Convert Pydantic serialized column dict formated data into MongoDB document format
         which can then be loaded into MongoDB.
         """
         out = []
 
-        datasource = self.datasource
-        weight = self.weight
+        datasource = self.container.datasource
+        weight = self.container.weight
 
         for set_id, set_data in self.column.items():
-            if self.flat:
+            if self.container.flat:
                 #
                 # In case of flat columns (where each set identified by set_id is stored
                 # in a single document) their is not need for further looping within the
@@ -85,7 +80,7 @@ class ColumnODM:
                 continue
 
             for set_element_id, set_element_data in set_data.items():
-                if set_element_id in self.categories:
+                if set_element_id in self.container.categories:
                     #
                     # Column types with categories further divide their set data
                     # into a number of categories (e.g. 'neighbors' and 'peer_groups'
@@ -140,7 +135,7 @@ class ColumnODM:
 
         self.mongo_data = out
 
-    def _from_mongo(self) -> None:
+    def _generate_column(self) -> None:
         """
         Convert MongoDB documents into column formated dict data.
         """
@@ -240,37 +235,43 @@ class ColumnODM:
 
         return True
 
-    def _replace(self) -> int:
+    def fetch(self, filt: Union[dict, None] = None, show_hidden: bool = False) -> dict:
         """
-        Upsert existing documents with new ones. Documents should already be loaded
-        into self.mongo_data by self._to_mongo().
+        Pull column ducuments from MongoDB and convert them into a column formatted
+        structured dict data and return it to caller.
+
+        filt: ``None``
+            Filter the query using a MongoDB compatable dict based filter
+
+        show_hidden: ``False``
+            Public wrapper around `self.__provide_all__` (see above for more details)
 
         """
-        count = 0
+        filt = filt or {}
 
-        for document in self.mongo_data:
-            if self.mongo.replace_one(document):
-                count += 1
+        self.mongo_data = self.mongo.read(filt)
 
-        return count
+        self.__provide_all__ = show_hidden
+        self._generate_column()
+
+        return self.column
 
     def reload(self) -> Union[dict, None]:
         """
         Replace entire column or parts of column filtered by datasource with new data.
         Documents should already be loaded into into self.mongo_data by
-        self._to_mongo().
+        self._generate_mongo_documents().
 
         This method is used by various SoT backends to manage 'their' portions of the
         configuration data column (as identified by 'datasource').
 
         """
-        self.__filter__ = {'datasource': self.datasource}
+        filt = {'datasource': self.container.datasource}
 
         if self.column_type != 'device':
             self._is_registered()
 
-        self._to_mongo()
-        if self.mongo.reload(self.mongo_data, self.__filter__):
+        if self.mongo.reload(self.mongo_data, filt):
             return self.column
 
         return None
@@ -278,7 +279,7 @@ class ColumnODM:
     def delete(self, filt: dict) -> int:
         """
         Delete documents from MongoDB filtered by filter. Documents should already be
-        loaded into self.mongo_data by self._to_mongo().
+        loaded into self.mongo_data by self._generate_mongo_documents().
 
         """
         if not filt:
@@ -288,19 +289,23 @@ class ColumnODM:
                 message='Invalid filter.',
             )
 
-        return self.mongo.delete_many(self.__filter__)
+        return self.mongo.delete_many(filt)
 
     def replace(self) -> int:
         """
-        Wrapper around self._replace(). Calls self._registered() first to verify that
-        the set_id in question is associated with a device set in the device column.
+        Upsert existing documents with new ones. Documents should already be loaded
+        into self.mongo_data by self._generate_mongo_documents().
 
         """
         if self.column_type != 'device':
             self._is_registered()
 
-        self._to_mongo()
-        return self._replace()
+        count = 0
+        for document in self.mongo_data:
+            if self.mongo.replace_one(document):
+                count += 1
+
+        return count
 
     def validate(self) -> bool:
         """
@@ -313,32 +318,3 @@ class ColumnODM:
             self._is_registered()
 
         return True
-
-    def load_mongo(self, filt: Union[dict, None] = None) -> Self:
-        """
-        Pull column data for a column from MongoDB and store it in self.mongo_data
-
-        filt: ``None``
-            Filter the query using a MongoDB compatable dict based filter
-
-        """
-        if filt:
-            self.__filter__ = filt
-
-        self.mongo_data = self.mongo.read(self.__filter__)
-
-        return self
-
-    def fetch(self, show_hidden: bool = False) -> dict:
-        """
-        Convert MongoDB documents stored in self.mongo_data into column formatted
-        structured dict data and return it to caller.
-
-        show_hidden: ``False``
-            Public wrapper around `self.__provide_all__` (see above for more details)
-
-        """
-        self.__provide_all__ = show_hidden
-        self._from_mongo()
-
-        return self.column
