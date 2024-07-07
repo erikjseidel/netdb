@@ -75,5 +75,5 @@ class BGP(BaseColumnModel):
 class BGPContainer(BaseContainer):
     __categories__ = ['peer_groups', 'neighbors']
 
-    column_type: Literal['bgp']
+    column_type: Literal['bgp'] = 'bgp'
     column: Dict[str, BGP]

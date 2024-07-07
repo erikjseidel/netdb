@@ -58,5 +58,5 @@ class InterfaceRoot(RootModel):
 
 
 class InterfaceContainer(BaseContainer):
-    column_type: Literal['interface']
+    column_type: Literal['interface'] = 'interface'
     column: Dict[str, InterfaceRoot]

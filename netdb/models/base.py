@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel, ConfigDict, Extra
 
 
 class BaseColumnModel(BaseModel):
@@ -9,8 +9,7 @@ class BaseColumnModel(BaseModel):
 
     """
 
-    class Config:
-        extra = Extra.forbid
+    model_config = ConfigDict(extra='forbid')
 
 
 class BaseContainer(BaseColumnModel):

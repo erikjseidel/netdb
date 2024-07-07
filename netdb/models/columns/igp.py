@@ -37,5 +37,5 @@ class IGPRoot(BaseColumnModel):
 
 
 class IGPContainer(BaseContainer):
-    column_type: Literal['igp']
+    column_type: Literal['igp'] = 'igp'
     column: Dict[str, IGPRoot]

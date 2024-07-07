@@ -265,7 +265,7 @@ def replace_elements(
 ) -> NetDBReturn:
     """
     Replace elements (or set in the case of 'flat' columns).
- 
+
     data:
         Column container with the column data to be reloaded.
 

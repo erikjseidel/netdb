@@ -109,5 +109,5 @@ class FirewallContainer(BaseContainer):
         'zone_policy',
     ]
 
-    column_type: Literal['firewall']
+    column_type: Literal['firewall'] = 'firewall'
     column: Dict[str, Firewall]

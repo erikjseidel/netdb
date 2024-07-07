@@ -90,5 +90,5 @@ class PolicyContainer(BaseContainer):
         'community_lists',
     ]
 
-    column_type: Literal['policy']
+    column_type: Literal['policy'] = 'policy'
     column: Dict[str, Policy]

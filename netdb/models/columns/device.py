@@ -1,6 +1,6 @@
 from typing import Literal, Optional, Dict, List
 from ipaddress import IPv6Address, IPv4Address, IPv4Network
-from pydantic import Field, Extra, IPvAnyAddress, IPvAnyNetwork
+from pydantic import ConfigDict, Field, Extra, IPvAnyAddress, IPvAnyNetwork
 from ..base import BaseContainer, BaseColumnModel
 
 
@@ -15,8 +15,7 @@ class DeviceCVars(BaseColumnModel):
     dns_servers: List[IPvAnyAddress]
     znsl_prefixes: List[IPvAnyNetwork]
 
-    class Config:
-        extra = Extra.allow
+    model_config = ConfigDict(extra='allow')
 
 
 class DHCPRange(BaseColumnModel):
@@ -43,5 +42,5 @@ class Device(BaseColumnModel):
 class DeviceContainer(BaseContainer):
     __flat__ = True
 
-    column_type: Literal['device']
+    column_type: Literal['device'] = 'device'
     column: Dict[str, Device]

@@ -1,0 +1,7 @@
+FROM python:3.11
+WORKDIR /netdb/app
+COPY ./requirements-pytest.txt /netdb/requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /netdb/requirements.txt
+COPY ./netdb /netdb/app
+COPY ./pytest.ini /netdb/app
+CMD ["pytest", "-vv"]
