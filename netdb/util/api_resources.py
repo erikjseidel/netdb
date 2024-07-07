@@ -10,6 +10,7 @@ For more information visit [NetDB at Github](https://github.com/erikjseidel/netd
 """
 
 
+# Used by FastAPI for docs / redoc generation
 tags = [
     {
         "name": "list_columns",
@@ -36,35 +37,61 @@ ERR_READONLY = {
 
 
 class NetDBReturn(BaseModel):
+    """
+    A netdb return type which includes all the data expected to be fund in a return
+    to a netdb consumer.
+
+    """
+
     result: bool = True
     error: bool = False
     out: Union[dict, list, None] = None
     comment: Union[str, None] = None
 
 
-def generate_filter(
-    datasource=None, set_id=None, category=None, family=None, element_id=None
-):
-    filt = {}
+def generate_filter(*args, **kwargs) -> dict:
+    """
+    A helper function to create MongoDB compatible query filters. Filters for
+    the netdb standard document keys, i.e. the following keys:
 
-    if datasource:
-        filt['datasource'] = datasource
-    if set_id:
-        filt['set_id'] = set_id
-    if category:
-        filt['category'] = category
-    if family:
-        filt['family'] = family
-    if element_id:
-        filt['element_id'] = element_id
+    datasource: ``None``
+        The datasource e.g. SoT with witch the netdb document is associated
 
-    return filt
+    set_id: ``None``
+        The top level sub-dict within a netdb column dict
+
+    category: ``None``
+        The optional category sub-dict of set_id in certain netdb columns
+
+    family: ``None``
+        The optional category sub-dict of category dicts in certain netdb columns
+
+    element_id: ``None``
+        The element_id inner-most dict in certain netdb columns
+
+    """
+    key_names = ['datasource', 'set_id', 'category', 'family', 'element_id']
+
+    ret = {k: v for k, v in dict(zip(key_names, args)).items() if v}
+    ret.update(kwargs)
+
+    return ret
 
 
 class PrettyJSONResponse(Response):
+    """
+    Class to implement a FastAPI Response. Used to return a 'prettified' JSON
+    response to the consumer.
+
+    """
+
     media_type = "application/json"
 
     def render(self, content: Any) -> bytes:
+        """
+        Implements FastAPI Response.render(). Returns 'prettified' JSON output.
+
+        """
         return json.dumps(
             content,
             ensure_ascii=False,
