@@ -22,6 +22,11 @@ from util.api_resources import (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    """
+    Called at API startup time. Initialize the database (i.e. make sure indexes are installed)
+    unless started in read only mode.
+
+    """
     if not READ_ONLY:
         init.initialize()
     yield
@@ -37,6 +42,17 @@ app = FastAPI(
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """
+    NetDB API error returns should have the same structure as normal returns. This handler
+    implements that requirement in the case of Pydantic validation exceptions.
+
+    request:
+        The HTTP request context
+
+    exc:
+        The incoming Pydantic validation exception
+
+    """
     errors = exc.errors()
     response = jsonable_encoder(
         NetDBReturn(
@@ -53,6 +69,17 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 @app.exception_handler(404)
 async def not_found_exception_handler(request: Request, exc: HTTPException):
+    """
+    NetDB API error returns should have the same structure as normal returns. This handler
+    implements that requirement in the case of HTTP 404 / not found errors.
+
+    request:
+        The HTTP request context
+
+    exc:
+        The incoming FastAPI HTTP 404 exception
+
+    """
     response = jsonable_encoder(
         NetDBReturn(
             result=False,
@@ -67,6 +94,17 @@ async def not_found_exception_handler(request: Request, exc: HTTPException):
 
 @app.exception_handler(NetDBException)
 async def netdb__exception_handler(request: Request, exc: NetDBException):
+    """
+    NetDB API error returns should have the same structure as normal returns. This handler
+    implements that requirement in the case a NetDBException is thrown.
+
+    request:
+        The HTTP request context
+
+    exc:
+        The incoming NetDB exception
+
+    """
     response = jsonable_encoder(
         NetDBReturn(
             result=False,
@@ -80,7 +118,11 @@ async def netdb__exception_handler(request: Request, exc: NetDBException):
 
 
 @app.get("/")
-def read_root():
+def read_root() -> dict:
+    """
+    API root handler. Simply returns API name and status=up
+
+    """
     return {
         'name': 'NetDB API version 2',
         'status': 'up',
@@ -92,7 +134,11 @@ def read_root():
     tags=['list_columns'],
     response_class=PrettyJSONResponse,
 )
-def list_columns():
+def list_columns() -> NetDBReturn:
+    """
+    Return a list of available columns.
+
+    """
     return NetDBReturn(
         out=COLUMN_TYPES,
         comment='Available NetDB columns.',
@@ -102,7 +148,18 @@ def list_columns():
 @app.post('/validate', tags=['validate'])
 def validate_column(
     data: RootContainer,
-):
+) -> NetDBReturn:
+    """
+    Validate column data. Can be used for dry runs before calling reload / add
+    endpoints (which will also validate before adding.
+
+    Most validation is already done by FastAPI / Pydantic by the time that
+    control reaches this point.
+
+    data:
+        Column container with the column data to be validated.
+
+    """
     ColumnODM(data).validate()
 
     return NetDBReturn(
@@ -114,7 +171,21 @@ def validate_column(
 def reload_column(
     data: RootContainer,
     response: Response,
-):
+) -> NetDBReturn:
+    """
+    Replace entire column or parts of column filtered by datasource with new data.
+
+    This endpoint is used by various SoT backends to manage 'their' portions of the
+    configuration data column (as identified by the container  'datasource'
+    attribute).
+
+    data:
+        Column container with the column data to be reloaded.
+
+    response:
+        HTTP response context passed in by FastAPI
+
+    """
     if READ_ONLY:
         response.status_code = status.HTTP_403_NOT_ALLOWED
         return ERR_READONLY
@@ -142,14 +213,47 @@ def get_column(
     family: Optional[str] = None,
     element_id: Optional[str] = None,
     show_hidden: bool = False,
-):
+) -> NetDBReturn:
+    """
+    Get a column. Optionally filter the results using the following keys:
+
+    column:
+        Name of column to query (e.g. `bgp')
+
+    datasource: ``None``
+        Data source to query e.g. `netbox'
+
+    set_id: ``None``
+        Filter  query by `set_id' (this aligns with device name)
+
+    device: ``None``
+        Same as `set_id' key. Automatically uppercases input.
+
+    category: ``None``
+        Filter query by `category' key
+
+    family: ``None``
+        Filter query by `family' key
+
+    element_id: ``None``
+        Filter query by `element_id' key
+
+    show_hidden: ``False``
+        Return 'hidden' (i.e. weight < 1) elements
+
+    Other arguments:
+
+    response:
+        HTTP response context passed in by FastAPI
+
+    """
     # Shortcut for set_id. Only using uppercase device names for now.
     if device:
         set_id = str(device).upper()
 
     filt = generate_filter(datasource, set_id, category, family, element_id)
 
-    out = ColumnODM(type=column).load_mongo(filt).fetch(show_hidden)
+    out = ColumnODM(column_type=column).load_mongo(filt).fetch(show_hidden)
 
     return NetDBReturn(out=out, comment=f'Column data for {column} column.')
 
@@ -158,7 +262,17 @@ def get_column(
 def replace_elements(
     data: RootContainer,
     response: Response,
-):
+) -> NetDBReturn:
+    """
+    Replace elements (or set in the case of 'flat' columns).
+ 
+    data:
+        Column container with the column data to be reloaded.
+
+    response:
+        HTTP response context passed in by FastAPI
+
+    """
     if READ_ONLY:
         response.status_code = status.HTTP_403_NOT_ALLOWED
         return ERR_READONLY
@@ -187,14 +301,41 @@ def delete_elements(
     category: Optional[str] = None,
     family: Optional[str] = None,
     element_id: Optional[str] = None,
-):
+) -> NetDBReturn:
+    """
+    Delete elements from a column. Delete column elements matching the following keys:
+
+    column:
+        Name of column to query (e.g. `bgp')
+
+    datasource: ``None``
+        Data source e.g. `netbox'
+
+    set_id: ``None``
+        Match by `set_id'
+
+    category: ``None``
+        Match by `category'
+
+    family: ``None``
+        Match by `family'
+
+    element_id: ``None``
+        Match by `element_id'
+
+    Other arguments:
+
+    response:
+        HTTP response context passed in by FastAPI
+
+    """
     if READ_ONLY:
         response.status_code = status.HTTP_403_NOT_ALLOWED
         return ERR_READONLY
 
     filt = generate_filter(datasource, set_id, category, family, element_id)
 
-    count = ColumnODM(type=column).delete(filt)
+    count = ColumnODM(column_type=column).delete(filt)
 
     word = 'elements'
     if count == 1:
@@ -212,10 +353,26 @@ def get_column_set(
     column: str,
     set_id: str,
     response: Response,
-):
+) -> NetDBReturn:
+    """
+    Get a single set from a column identified by set_id.
+
+    column:
+        Name of column to query (e.g. `bgp')
+
+    set_id:
+        Set ID of set to query (this aligns with device name)
+
+    response:
+        HTTP response context passed in by FastAPI
+
+    """
+
+    # set_id is the same as device name and device names are capitalized. So
+    # capitalize anything that comes in.
     filt = {'set_id': set_id.upper()}
 
-    out = ColumnODM(type=column).load_mongo(filt).fetch()
+    out = ColumnODM(column_type=column).load_mongo(filt).fetch()
     if not out:
         response.status_code = status.HTTP_404_NOT_FOUND
 
