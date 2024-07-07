@@ -635,6 +635,5 @@ disable=import-error,
         missing-module-docstring,
         too-few-public-methods,
         missing-class-docstring,
-        dangerous-default-value,
         redefined-outer-name,
         unused-argument
