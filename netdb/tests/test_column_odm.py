@@ -375,8 +375,8 @@ def test_column_odm_reload(container, datasource, documents):
     odm = column_odm.ColumnODM(container=container)
     odm.reload()
 
-    assert odm.mongo.filter == {'datasource': datasource}  # pylint: disable=E1101
-    assert odm.mongo.documents == documents  # pylint: disable=E1101
+    assert odm.mongo.filter == {'datasource': datasource}
+    assert odm.mongo.documents == documents
 
 
 @pytest.mark.parametrize(
@@ -495,7 +495,7 @@ def test_column_odm_replace(container, documents, count):
     odm = column_odm.ColumnODM(container=container)
     out = odm.replace()
 
-    assert odm.mongo.documents == documents  # pylint: disable=E1101
+    assert odm.mongo.documents == documents
     assert out == count
 
 
@@ -565,7 +565,7 @@ def test_column_odm_delete(column_type, filt):
     odm = column_odm.ColumnODM(column_type=column_type)
     odm.delete(filt)
 
-    assert odm.mongo.filter == filt  # pylint: disable=E1101
+    assert odm.mongo.filter == filt
 
 
 def test_column_odm_delete_no_filt_fail():
