@@ -253,7 +253,7 @@ def get_column(
 
     filt = generate_filter(datasource, set_id, category, family, element_id)
 
-    out = ColumnODM(column_type=column).load_mongo(filt).fetch(show_hidden)
+    out = ColumnODM(column_type=column).fetch(filt, show_hidden)
 
     return NetDBReturn(out=out, comment=f'Column data for {column} column.')
 
@@ -372,7 +372,7 @@ def get_column_set(
     # capitalize anything that comes in.
     filt = {'set_id': set_id.upper()}
 
-    out = ColumnODM(column_type=column).load_mongo(filt).fetch()
+    out = ColumnODM(column_type=column).fetch(filt)
     if not out:
         response.status_code = status.HTTP_404_NOT_FOUND
 

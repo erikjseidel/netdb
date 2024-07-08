@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, Extra
+from pydantic import BaseModel, ConfigDict
 
 
 class BaseColumnModel(BaseModel):

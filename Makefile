@@ -1,8 +1,8 @@
 export WORKING_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+export BLACK_IMAGE := pyfound/black
 export LINT_IMAGE := erikjseidel/pylint-docker
 export APP_DIR := /netdb
 export PYLINTRC := /var/cache/.pylintrc
-export BLACK_IMAGE := pyfound/black
 
 .PHONY: format
 format:
