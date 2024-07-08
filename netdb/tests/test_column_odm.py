@@ -1,4 +1,3 @@
-from typing import Union
 from unittest.mock import MagicMock, patch
 from pprint import pprint
 
@@ -16,64 +15,14 @@ from models.columns.policy import PolicyContainer
 
 from util.exception import NetDBException
 
-
-class MockMongoAPI:
-
-    def __init__(self, database: str, collection: str):
-        self.column_type = collection
-        self.filter = None
-        self.documents = []
-
-    def read(self, query: Union[dict, None] = None) -> list:
-        """
-        Mock MongoAPI read returns for valid column types.
-        """
-        match self.column_type:
-            case 'device':
-                return device.mock_standard_device_documents()
-            case 'interface':
-                return interface.mock_standard_interface_documents()
-            case 'igp':
-                return igp.mock_standard_igp_documents()
-            case 'bgp':
-                return bgp.mock_standard_bgp_documents()
-            case 'firewall':
-                return firewall.mock_standard_firewall_documents()
-            case 'policy':
-                return policy.mock_standard_policy_documents()
-
-    def reload(self, documents: list, filt: dict) -> bool:
-        """
-        Mock MongoAPI reload
-        """
-        self.filter = filt
-        self.documents = documents
-
-        return True
-
-    def replace_one(self, document: dict) -> bool:
-        """
-        Mock MongoAPI replace
-        """
-        self.documents.append(document)
-
-        return True
-
-    def delete_many(self, filt: dict) -> int:
-        """
-        Mock MongoAPI delete
-        """
-        self.filter = filt
-
-        return 0
-
+from mocked_utils import mock_mongo_api
 
 mock_defaults = MagicMock(DB_NAME='netdb', TRANSACTIONS=True, READ_ONLY=False)
 
 with patch.dict(
     'sys.modules',
     {
-        'util.mongo_api': MagicMock(MongoAPI=MockMongoAPI),
+        'util.mongo_api': mock_mongo_api,
         'config.defaults': mock_defaults,
     },
 ):
@@ -153,7 +102,7 @@ def test_column_odm_container_init(column_type, container):
 
     assert odm.column_type == column_type
     assert odm.column == jsonable_encoder(container.column, exclude_none=True)
-    assert isinstance(odm.mongo, MockMongoAPI)
+    assert isinstance(odm.mongo, mock_mongo_api.MongoAPI)
 
 
 @pytest.mark.parametrize(
@@ -167,7 +116,7 @@ def test_column_odm_read_init(column_type):
     odm = column_odm.ColumnODM(column_type=column_type)
 
     assert odm.column_type == column_type
-    assert isinstance(odm.mongo, MockMongoAPI)
+    assert isinstance(odm.mongo, mock_mongo_api.MongoAPI)
 
 
 def test_column_odm_read_init_bad_column():

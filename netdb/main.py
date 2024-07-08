@@ -284,7 +284,7 @@ def replace_elements(
             word = 'element'
 
         return NetDBReturn(
-            comment=f'{data.column} column: {count} {word} successfully replaced.'
+            comment=f'{data.column_type} column: {count} {word} successfully replaced.'
         )
 
     # Empty result. Nothing was replaced.
