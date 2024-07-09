@@ -15,17 +15,27 @@ class MongoAPI:
         """
         match self.column_type:
             case 'device':
-                return device.mock_standard_device_documents()
+                documents = device.mock_standard_device_documents()
             case 'interface':
-                return interface.mock_standard_interface_documents()
+                documents = interface.mock_standard_interface_documents()
             case 'igp':
-                return igp.mock_standard_igp_documents()
+                documents = igp.mock_standard_igp_documents()
             case 'bgp':
-                return bgp.mock_standard_bgp_documents()
+                documents = bgp.mock_standard_bgp_documents()
             case 'firewall':
-                return firewall.mock_standard_firewall_documents()
+                documents = firewall.mock_standard_firewall_documents()
             case 'policy':
-                return policy.mock_standard_policy_documents()
+                documents = policy.mock_standard_policy_documents()
+
+        if query:
+            # Simulate a mongo filtered return by, well, filtering the return.
+            return [
+                document
+                for document in documents
+                if all(document.get(k) == v for k, v in query.items())
+            ]
+
+        return documents
 
     def reload(self, documents: list, filt: dict) -> bool:
         """
