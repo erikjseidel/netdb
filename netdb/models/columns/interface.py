@@ -36,6 +36,7 @@ class Interface(BaseColumnModel):
     disabled: bool = False
     offload: bool = False
     use_dhcp: bool = False
+    ipv6_autoconf: bool = False
     description: Optional[str] = None
     interface: Optional[str] = None
     mac_address: Optional[str] = None

@@ -144,6 +144,7 @@ def test_get_column_root():
                         'bond0': {
                             'description': 'Trunk Interface',
                             'disabled': False,
+                            'ipv6_autoconf': False,
                             'lacp': {
                                 'hash_policy': 'layer3+4',
                                 'members': ['eth1', 'eth2'],
