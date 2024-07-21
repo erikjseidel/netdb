@@ -200,6 +200,7 @@ def mock_standard_interface_documents():
             'data': {
                 'description': 'Trunk Interface',
                 'disabled': False,
+                'ipv6_autoconf': False,
                 'lacp': {
                     'hash_policy': 'layer3+4',
                     'members': ['eth1', 'eth2'],
@@ -238,6 +239,7 @@ def mock_standard_interface_documents():
                 },
                 'description': 'Private VLAN',
                 'disabled': False,
+                'ipv6_autoconf': False,
                 'meta': {
                     'netbox': {
                         'id': 2,
@@ -284,6 +286,7 @@ def mock_standard_interface_documents():
                 },
                 'description': 'Management VLAN',
                 'disabled': False,
+                'ipv6_autoconf': False,
                 'meta': {
                     'netbox': {
                         'id': 4,
@@ -333,6 +336,7 @@ def mock_standard_interface_documents():
                 'firewall': {
                     'local': {'ipv4': 'LOOPBACK-LOCAL', 'ipv6': '6-LOOPBACK-LOCAL'}
                 },
+                'ipv6_autoconf': False,
                 'meta': {
                     'netbox': {
                         'id': 5,
@@ -353,6 +357,7 @@ def mock_standard_interface_documents():
             'data': {
                 'description': 'LACP Member: bond0',
                 'disabled': False,
+                'ipv6_autoconf': False,
                 'mac_address': '00:00:12:23:45:67',
                 'meta': {
                     'netbox': {
@@ -374,6 +379,7 @@ def mock_standard_interface_documents():
             'data': {
                 'description': 'LACP Member: bond0',
                 'disabled': False,
+                'ipv6_autoconf': False,
                 'mac_address': '00:00:12:23:45:68',
                 'meta': {
                     'netbox': {
@@ -419,6 +425,7 @@ def mock_standard_interface_documents():
                 },
                 'description': 'router1:tun0:router2:tun0',
                 'disabled': False,
+                'ipv6_autoconf': False,
                 'interface': 'bond0.100',
                 'meta': {
                     'netbox': {
@@ -452,6 +459,7 @@ def mock_standard_interface_column():
             'bond0': {
                 'description': 'Trunk Interface',
                 'disabled': False,
+                'ipv6_autoconf': False,
                 'lacp': {
                     'hash_policy': 'layer3+4',
                     'members': ['eth1', 'eth2'],
@@ -485,6 +493,7 @@ def mock_standard_interface_column():
                 },
                 'description': 'Private VLAN',
                 'disabled': False,
+                'ipv6_autoconf': False,
                 'meta': {
                     'netbox': {
                         'id': 2,
@@ -526,6 +535,7 @@ def mock_standard_interface_column():
                 },
                 'description': 'Management VLAN',
                 'disabled': False,
+                'ipv6_autoconf': False,
                 'meta': {
                     'netbox': {
                         'id': 4,
@@ -570,6 +580,7 @@ def mock_standard_interface_column():
                 'firewall': {
                     'local': {'ipv4': 'LOOPBACK-LOCAL', 'ipv6': '6-LOOPBACK-LOCAL'}
                 },
+                'ipv6_autoconf': False,
                 'meta': {
                     'netbox': {
                         'id': 5,
@@ -585,6 +596,7 @@ def mock_standard_interface_column():
             'eth1': {
                 'description': 'LACP Member: bond0',
                 'disabled': False,
+                'ipv6_autoconf': False,
                 'mac_address': '00:00:12:23:45:67',
                 'meta': {
                     'netbox': {
@@ -601,6 +613,7 @@ def mock_standard_interface_column():
             'eth2': {
                 'description': 'LACP Member: bond0',
                 'disabled': False,
+                'ipv6_autoconf': False,
                 'mac_address': '00:00:12:23:45:68',
                 'meta': {
                     'netbox': {
@@ -641,6 +654,7 @@ def mock_standard_interface_column():
                 },
                 'description': 'router1:tun0:router2:tun0',
                 'disabled': False,
+                'ipv6_autoconf': False,
                 'interface': 'bond0.100',
                 'meta': {
                     'netbox': {
@@ -672,6 +686,7 @@ def mock_standard_interface_pydantic_return():
             'bond0': {
                 'description': 'Trunk Interface',
                 'disabled': False,
+                'ipv6_autoconf': False,
                 'lacp': {
                     'hash_policy': 'layer3+4',
                     'members': [
@@ -709,6 +724,7 @@ def mock_standard_interface_pydantic_return():
                 },
                 'description': 'Private VLAN',
                 'disabled': False,
+                'ipv6_autoconf': False,
                 'meta': {
                     'netbox': {
                         'id': 2,
@@ -760,6 +776,7 @@ def mock_standard_interface_pydantic_return():
                 },
                 'description': 'Management VLAN',
                 'disabled': False,
+                'ipv6_autoconf': False,
                 'meta': {
                     'netbox': {
                         'id': 4,
@@ -813,6 +830,7 @@ def mock_standard_interface_pydantic_return():
                         'ipv6': '6-LOOPBACK-LOCAL',
                     },
                 },
+                'ipv6_autoconf': False,
                 'meta': {
                     'netbox': {
                         'id': 5,
@@ -827,6 +845,7 @@ def mock_standard_interface_pydantic_return():
             'eth1': {
                 'description': 'LACP Member: bond0',
                 'disabled': False,
+                'ipv6_autoconf': False,
                 'mac_address': '00:00:12:23:45:67',
                 'meta': {
                     'netbox': {
@@ -842,6 +861,7 @@ def mock_standard_interface_pydantic_return():
             'eth2': {
                 'description': 'LACP Member: bond0',
                 'disabled': False,
+                'ipv6_autoconf': False,
                 'mac_address': '00:00:12:23:45:68',
                 'meta': {
                     'netbox': {
@@ -890,6 +910,7 @@ def mock_standard_interface_pydantic_return():
                 'description': 'router1:tun0:router2:tun0',
                 'disabled': False,
                 'interface': 'bond0.100',
+                'ipv6_autoconf': False,
                 'meta': {
                     'netbox': {
                         'id': 8,
@@ -987,6 +1008,7 @@ def mock_invalid_interface_data():
                 'description': 'router1:tun0:router2:tun0',
                 'disabled': False,
                 'interface': 'bond0.100',
+                'ipv6_autoconf': False,
                 'meta': {
                     'netbox': {
                         'id': 8,
