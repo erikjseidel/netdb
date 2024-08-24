@@ -1,5 +1,6 @@
 from typing import Union
 from pymongo import MongoClient, ReadPreference
+from odm.document_models import NetdbDocument
 from config.defaults import TRANSACTIONS, MONGO_URL
 
 
@@ -43,7 +44,10 @@ class MongoAPI:
         documents = self.collection.find(query)
 
         return [
-            {item: data[item] for item in data if item != '_id'} for data in documents
+            NetdbDocument.model_validate(
+                {item: data[item] for item in data if item != '_id'}
+            )
+            for data in documents
         ]
 
     def reload(self, documents: list, filt: dict) -> bool:
@@ -69,11 +73,15 @@ class MongoAPI:
                 with session.start_transaction():
                     self.collection.delete_many(filt, session=session)
                     self.collection.insert_many(
-                        documents, ordered=False, session=session
+                        [document.model_dump() for document in documents],
+                        ordered=False,
+                        session=session,
                     )
         else:
             self.collection.delete_many(filt)
-            self.collection.insert_many(documents, ordered=False)
+            self.collection.insert_many(
+                [document.model_dump for document in documents], ordered=False
+            )
 
         return True
 
@@ -97,14 +105,16 @@ class MongoAPI:
 
         """
         filt = {
-            'set_id': document.get('set_id'),
-            'category': document.get('category'),
-            'family': document.get('family'),
-            'element_id': document.get('element_id'),
-            'datasource': document['datasource'],
+            'set_id': document.set_id,
+            'category': document.category,
+            'family': document.family,
+            'element_id': document.element_id,
+            'datasource': document.datasource,
         }
 
-        return bool(self.collection.replace_one(filt, document).modified_count)
+        return bool(
+            self.collection.replace_one(filt, document.model_dump).modified_count
+        )
 
     def delete_many(self, filt: dict) -> int:
         """
