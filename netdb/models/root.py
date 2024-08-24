@@ -8,27 +8,20 @@ from .columns.interface import InterfaceContainer
 from .columns.bgp import BGPContainer
 from .columns.igp import IGPContainer
 
-COLUMN_TYPES = [
-    'device',
-    'firewall',
-    'policy',
-    'interface',
-    'bgp',
-    'igp',
-]
+COLUMN_FACTORY = {
+    'device': DeviceContainer,
+    'firewall': FirewallContainer,
+    'policy': PolicyContainer,
+    'interface': InterfaceContainer,
+    'bgp': BGPContainer,
+    'igp': IGPContainer,
+}
 
-COLUMN_CLASSES = [
-    DeviceContainer,  # device
-    FirewallContainer,  # firewall
-    PolicyContainer,  # policy
-    InterfaceContainer,  # interface
-    BGPContainer,  # bgp
-    IGPContainer,  # igp
-]
+COLUMN_CLASSES = list(COLUMN_FACTORY.values())
+
+COLUMN_TYPES = list(COLUMN_FACTORY.keys())
 
 RootContainer = Annotated[
     Union[*COLUMN_CLASSES],
     Body(discriminator='column_type'),
 ]
-
-COLUMN_FACTORY = dict(zip(COLUMN_TYPES, COLUMN_CLASSES))
