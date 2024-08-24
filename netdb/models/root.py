@@ -17,14 +17,18 @@ COLUMN_TYPES = [
     'igp',
 ]
 
+COLUMN_CLASSES = [
+    DeviceContainer,  # device
+    FirewallContainer,  # firewall
+    PolicyContainer,  # policy
+    InterfaceContainer,  # interface
+    BGPContainer,  # bgp
+    IGPContainer,  # igp
+]
+
 RootContainer = Annotated[
-    Union[
-        DeviceContainer,  # device
-        FirewallContainer,  # firewall
-        PolicyContainer,  # policy
-        InterfaceContainer,  # interface
-        BGPContainer,  # bgp
-        IGPContainer,  # igp
-    ],
+    Union[*COLUMN_CLASSES],
     Body(discriminator='column_type'),
 ]
+
+COLUMN_FACTORY = dict(zip(COLUMN_TYPES, COLUMN_CLASSES))

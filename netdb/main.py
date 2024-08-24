@@ -190,7 +190,7 @@ def reload_column(
         response.status_code = status.HTTP_403_NOT_ALLOWED
         return ERR_READONLY
 
-    if out := ColumnODM(data).reload():
+    if out := ColumnODM(data).reload().pruned_column:
         # Successful return
         return NetDBReturn(out=out, comment='Column reload successful.')
 
@@ -253,7 +253,7 @@ def get_column(
 
     filt = generate_filter(datasource, set_id, category, family, element_id)
 
-    out = ColumnODM(column_type=column).fetch(filt, show_hidden)
+    out = ColumnODM(column_type=column).fetch(filt, show_hidden).pruned_column
 
     return NetDBReturn(out=out, comment=f'Column data for {column} column.')
 
@@ -372,7 +372,7 @@ def get_column_set(
     # capitalize anything that comes in.
     filt = {'set_id': set_id.upper()}
 
-    out = ColumnODM(column_type=column).fetch(filt)
+    out = ColumnODM(column_type=column).fetch(filt).pruned_column
     if not out:
         response.status_code = status.HTTP_404_NOT_FOUND
 
