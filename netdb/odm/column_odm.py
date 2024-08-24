@@ -51,7 +51,7 @@ class ColumnODM:
         self.mongo = MongoAPI(DB_NAME, self.column_type)
 
     @property
-    def pruned_column(self):
+    def pruned_column(self) -> dict:
         """
         Return a "pruned column", which is simply the column data itself absent the encap-
         sulating container, in dict formart and with empty keys removed.
