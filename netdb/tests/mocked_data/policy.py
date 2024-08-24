@@ -1,3 +1,6 @@
+from odm.document_models import NetdbDocument
+
+
 def mock_standard_policy_data():
     """
     Standard policy data which should successfully load into netbox.
@@ -135,27 +138,35 @@ def mock_standard_policy_documents():
     Standard policy data in MongoDB document format
     """
     return [
-        {
-            'category': 'prefix_lists',
-            'data': {'rules': [{'ge': 1, 'le': 7, 'prefix': '0.0.0.0/0'}]},
-            'datasource': 'repo',
-            'element_id': '4-BIG-PREFIXES',
-            'family': 'ipv4',
-            'set_id': 'ROUTER1',
-            'weight': 50,
-        },
-        {
-            'category': 'prefix_lists',
-            'data': {'rules': [{'prefix': '0.0.0.0/0'}]},
-            'datasource': 'repo',
-            'element_id': '4-DEFAULT-ROUTE',
-            'family': 'ipv4',
-            'set_id': 'ROUTER1',
-            'weight': 50,
-        },
-        {
-            'category': 'prefix_lists',
-            'data': {
+        NetdbDocument(
+            set_id='ROUTER1',
+            datasource='repo',
+            weight=50,
+            flat=False,
+            category='prefix_lists',
+            family='ipv4',
+            element_id='4-BIG-PREFIXES',
+            data={'rules': [{'le': 7, 'ge': 1, 'prefix': '0.0.0.0/0'}]},
+        ),
+        NetdbDocument(
+            set_id='ROUTER1',
+            datasource='repo',
+            weight=50,
+            flat=False,
+            category='prefix_lists',
+            family='ipv4',
+            element_id='4-DEFAULT-ROUTE',
+            data={'rules': [{'prefix': '0.0.0.0/0'}]},
+        ),
+        NetdbDocument(
+            set_id='ROUTER1',
+            datasource='repo',
+            weight=50,
+            flat=False,
+            category='prefix_lists',
+            family='ipv4',
+            element_id='4-MARTIAN-PREFIXES',
+            data={
                 'rules': [
                     {'le': 32, 'prefix': '0.0.0.0/8'},
                     {'le': 32, 'prefix': '10.0.0.0/8'},
@@ -172,51 +183,56 @@ def mock_standard_policy_documents():
                     {'le': 32, 'prefix': '224.0.0.0/3'},
                 ]
             },
-            'datasource': 'repo',
-            'element_id': '4-MARTIAN-PREFIXES',
-            'family': 'ipv4',
-            'set_id': 'ROUTER1',
-            'weight': 50,
-        },
-        {
-            'category': 'prefix_lists',
-            'data': {'rules': [{'ge': 25, 'le': 32, 'prefix': '0.0.0.0/0'}]},
-            'datasource': 'repo',
-            'element_id': '4-SMALL-PREFIXES',
-            'family': 'ipv4',
-            'set_id': 'ROUTER1',
-            'weight': 50,
-        },
-        {
-            'category': 'prefix_lists',
-            'data': {'rules': [{'le': 24, 'prefix': '10.0.0.0/8'}]},
-            'datasource': 'repo',
-            'element_id': '4-65000-PREFIXES',
-            'family': 'ipv4',
-            'set_id': 'ROUTER1',
-            'weight': 50,
-        },
-        {
-            'category': 'prefix_lists',
-            'data': {'rules': [{'ge': 1, 'le': 15, 'prefix': '::/0'}]},
-            'datasource': 'repo',
-            'element_id': '6-BIG-PREFIXES',
-            'family': 'ipv6',
-            'set_id': 'ROUTER1',
-            'weight': 50,
-        },
-        {
-            'category': 'prefix_lists',
-            'data': {'rules': [{'prefix': '::/0'}]},
-            'datasource': 'repo',
-            'element_id': '6-DEFAULT-ROUTE',
-            'family': 'ipv6',
-            'set_id': 'ROUTER1',
-            'weight': 50,
-        },
-        {
-            'category': 'prefix_lists',
-            'data': {
+        ),
+        NetdbDocument(
+            set_id='ROUTER1',
+            datasource='repo',
+            weight=50,
+            flat=False,
+            category='prefix_lists',
+            family='ipv4',
+            element_id='4-SMALL-PREFIXES',
+            data={'rules': [{'le': 32, 'ge': 25, 'prefix': '0.0.0.0/0'}]},
+        ),
+        NetdbDocument(
+            set_id='ROUTER1',
+            datasource='repo',
+            weight=50,
+            flat=False,
+            category='prefix_lists',
+            family='ipv4',
+            element_id='4-65000-PREFIXES',
+            data={'rules': [{'le': 24, 'prefix': '10.0.0.0/8'}]},
+        ),
+        NetdbDocument(
+            set_id='ROUTER1',
+            datasource='repo',
+            weight=50,
+            flat=False,
+            category='prefix_lists',
+            family='ipv6',
+            element_id='6-BIG-PREFIXES',
+            data={'rules': [{'le': 15, 'ge': 1, 'prefix': '::/0'}]},
+        ),
+        NetdbDocument(
+            set_id='ROUTER1',
+            datasource='repo',
+            weight=50,
+            flat=False,
+            category='prefix_lists',
+            family='ipv6',
+            element_id='6-DEFAULT-ROUTE',
+            data={'rules': [{'prefix': '::/0'}]},
+        ),
+        NetdbDocument(
+            set_id='ROUTER1',
+            datasource='repo',
+            weight=50,
+            flat=False,
+            category='prefix_lists',
+            family='ipv6',
+            element_id='6-MARTIAN-PREFIXES',
+            data={
                 'rules': [
                     {'le': 128, 'prefix': '::/8'},
                     {'le': 128, 'prefix': '200::/7'},
@@ -231,76 +247,82 @@ def mock_standard_policy_documents():
                     {'le': 128, 'prefix': 'ff00::/8'},
                 ]
             },
-            'datasource': 'repo',
-            'element_id': '6-MARTIAN-PREFIXES',
-            'family': 'ipv6',
-            'set_id': 'ROUTER1',
-            'weight': 50,
-        },
-        {
-            'category': 'prefix_lists',
-            'data': {'rules': [{'ge': 49, 'le': 128, 'prefix': '::/0'}]},
-            'datasource': 'repo',
-            'element_id': '6-SMALL-PREFIXES',
-            'family': 'ipv6',
-            'set_id': 'ROUTER1',
-            'weight': 50,
-        },
-        {
-            'category': 'prefix_lists',
-            'data': {'rules': [{'le': 64, 'prefix': 'fd00:abcd::/48'}]},
-            'datasource': 'repo',
-            'element_id': '6-65000-PREFIXES',
-            'family': 'ipv6',
-            'set_id': 'ROUTER1',
-            'weight': 50,
-        },
-        {
-            'category': 'route_maps',
-            'data': {'rules': [{'action': 'permit', 'number': 99}]},
-            'datasource': 'repo',
-            'element_id': 'ALLOW-ALL',
-            'family': 'ipv4',
-            'set_id': 'ROUTER1',
-            'weight': 50,
-        },
-        {
-            'category': 'route_maps',
-            'data': {'rules': [{'action': 'deny', 'number': 99}]},
-            'datasource': 'repo',
-            'element_id': 'REJECT-ALL',
-            'family': 'ipv4',
-            'set_id': 'ROUTER1',
-            'weight': 50,
-        },
-        {
-            'category': 'route_maps',
-            'data': {
+        ),
+        NetdbDocument(
+            set_id='ROUTER1',
+            datasource='repo',
+            weight=50,
+            flat=False,
+            category='prefix_lists',
+            family='ipv6',
+            element_id='6-SMALL-PREFIXES',
+            data={'rules': [{'le': 128, 'ge': 49, 'prefix': '::/0'}]},
+        ),
+        NetdbDocument(
+            set_id='ROUTER1',
+            datasource='repo',
+            weight=50,
+            flat=False,
+            category='prefix_lists',
+            family='ipv6',
+            element_id='6-65000-PREFIXES',
+            data={'rules': [{'le': 64, 'prefix': 'fd00:abcd::/48'}]},
+        ),
+        NetdbDocument(
+            set_id='ROUTER1',
+            datasource='repo',
+            weight=50,
+            flat=False,
+            category='route_maps',
+            family='ipv4',
+            element_id='ALLOW-ALL',
+            data={'rules': [{'action': 'permit', 'number': 99}]},
+        ),
+        NetdbDocument(
+            set_id='ROUTER1',
+            datasource='repo',
+            weight=50,
+            flat=False,
+            category='route_maps',
+            family='ipv4',
+            element_id='REJECT-ALL',
+            data={'rules': [{'action': 'deny', 'number': 99}]},
+        ),
+        NetdbDocument(
+            set_id='ROUTER1',
+            datasource='repo',
+            weight=50,
+            flat=False,
+            category='route_maps',
+            family='ipv4',
+            element_id='4-PEER-IN',
+            data={
                 'rules': [
                     {
                         'action': 'permit',
                         'match': {'prefix_list': '4-DEFAULT-ROUTE'},
-                        'number': 50,
                         'set': {'local_pref': 100},
+                        'number': 50,
                     },
                     {
                         'action': 'permit',
                         'match': {'prefix_list': '4-65000-PREFIXES'},
-                        'number': 60,
                         'set': {'local_pref': 100},
+                        'number': 60,
                     },
                     {'action': 'deny', 'number': 99},
                 ]
             },
-            'datasource': 'repo',
-            'element_id': '4-PEER-IN',
-            'family': 'ipv4',
-            'set_id': 'ROUTER1',
-            'weight': 50,
-        },
-        {
-            'category': 'route_maps',
-            'data': {
+        ),
+        NetdbDocument(
+            set_id='ROUTER1',
+            datasource='repo',
+            weight=50,
+            flat=False,
+            category='route_maps',
+            family='ipv4',
+            element_id='4-PEER-OUT',
+            data={
                 'rules': [
                     {
                         'action': 'permit',
@@ -310,40 +332,42 @@ def mock_standard_policy_documents():
                     {'action': 'deny', 'number': 99},
                 ]
             },
-            'datasource': 'repo',
-            'element_id': '4-PEER-OUT',
-            'family': 'ipv4',
-            'set_id': 'ROUTER1',
-            'weight': 50,
-        },
-        {
-            'category': 'route_maps',
-            'data': {
+        ),
+        NetdbDocument(
+            set_id='ROUTER1',
+            datasource='repo',
+            weight=50,
+            flat=False,
+            category='route_maps',
+            family='ipv6',
+            element_id='6-PEER-IN',
+            data={
                 'rules': [
                     {
                         'action': 'permit',
                         'match': {'prefix_list': '6-DEFAULT-ROUTE'},
-                        'number': 50,
                         'set': {'local_pref': 100},
+                        'number': 50,
                     },
                     {
                         'action': 'permit',
                         'match': {'prefix_list': '6-65000-PREFIXES'},
-                        'number': 60,
                         'set': {'local_pref': 100},
+                        'number': 60,
                     },
                     {'action': 'deny', 'number': 99},
                 ]
             },
-            'datasource': 'repo',
-            'element_id': '6-PEER-IN',
-            'family': 'ipv6',
-            'set_id': 'ROUTER1',
-            'weight': 50,
-        },
-        {
-            'category': 'route_maps',
-            'data': {
+        ),
+        NetdbDocument(
+            set_id='ROUTER1',
+            datasource='repo',
+            weight=50,
+            flat=False,
+            category='route_maps',
+            family='ipv6',
+            element_id='6-PEER-OUT',
+            data={
                 'rules': [
                     {
                         'action': 'permit',
@@ -353,12 +377,7 @@ def mock_standard_policy_documents():
                     {'action': 'deny', 'number': 99},
                 ]
             },
-            'datasource': 'repo',
-            'element_id': '6-PEER-OUT',
-            'family': 'ipv6',
-            'set_id': 'ROUTER1',
-            'weight': 50,
-        },
+        ),
     ]
 
 

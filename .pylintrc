@@ -636,4 +636,5 @@ disable=import-error,
         too-few-public-methods,
         missing-class-docstring,
         redefined-outer-name,
-        unused-argument
+        unused-argument,
+        duplicate-code

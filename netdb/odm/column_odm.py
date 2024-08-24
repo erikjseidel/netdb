@@ -4,6 +4,7 @@ from config.defaults import DB_NAME
 from models.root import RootContainer, COLUMN_TYPES
 from util.mongo_api import MongoAPI
 from util.exception import NetDBException
+from .document_models import NetdbDocument
 
 
 class ColumnODM:
@@ -68,13 +69,13 @@ class ColumnODM:
                 # set. The entire set will be stored in a document and we then continue
                 # to the next set.
                 #
-                entry = {
-                    'set_id': set_id,
-                    'datasource': datasource,
-                    'weight': weight,
-                    'flat': True,
-                    'data': set_data,
-                }
+                entry = NetdbDocument(
+                    set_id=set_id,
+                    datasource=datasource,
+                    weight=weight,
+                    flat=True,
+                    data=set_data,
+                )
                 out.append(entry)
 
                 continue
@@ -98,25 +99,27 @@ class ColumnODM:
                                 family_element_id,
                                 family_element_data,
                             ) in element_data.items():
-                                entry = {
-                                    'set_id': set_id,
-                                    'category': set_element_id,
-                                    'family': element_id,
-                                    'element_id': family_element_id,
-                                    'datasource': datasource,
-                                    'weight': weight,
-                                    'data': family_element_data,
-                                }
+                                entry = NetdbDocument(
+                                    set_id=set_id,
+                                    category=set_element_id,
+                                    family=element_id,
+                                    element_id=family_element_id,
+                                    flat=False,
+                                    datasource=datasource,
+                                    weight=weight,
+                                    data=family_element_data,
+                                )
                                 out.append(entry)
                         else:
-                            entry = {
-                                'set_id': set_id,
-                                'category': set_element_id,
-                                'element_id': element_id,
-                                'datasource': datasource,
-                                'weight': weight,
-                                'data': element_data,
-                            }
+                            entry = NetdbDocument(
+                                set_id=set_id,
+                                category=set_element_id,
+                                element_id=element_id,
+                                flat=False,
+                                datasource=datasource,
+                                weight=weight,
+                                data=element_data,
+                            )
                             out.append(entry)
                 else:
                     #
@@ -124,13 +127,14 @@ class ColumnODM:
                     # the set is simply deviced into elements(e.g. one element for each
                     # interface).
                     #
-                    entry = {
-                        'set_id': set_id,
-                        'element_id': set_element_id,
-                        'datasource': datasource,
-                        'weight': weight,
-                        'data': set_element_data,
-                    }
+                    entry = NetdbDocument(
+                        set_id=set_id,
+                        element_id=set_element_id,
+                        datasource=datasource,
+                        weight=weight,
+                        flat=False,
+                        data=set_element_data,
+                    )
                     out.append(entry)
 
         self.mongo_data = out
@@ -141,7 +145,9 @@ class ColumnODM:
         """
         out = {}
 
-        for element in self.mongo_data:
+        for netdb_document in self.mongo_data:
+
+            element = netdb_document.model_dump()
 
             if element['weight'] < 1 and not self.__provide_all__:
                 #
@@ -220,11 +226,7 @@ class ColumnODM:
         names and the device should already be 'registered' in the device column.
 
         """
-        out = MongoAPI(DB_NAME, 'device').read()
-        devices = []
-
-        for device in out:
-            devices.append(device.pop('set_id'))
+        devices = [device.set_id for device in MongoAPI(DB_NAME, 'device').read()]
 
         for set_id in self.column.keys():
             if set_id not in devices:

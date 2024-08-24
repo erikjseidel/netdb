@@ -32,7 +32,7 @@ class MongoAPI:
             return [
                 document
                 for document in documents
-                if all(document.get(k) == v for k, v in query.items())
+                if all(getattr(document, k) == v for k, v in query.items())
             ]
 
         return documents
