@@ -101,7 +101,7 @@ def test_column_odm_container_init(column_type, container):
     odm = column_odm.ColumnODM(container=container)
 
     assert odm.column_type == column_type
-    assert odm.column == jsonable_encoder(container.column, exclude_none=True)
+    assert odm.pruned_column == jsonable_encoder(container.column, exclude_none=True)
     assert isinstance(odm.mongo, mock_mongo_api.MongoAPI)
 
 
@@ -136,7 +136,7 @@ def test_column_odm_read_init_bad_column():
 
 
 @pytest.mark.parametrize(
-    'container, mongo_data',
+    'container, documents',
     [
         (
             DeviceContainer(
@@ -204,17 +204,17 @@ def test_column_odm_read_init_bad_column():
         ),
     ],
 )
-def test_column_odm_mongo_generation(container, mongo_data):
+def test_column_odm_mongo_generation(container, documents):
     """
     Test that ColumnODM container load initialization generates the correct
     MongoDB documents.
     """
     odm = column_odm.ColumnODM(container=container)
 
-    # Show all mongo_data in case of failure.
-    pprint(odm.mongo_data)
+    # Show all NetdbDocument documents in case of failure.
+    pprint(odm.documents)
 
-    assert odm.mongo_data == mongo_data
+    assert odm.documents == documents
 
 
 @pytest.mark.parametrize(
@@ -232,7 +232,7 @@ def test_column_odm_fetch(column_type, column):
     """
     Test ColumnODM fetch for all column types.
     """
-    out = column_odm.ColumnODM(column_type=column_type).fetch()
+    out = column_odm.ColumnODM(column_type=column_type).fetch().pruned_column
 
     # Show all mongo_data in case of failure.
     pprint(out)

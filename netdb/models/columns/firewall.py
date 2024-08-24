@@ -95,7 +95,7 @@ class Firewall(BaseColumnModel):
     state_policy: Optional[FirewallStatePolicy] = None
     mss_clamp: Optional[FirewallMSSClamp] = None
     zone_policy: Optional[Dict[str, FirewallZonePolicy]] = None
-    options: FirewallOptions
+    options: Optional[FirewallOptions] = None
 
     # Vyos 1.4
     interfaces: Optional[Dict[str, InterfaceGroup]] = None

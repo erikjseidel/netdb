@@ -1,7 +1,7 @@
 from typing import Union
 from fastapi.encoders import jsonable_encoder
 from config.defaults import DB_NAME
-from models.root import RootContainer, COLUMN_TYPES
+from models.root import RootContainer, COLUMN_TYPES, COLUMN_FACTORY
 from util.mongo_api import MongoAPI
 from util.exception import NetDBException
 from .document_models import NetdbDocument
@@ -28,16 +28,15 @@ class ColumnODM:
 
         """
 
-        # MongoDB documents stored here pending load into MongoDB.
-        self.mongo_data = None
+        # NetdbDocument documents stored here pending load into MongoDB.
+        self.documents = None
 
         self.column_type = None
 
         if container:
             self.container = container
             self.column_type = container.column_type
-            self.column = jsonable_encoder(container.column, exclude_none=True)
-            self._generate_mongo_documents()
+            self._generate_netdb_documents()
 
         elif column_type:
             self.column_type = column_type
@@ -51,9 +50,17 @@ class ColumnODM:
         # Initialize the MongoDB driver
         self.mongo = MongoAPI(DB_NAME, self.column_type)
 
-    def _generate_mongo_documents(self) -> None:
+    @property
+    def pruned_column(self):
         """
-        Convert Pydantic serialized column dict formated data into MongoDB document format
+        Return a "pruned column", which is simply the column data itself absent the encap-
+        sulating container, in dict formart and with empty keys removed.
+        """
+        return jsonable_encoder(self.container.column, exclude_none=True)
+
+    def _generate_netdb_documents(self) -> None:
+        """
+        Convert Pydantic serialized column dict formated data into NetdbDocument format
         which can then be loaded into MongoDB.
         """
         out = []
@@ -61,7 +68,7 @@ class ColumnODM:
         datasource = self.container.datasource
         weight = self.container.weight
 
-        for set_id, set_data in self.column.items():
+        for set_id, set_data in self.pruned_column.items():
             if self.container.flat:
                 #
                 # In case of flat columns (where each set identified by set_id is stored
@@ -137,7 +144,7 @@ class ColumnODM:
                     )
                     out.append(entry)
 
-        self.mongo_data = out
+        self.documents = out
 
     def _generate_column(self) -> None:
         """
@@ -145,7 +152,7 @@ class ColumnODM:
         """
         out = {}
 
-        for netdb_document in self.mongo_data:
+        for netdb_document in self.documents:
 
             element = netdb_document.model_dump()
 
@@ -216,7 +223,9 @@ class ColumnODM:
 
             unwind[element_id] = element_data
 
-        self.column = out
+        self.container = COLUMN_FACTORY[self.column_type](
+            datasource="netdb", column_type=self.column_type, weight=0, column=out
+        )
 
     def _is_registered(self) -> bool:
         """
@@ -228,7 +237,7 @@ class ColumnODM:
         """
         devices = [device.set_id for device in MongoAPI(DB_NAME, 'device').read()]
 
-        for set_id in self.column.keys():
+        for set_id in self.container.column.keys():
             if set_id not in devices:
                 raise NetDBException(
                     code=422,
@@ -251,17 +260,17 @@ class ColumnODM:
         """
         filt = filt or {}
 
-        self.mongo_data = self.mongo.read(filt)
+        self.documents = self.mongo.read(filt)
 
         self.__provide_all__ = show_hidden
         self._generate_column()
 
-        return self.column
+        return self
 
     def reload(self) -> Union[dict, None]:
         """
         Replace entire column or parts of column filtered by datasource with new data.
-        Documents should already be loaded into into self.mongo_data by
+        Documents should already be loaded into into self.documents by
         self._generate_mongo_documents().
 
         This method is used by various SoT backends to manage 'their' portions of the
@@ -273,15 +282,14 @@ class ColumnODM:
         if self.column_type != 'device':
             self._is_registered()
 
-        if self.mongo.reload(self.mongo_data, filt):
-            return self.column
+        self.mongo.reload(self.documents, filt)
 
-        return None
+        return self
 
     def delete(self, filt: dict) -> int:
         """
         Delete documents from MongoDB filtered by filter. Documents should already be
-        loaded into self.mongo_data by self._generate_mongo_documents().
+        loaded into self.documents by self._generate_mongo_documents().
 
         """
         if not filt:
@@ -296,14 +304,14 @@ class ColumnODM:
     def replace(self) -> int:
         """
         Upsert existing documents with new ones. Documents should already be loaded
-        into self.mongo_data by self._generate_mongo_documents().
+        into self.documents by self._generate_mongo_documents().
 
         """
         if self.column_type != 'device':
             self._is_registered()
 
         count = 0
-        for document in self.mongo_data:
+        for document in self.documents:
             if self.mongo.replace_one(document):
                 count += 1
 

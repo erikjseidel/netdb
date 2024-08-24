@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel, ConfigDict
 
 
@@ -10,6 +11,8 @@ class BaseColumnModel(BaseModel):
     """
 
     model_config = ConfigDict(extra='forbid')
+
+    meta: Optional[dict] = None
 
 
 class BaseContainer(BaseColumnModel):
