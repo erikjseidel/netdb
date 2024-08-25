@@ -1,5 +1,5 @@
 from typing import Union
-from mocked_data import device, interface, igp, bgp, firewall, policy
+from mocked_data import device, interface, bgp, protocol, firewall, policy
 
 
 class MongoAPI:
@@ -18,8 +18,8 @@ class MongoAPI:
                 documents = device.mock_standard_device_documents()
             case 'interface':
                 documents = interface.mock_standard_interface_documents()
-            case 'igp':
-                documents = igp.mock_standard_igp_documents()
+            case 'protocol':
+                documents = protocol.mock_standard_protocol_documents()
             case 'bgp':
                 documents = bgp.mock_standard_bgp_documents()
             case 'firewall':

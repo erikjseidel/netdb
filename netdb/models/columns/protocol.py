@@ -1,6 +1,30 @@
 from typing import Literal, Dict, Optional, List
+from ipaddress import IPv4Address, IPv4Network
 from pydantic import Field
 from ..base import BaseContainer, BaseColumnModel
+
+
+class DHCPRange(BaseColumnModel):
+    start_address: IPv4Address
+    end_address: IPv4Address
+
+
+class DHCPNetwork(BaseColumnModel):
+    router_ip: IPv4Address
+    network: IPv4Network
+    ranges: List[DHCPRange]
+
+
+class DHCPServer(BaseColumnModel):
+    networks: List[DHCPNetwork]
+
+
+class Services(BaseColumnModel):
+    dhcp_server: Optional[DHCPServer] = None
+
+
+class LLDP(BaseColumnModel):
+    interfaces: Optional[List[str]] = None
 
 
 class ISISInterface(BaseColumnModel):
@@ -32,10 +56,14 @@ class ISIS(BaseColumnModel):
     meta: Optional[dict]
 
 
-class IGPRoot(BaseColumnModel):
-    isis: ISIS
+class Protocol(BaseColumnModel):
+    isis: Optional[ISIS] = None
+    lldp: Optional[LLDP] = None
+    services: Optional[Services] = None
 
 
-class IGPContainer(BaseContainer):
-    column_type: Literal['igp'] = 'igp'
-    column: Dict[str, IGPRoot]
+class ProtocolContainer(BaseContainer):
+    __categories__ = ['services']
+
+    column_type: Literal['protocol'] = 'protocol'
+    column: Dict[str, Protocol]

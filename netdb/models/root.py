@@ -6,7 +6,7 @@ from .columns.firewall import FirewallContainer
 from .columns.policy import PolicyContainer
 from .columns.interface import InterfaceContainer
 from .columns.bgp import BGPContainer
-from .columns.igp import IGPContainer
+from .columns.protocol import ProtocolContainer
 
 COLUMN_FACTORY = {
     'device': DeviceContainer,
@@ -14,7 +14,7 @@ COLUMN_FACTORY = {
     'policy': PolicyContainer,
     'interface': InterfaceContainer,
     'bgp': BGPContainer,
-    'igp': IGPContainer,
+    'protocol': ProtocolContainer,
 }
 
 COLUMN_CLASSES = list(COLUMN_FACTORY.values())
