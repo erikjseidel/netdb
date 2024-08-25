@@ -1,7 +1,13 @@
+import logging
+
 from config.defaults import DB_NAME
+from models.root import COLUMN_TYPES
 from .mongo_api import MongoAPI
 
-# The default compound index type.
+logger = logging.getLogger(__name__)
+
+# Column default index. We're currently using default for all column types
+# as mongodb will allow / ignore non-existent keys when indexing.
 DEFAULT_INDEX = [
     ('set_id', 1),
     ('category', 1),
@@ -10,17 +16,6 @@ DEFAULT_INDEX = [
     ('datasource', 1),
 ]
 
-# Column indexes. We're currently using default for all column types
-# as mongodb will allow / ignore non-existent keys when indexing.
-INDEXES = {
-    'device': DEFAULT_INDEX,
-    'interface': DEFAULT_INDEX,
-    'firewall': DEFAULT_INDEX,
-    'policy': DEFAULT_INDEX,
-    'igp': DEFAULT_INDEX,
-    'bgp': DEFAULT_INDEX,
-}
-
 
 def initialize():
     """
@@ -28,8 +23,8 @@ def initialize():
     that the required MongoDB collection indexes are in place.
 
     """
-    for column, index in INDEXES.items():
-        # This call will be a no-op if index already exists.
-        MongoAPI(DB_NAME, column).create_index(index)
+    for column in COLUMN_TYPES:
+        logger.info("%s: Creating index for column %s", DB_NAME, column)
 
-        # Needs proper logging.
+        # This call will be a no-op if index already exists.
+        MongoAPI(DB_NAME, column).create_index(DEFAULT_INDEX)

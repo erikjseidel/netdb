@@ -57,7 +57,7 @@ def test_get_column_root():
     assert response.json() == {
         'comment': 'Available NetDB columns.',
         'error': False,
-        'out': ['device', 'firewall', 'policy', 'interface', 'bgp', 'igp'],
+        'out': ['device', 'firewall', 'policy', 'interface', 'bgp', 'protocol'],
         'result': True,
     }
 
@@ -169,11 +169,11 @@ def test_get_column_root():
             },
         ),
         (
-            'igp',
+            'protocol',
             '',
             200,
             {
-                'comment': 'Column data for igp column.',
+                'comment': 'Column data for protocol column.',
                 'error': False,
                 'out': {
                     'ROUTER1': {
@@ -192,7 +192,57 @@ def test_get_column_root():
                                 },
                                 'netdb': {'datasource': 'netbox', 'weight': 150},
                             },
-                        }
+                        },
+                        'lldp': {
+                            'interfaces': [
+                                'bond0',
+                                'eth6',
+                                'eth7',
+                            ],
+                            'meta': {
+                                'netdb': {
+                                    'datasource': 'netbox',
+                                    'weight': 150,
+                                },
+                            },
+                        },
+                        'services': {
+                            'dhcp_server': {
+                                'meta': {
+                                    'netbox': {
+                                        'id': 1,
+                                        'last_updated': '2024-06-23T01:57:29.635963+00:00',
+                                        'url': 'https://netbox.example.net/ipam/services/1/',
+                                    },
+                                    'netdb': {
+                                        'datasource': 'netbox',
+                                        'weight': 150,
+                                    },
+                                },
+                                'networks': [
+                                    {
+                                        'network': '10.10.10.0/24',
+                                        'ranges': [
+                                            {
+                                                'end_address': '10.10.10.254',
+                                                'start_address': '10.10.10.100',
+                                            },
+                                        ],
+                                        'router_ip': '10.10.10.1',
+                                    },
+                                    {
+                                        'network': '192.168.1.128/26',
+                                        'ranges': [
+                                            {
+                                                'end_address': '192.168.1.190',
+                                                'start_address': '192.168.1.138',
+                                            },
+                                        ],
+                                        'router_ip': '192.168.1.129',
+                                    },
+                                ],
+                            },
+                        },
                     }
                 },
                 'result': True,
@@ -433,11 +483,11 @@ def test_get_column(column, get_string, code, result):
             },
         ),
         (
-            'igp',
+            'protocol',
             'datasource=netbox',
             200,
             {
-                'comment': 'igp column: 0 elements deleted.',
+                'comment': 'protocol column: 0 elements deleted.',
                 'error': False,
                 'out': None,
                 'result': True,

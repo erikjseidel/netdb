@@ -3,12 +3,12 @@ from pprint import pprint
 
 import pytest
 
-from mocked_data import device, interface, igp, bgp, firewall, policy
+from mocked_data import device, interface, protocol, bgp, firewall, policy
 from fastapi.encoders import jsonable_encoder
 
 from models.columns.device import DeviceContainer
 from models.columns.interface import InterfaceContainer
-from models.columns.igp import IGPContainer
+from models.columns.protocol import ProtocolContainer
 from models.columns.bgp import BGPContainer
 from models.columns.firewall import FirewallContainer
 from models.columns.policy import PolicyContainer
@@ -49,9 +49,11 @@ with patch.dict(
             ),
         ),
         (
-            'igp',
-            IGPContainer(
-                datasource='netbox', weight=150, column=igp.mock_standard_igp_data()
+            'protocol',
+            ProtocolContainer(
+                datasource='netbox',
+                weight=150,
+                column=protocol.mock_standard_protocol_data(),
             ),
         ),
         (
@@ -107,7 +109,7 @@ def test_column_odm_container_init(column_type, container):
 
 @pytest.mark.parametrize(
     'column_type',
-    [('device'), ('interface'), ('igp'), ('bgp'), ('firewall'), ('policy')],
+    [('device'), ('interface'), ('protocol'), ('bgp'), ('firewall'), ('policy')],
 )
 def test_column_odm_read_init(column_type):
     """
@@ -155,12 +157,12 @@ def test_column_odm_read_init_bad_column():
             interface.mock_standard_interface_documents(),
         ),
         (
-            IGPContainer(
+            ProtocolContainer(
                 datasource='netbox',
                 weight=150,
-                column=igp.mock_standard_igp_data(),
+                column=protocol.mock_standard_protocol_data(),
             ),
-            igp.mock_standard_igp_documents(),
+            protocol.mock_standard_protocol_documents(),
         ),
         (
             BGPContainer(
@@ -222,7 +224,7 @@ def test_column_odm_mongo_generation(container, documents):
     [
         ('device', device.mock_standard_device_column()),
         ('interface', interface.mock_standard_interface_column()),
-        ('igp', igp.mock_standard_igp_column()),
+        ('protocol', protocol.mock_standard_protocol_column()),
         ('bgp', bgp.mock_standard_bgp_column()),
         ('firewall', firewall.mock_standard_firewall_column()),
         ('policy', policy.mock_standard_policy_column()),
@@ -262,13 +264,13 @@ def test_column_odm_fetch(column_type, column):
             interface.mock_standard_interface_documents(),
         ),
         (
-            IGPContainer(
+            ProtocolContainer(
                 datasource='netbox',
                 weight=150,
-                column=igp.mock_standard_igp_data(),
+                column=protocol.mock_standard_protocol_data(),
             ),
             'netbox',
-            igp.mock_standard_igp_documents(),
+            protocol.mock_standard_protocol_documents(),
         ),
         (
             BGPContainer(
@@ -382,13 +384,13 @@ def test_column_odm_reload_validation_fail(container, error_code, error_message)
             7,
         ),
         (
-            IGPContainer(
+            ProtocolContainer(
                 datasource='netbox',
                 weight=150,
-                column=igp.mock_standard_igp_data(),
+                column=protocol.mock_standard_protocol_data(),
             ),
-            igp.mock_standard_igp_documents(),
-            1,
+            protocol.mock_standard_protocol_documents(),
+            3,
         ),
         (
             BGPContainer(
@@ -485,7 +487,7 @@ def test_column_odm_replace_fail(container, error_code, error_message):
     [
         ('device', {'set_id': 'ROUTER1'}),
         ('interface', {'set_id': 'ROUTER1', 'element_id': 'bond0'}),
-        ('igp', {'set_id': 'ROUTER1'}),
+        ('protocol', {'set_id': 'ROUTER1'}),
         ('bgp', {'set_id': 'ROUTER1', 'category': 'peer_group', 'element_id': '6_RR'}),
         (
             'firewall',
@@ -553,10 +555,10 @@ def test_column_odm_delete_no_filt_fail():
             )
         ),
         (
-            IGPContainer(
+            ProtocolContainer(
                 datasource='netbox',
                 weight=150,
-                column=igp.mock_standard_igp_data(),
+                column=protocol.mock_standard_protocol_data(),
             )
         ),
         (
