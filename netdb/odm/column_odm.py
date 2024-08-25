@@ -194,13 +194,11 @@ class ColumnODM:
             if not flat:
                 #
                 # This is where, in the case of flat==False, we determine where in the
-                # set dict to place this particular element's nested dict.
+                # column dict to place this particular element's nested dict.
                 #
-                for i in ['set_id', 'category', 'family']:
-                    if name := element.get(i):
-                        if not unwind.get(name):
-                            unwind[name] = {}
-                        unwind = unwind[name]
+                for level in ['set_id', 'category', 'family']:
+                    if name := element.get(level):
+                        unwind = unwind.setdefault(name, {})
 
             if element_id in unwind:
                 #
