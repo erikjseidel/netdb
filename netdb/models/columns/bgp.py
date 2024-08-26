@@ -11,7 +11,6 @@ class BGPOptions(BaseColumnModel):
     log_neighbor_changes: bool = False
     router_id: IPv4Address
     cluster_id: Optional[IPv4Address] = None
-    meta: Optional[dict] = None
 
 
 class BGPAddressFamilyElement(BaseColumnModel):
@@ -54,7 +53,6 @@ class BGPPeerGroup(BaseColumnModel):
     multihop: Optional[int] = Field(None, ge=1, le=255)
     password: Optional[str] = None
     remote_asn: Optional[int] = Field(None, ge=1, lt=2**32)
-    meta: Optional[dict] = None
 
 
 # Neighbor extends peergroup with a couple of additional options.

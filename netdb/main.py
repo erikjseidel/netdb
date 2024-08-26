@@ -1,7 +1,6 @@
 from typing import Optional
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, Response, status
-from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError, HTTPException
 from fastapi.encoders import jsonable_encoder
 
@@ -62,7 +61,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         )
     )
 
-    return JSONResponse(
+    return PrettyJSONResponse(
         content=response, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
     )
 
@@ -89,7 +88,7 @@ async def not_found_exception_handler(request: Request, exc: HTTPException):
         exclude_none=True,
     )
 
-    return JSONResponse(content=response, status_code=status.HTTP_404_NOT_FOUND)
+    return PrettyJSONResponse(content=response, status_code=status.HTTP_404_NOT_FOUND)
 
 
 @app.exception_handler(NetDBException)
@@ -110,11 +109,12 @@ async def netdb__exception_handler(request: Request, exc: NetDBException):
             result=False,
             error=True,
             comment=exc.message,
+            out=exc.out,
         ),
         exclude_none=True,
     )
 
-    return JSONResponse(content=response, status_code=exc.code)
+    return PrettyJSONResponse(content=response, status_code=exc.code)
 
 
 @app.get("/")

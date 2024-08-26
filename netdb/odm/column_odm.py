@@ -1,5 +1,6 @@
-from typing import Union
+from typing import Union, Optional
 from fastapi.encoders import jsonable_encoder
+from pydantic import ValidationError
 from config.defaults import DB_NAME
 from models.root import RootContainer, COLUMN_TYPES, COLUMN_FACTORY
 from util.mongo_api import MongoAPI
@@ -221,9 +222,16 @@ class ColumnODM:
 
             unwind[element_id] = element_data
 
-        self.container = COLUMN_FACTORY[self.column_type](
-            datasource="netdb", column_type=self.column_type, weight=0, column=out
-        )
+        try:
+            self.container = COLUMN_FACTORY[self.column_type](
+                datasource="netdb", column_type=self.column_type, weight=0, column=out
+            )
+        except ValidationError as e:
+            raise NetDBException(
+                code=422,
+                message=f"Stored documents for {self.column_type} column failed validation.",
+                out=e.errors(),
+            ) from e
 
     def _is_registered(self) -> bool:
         """
@@ -265,7 +273,7 @@ class ColumnODM:
 
         return self
 
-    def reload(self) -> Union[dict, None]:
+    def reload(self, filt: Optional[dict] = None) -> Optional[dict]:
         """
         Replace entire column or parts of column filtered by datasource with new data.
         Documents should already be loaded into into self.documents by
@@ -275,7 +283,8 @@ class ColumnODM:
         configuration data column (as identified by 'datasource').
 
         """
-        filt = {'datasource': self.container.datasource}
+        filt = filt or {}
+        filt.update({'datasource': self.container.datasource})
 
         if self.column_type != 'device':
             self._is_registered()

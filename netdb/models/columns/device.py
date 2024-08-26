@@ -34,7 +34,6 @@ class Device(BaseColumnModel):
     providers: List[str]
     roles: Optional[List[str]] = None
     node_name: str
-    meta: Optional[dict] = None
     cvars: DeviceCVars
     dhcp_servers: Optional[List[DHCPServer]] = None
 

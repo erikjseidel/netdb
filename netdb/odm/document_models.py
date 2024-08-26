@@ -3,6 +3,15 @@ from pydantic import BaseModel
 
 
 class NetdbDocument(BaseModel):
+    """
+    Structure of on-database document. Intended to be compatable with
+    both SQL and document oriented databases (e.g. MongoDB).
+
+    Incoming column data is decomposed into a number of NetdbDocuments
+    which can then be stored on the backend database.
+
+    """
+
     set_id: str
     datasource: str
     weight: int

@@ -44,10 +44,17 @@ class MongoAPI:
         documents = self.collection.find(query)
 
         return [
-            NetdbDocument.model_validate(
-                {item: data[item] for item in data if item != '_id'}
+            NetdbDocument(
+                set_id=document['set_id'],
+                datasource=document['datasource'],
+                weight=document['weight'],
+                flat=document['flat'],
+                category=document['category'],
+                family=document['family'],
+                element_id=document['element_id'],
+                data=document['data'],
             )
-            for data in documents
+            for document in documents
         ]
 
     def reload(self, documents: list, filt: dict) -> bool:

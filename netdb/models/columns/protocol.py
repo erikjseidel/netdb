@@ -53,7 +53,6 @@ class ISIS(BaseColumnModel):
     iso: str
     interfaces: List[ISISInterface]
     redistribute: Optional[ISISRedistributePolicy] = None
-    meta: Optional[dict]
 
 
 class Protocol(BaseColumnModel):

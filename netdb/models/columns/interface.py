@@ -51,7 +51,6 @@ class Interface(BaseColumnModel):
     lacp: Optional[InterfaceLACPOptions] = None
     firewall: Optional[InterfaceFirewall] = None
     policy: Optional[InterfacePolicy] = None
-    meta: Optional[dict] = None
 
 
 class InterfaceRoot(RootModel):
