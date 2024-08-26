@@ -41,12 +41,6 @@ class FirewallZonePolicy(BaseColumnModel):
     default_action: Literal['accept', 'drop']
 
 
-class InterfaceGroup(BaseColumnModel):
-    description: Optional[str] = None
-    interfaces: Optional[List[str]] = None
-    include: Optional[str] = None
-
-
 class FirewallGroup(BaseColumnModel):
     type: Literal['network']
     networks: List[IPvAnyInterface]
@@ -98,7 +92,6 @@ class Firewall(BaseColumnModel):
     options: Optional[FirewallOptions] = None
 
     # Vyos 1.4
-    interfaces: Optional[Dict[str, InterfaceGroup]] = None
     policy_base: Optional[FirewallPolicyBase] = None
 
 
