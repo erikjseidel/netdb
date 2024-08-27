@@ -1,7 +1,7 @@
 from typing import Union
 from pymongo import MongoClient, ReadPreference
-from odm.document_models import NetdbDocument
-from config.defaults import TRANSACTIONS, MONGO_URL
+from models.types import NetdbDocument, OverrideDocument
+from config.defaults import TRANSACTIONS, MONGO_URL, OVERRIDE_TABLE
 
 
 class MongoAPI:
@@ -28,6 +28,8 @@ class MongoAPI:
         else:
             self.client = MongoClient(MONGO_URL)
 
+        self.collection_name = collection
+
         cursor = self.client[database]
         self.collection = cursor[collection]
 
@@ -43,19 +45,34 @@ class MongoAPI:
 
         documents = self.collection.find(query)
 
-        return [
-            NetdbDocument(
-                set_id=document['set_id'],
-                datasource=document['datasource'],
-                weight=document['weight'],
-                flat=document['flat'],
-                category=document['category'],
-                family=document['family'],
-                element_id=document['element_id'],
-                data=document['data'],
-            )
-            for document in documents
-        ]
+        if self.collection_name == OVERRIDE_TABLE:
+            ret = [
+                OverrideDocument(
+                    column_type=document['datasource'],
+                    set_id=document['set_id'],
+                    category=document['category'],
+                    family=document['family'],
+                    element_id=document['element_id'],
+                    data=document['data'],
+                )
+                for document in documents
+            ]
+        else:
+            ret = [
+                NetdbDocument(
+                    set_id=document['set_id'],
+                    datasource=document['datasource'],
+                    weight=document['weight'],
+                    flat=document['flat'],
+                    category=document['category'],
+                    family=document['family'],
+                    element_id=document['element_id'],
+                    data=document['data'],
+                )
+                for document in documents
+            ]
+
+        return ret
 
     def reload(self, documents: list, filt: dict) -> bool:
         """
@@ -92,7 +109,7 @@ class MongoAPI:
 
         return True
 
-    def write_one(self, document: dict) -> str:
+    def write_one(self, document: Union[NetdbDocument, OverrideDocument]) -> str:
         """
         Add a single document to a collection
 
@@ -100,9 +117,9 @@ class MongoAPI:
             A dict representing the new document to load into the collection
 
         """
-        return str(self.collection.insert_one(document).inserted_id)
+        return str(self.collection.insert_one(document.model_dump).inserted_id)
 
-    def replace_one(self, document: dict) -> bool:
+    def replace_one(self, document: Union[NetdbDocument, OverrideDocument]) -> bool:
         """
         Replace a single document to a collection
 

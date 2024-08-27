@@ -28,11 +28,20 @@ tags = [
         "name": "validate",
         "description": "validates an NetDBContainer configuration dataset without loading it",
     },
+    {
+        "name": "override",
+        "description": "endpoints and methods for querying and manipulating overrides",
+    },
 ]
 
 ERR_READONLY = {
     'result': False,
     'comment': 'NetDB API is running in read only mode.',
+}
+
+ERR_OVERRIDE_DISABLED = {
+    'result': False,
+    'comment': 'NETDB API overrides disabled.',
 }
 
 
@@ -73,7 +82,7 @@ def generate_filter(*args, **kwargs) -> dict:
     key_names = ['datasource', 'set_id', 'category', 'family', 'element_id']
 
     ret = {k: v for k, v in dict(zip(key_names, args)).items() if v}
-    ret.update(kwargs)
+    ret.update({k: v for k, v in kwargs.items() if v})
 
     return ret
 

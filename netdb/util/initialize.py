@@ -1,7 +1,7 @@
 import logging
 
-from config.defaults import DB_NAME
-from models.root import COLUMN_TYPES
+from config.defaults import DB_NAME, OVERRIDE_TABLE
+from models.types import COLUMN_TYPES
 from .mongo_api import MongoAPI
 
 logger = logging.getLogger(__name__)
@@ -16,6 +16,15 @@ DEFAULT_INDEX = [
     ('datasource', 1),
 ]
 
+# Index used for overrides in override table
+OVERRIDE_INDEX = [
+    ('column_type', 1),
+    ('set_id', 1),
+    ('category', 1),
+    ('family', 1),
+    ('element_id', 1),
+]
+
 
 def initialize():
     """
@@ -28,3 +37,6 @@ def initialize():
 
         # This call will be a no-op if index already exists.
         MongoAPI(DB_NAME, column).create_index(DEFAULT_INDEX)
+
+        logger.info("%s: Creating index for override table %s", DB_NAME, OVERRIDE_TABLE)
+        MongoAPI(DB_NAME, OVERRIDE_TABLE).create_index(OVERRIDE_INDEX)

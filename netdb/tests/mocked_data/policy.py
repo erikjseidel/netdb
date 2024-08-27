@@ -1,4 +1,4 @@
-from odm.document_models import NetdbDocument
+from models.types import NetdbDocument
 
 
 def mock_standard_policy_data():
@@ -381,11 +381,11 @@ def mock_standard_policy_documents():
     ]
 
 
-def mock_standard_policy_column():
+def mock_standard_policy_column(check_override=False):
     """
     Standard policy data column
     """
-    return {
+    ret = {
         'ROUTER1': {
             'prefix_lists': {
                 'ipv4': {
@@ -533,3 +533,31 @@ def mock_standard_policy_column():
             },
         }
     }
+
+    if check_override:
+        ret['ROUTER1']['route_maps']['ipv4']['4-PEER-OUT']['rules'] = [
+            {
+                'action': 'permit',
+                'match': {
+                    'prefix_list': '4-65000-PREFIXES',
+                },
+                'number': 50,
+            },
+            {
+                'action': 'permit',
+                'match': {
+                    'prefix_list': '4-65005-PREFIXES',
+                },
+                'number': 55,
+            },
+            {
+                'action': 'deny',
+                'number': 99,
+            },
+        ]
+
+        ret['ROUTER1']['route_maps']['ipv4']['4-PEER-OUT']['meta']['netdb'][
+            'override'
+        ] = True
+
+    return ret

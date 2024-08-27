@@ -1,4 +1,4 @@
-from odm.document_models import NetdbDocument
+from models.types import NetdbDocument
 
 
 def mock_standard_firewall_data():
@@ -454,11 +454,11 @@ def mock_standard_firewall_documents():
     ]
 
 
-def mock_standard_firewall_column():
+def mock_standard_firewall_column(check_override=False):
     """
     Standard firewall data column
     """
-    return {
+    ret = {
         'ROUTER1': {
             'groups': {
                 'ipv4': {
@@ -648,3 +648,14 @@ def mock_standard_firewall_column():
             },
         }
     }
+
+    if check_override:
+        ret['ROUTER1']['groups']['ipv6']['trusted6']['networks'] = [
+            'fd00:cb00::/32',
+            'fd00:4700::/32',
+            'fd00:4800::/32',
+        ]
+
+        ret['ROUTER1']['groups']['ipv6']['trusted6']['meta']['netdb']['override'] = True
+
+    return ret

@@ -6,9 +6,10 @@ from fastapi.encoders import jsonable_encoder
 
 import util.initialize as init
 import util.api_resources as resources
-from config.defaults import READ_ONLY
-from models.root import RootContainer, COLUMN_TYPES
+from config.defaults import READ_ONLY, OVERRIDES_ENABLED
+from models.types import RootContainer, OverrideDocument, COLUMN_TYPES
 from odm.column_odm import ColumnODM
+from odm.override_handler import OverrideHandler
 from util.exception import NetDBException
 
 from util.api_resources import (
@@ -16,6 +17,7 @@ from util.api_resources import (
     generate_filter,
     PrettyJSONResponse,
     ERR_READONLY,
+    ERR_OVERRIDE_DISABLED,
 )
 
 
@@ -241,11 +243,6 @@ def get_column(
     show_hidden: ``False``
         Return 'hidden' (i.e. weight < 1) elements
 
-    Other arguments:
-
-    response:
-        HTTP response context passed in by FastAPI
-
     """
     # Shortcut for set_id. Only using uppercase device names for now.
     if device:
@@ -253,7 +250,12 @@ def get_column(
 
     filt = generate_filter(datasource, set_id, category, family, element_id)
 
-    out = ColumnODM(column_type=column).fetch(filt, show_hidden).pruned_column
+    out = (
+        ColumnODM(column_type=column)
+        .fetch(filt, show_hidden)
+        .generate_column()
+        .pruned_column
+    )
 
     return NetDBReturn(out=out, comment=f'Column data for {column} column.')
 
@@ -372,10 +374,133 @@ def get_column_set(
     # capitalize anything that comes in.
     filt = {'set_id': set_id.upper()}
 
-    out = ColumnODM(column_type=column).fetch(filt).pruned_column
+    out = ColumnODM(column_type=column).fetch(filt).generate_column().pruned_column
     if not out:
         response.status_code = status.HTTP_404_NOT_FOUND
 
         return NetDBReturn(result=False, comment=f'No column data found for {set_id}')
 
     return NetDBReturn(out=out, comment=f'Column data for {column} column.')
+
+
+@app.get(
+    '/override',
+    tags=['override'],
+    response_class=PrettyJSONResponse,
+)
+def get_overrides(
+    column: Optional[str] = None,
+    set_id: Optional[str] = None,
+    category: Optional[str] = None,
+    family: Optional[str] = None,
+    element_id: Optional[str] = None,
+) -> NetDBReturn:
+    """
+    Get overrides. Optionally filter the results using the following keys:
+
+    column:
+        Name of column to query (e.g. `bgp')
+
+    set_id: ``None``
+        Filter  query by `set_id' (this aligns with device name)
+
+    category: ``None``
+        Filter query by `category' key
+
+    family: ``None``
+        Filter query by `family' key
+
+    element_id: ``None``
+        Filter query by `element_id' key
+
+    show_hidden: ``False``
+        Return 'hidden' (i.e. weight < 1) elements
+
+    """
+    filt = generate_filter(
+        None, set_id, category, family, element_id, column_type=column
+    )
+
+    out = OverrideHandler().fetch(filt).pruned_overrides
+
+    return NetDBReturn(out=out, comment='Column overrides')
+
+
+@app.put(
+    '/override',
+    tags=['override'],
+    response_class=PrettyJSONResponse,
+)
+def put_override(
+    override: OverrideDocument,
+    response: Response,
+) -> NetDBReturn:
+    """
+    Put (upsert) a new override.
+
+    override:
+        New column override to be upserted.
+
+    Other arguments:
+
+    response:
+        HTTP response context passed in by FastAPI
+
+    """
+    if not OVERRIDES_ENABLED:
+        response.status_code = status.HTTP_403_NOT_ALLOWED
+        return ERR_OVERRIDE_DISABLED
+
+    result = OverrideHandler().upsert(override)
+
+    return NetDBReturn(out=result, comment='New override installed.')
+
+
+@app.delete('/override', tags=['override'])
+def delete_overrides(
+    response: Response,
+    column: Optional[str] = None,
+    set_id: Optional[str] = None,
+    category: Optional[str] = None,
+    family: Optional[str] = None,
+    element_id: Optional[str] = None,
+) -> NetDBReturn:
+    """
+    Delete column overrides. Delete overrides matching the following keys:
+
+    column:
+        Name of column to query (e.g. `bgp')
+
+    set_id: ``None``
+        Match by `set_id'
+
+    category: ``None``
+        Match by `category'
+
+    family: ``None``
+        Match by `family'
+
+    element_id: ``None``
+        Match by `element_id'
+
+    Other arguments:
+
+    response:
+        HTTP response context passed in by FastAPI
+
+    """
+    if not OVERRIDES_ENABLED:
+        response.status_code = status.HTTP_403_NOT_ALLOWED
+        return ERR_OVERRIDE_DISABLED
+
+    filt = generate_filter(
+        None, set_id, category, family, element_id, column_type=column
+    )
+
+    count = OverrideHandler().delete(filt)
+
+    word = 'overrides'
+    if count == 1:
+        word = 'override'
+
+    return NetDBReturn(comment=f'{count} {word} deleted.')

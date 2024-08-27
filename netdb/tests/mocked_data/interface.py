@@ -1,4 +1,4 @@
-from odm.document_models import NetdbDocument
+from models.types import NetdbDocument
 
 
 def mock_standard_interface_data():
@@ -474,11 +474,11 @@ def mock_standard_interface_documents():
     ]
 
 
-def mock_standard_interface_column():
+def mock_standard_interface_column(check_override=False):
     """
     Standard interface data column
     """
-    return {
+    ret = {
         'ROUTER1': {
             'bond0': {
                 'description': 'Trunk Interface',
@@ -516,7 +516,7 @@ def mock_standard_interface_column():
                     }
                 },
                 'description': 'Private VLAN',
-                'disabled': False,
+                'disabled': check_override,
                 'ipv6_autoconf': False,
                 'meta': {
                     'netbox': {
@@ -698,6 +698,11 @@ def mock_standard_interface_column():
             },
         }
     }
+
+    if check_override:
+        ret['ROUTER1']['bond0.100']['meta']['netdb']['override'] = True
+
+    return ret
 
 
 def mock_standard_interface_pydantic_return():

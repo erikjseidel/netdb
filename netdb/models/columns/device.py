@@ -1,7 +1,7 @@
 from typing import Literal, Optional, Dict, List
-from ipaddress import IPv6Address, IPv4Address, IPv4Network
+from ipaddress import IPv6Address, IPv4Address
 from pydantic import ConfigDict, Field, IPvAnyAddress, IPvAnyNetwork
-from ..base import BaseContainer, BaseColumnModel
+from ..base_types import BaseContainer, BaseColumnModel
 
 
 class DeviceCVars(BaseColumnModel):
@@ -18,24 +18,12 @@ class DeviceCVars(BaseColumnModel):
     model_config = ConfigDict(extra='allow')
 
 
-class DHCPRange(BaseColumnModel):
-    start_address: IPv4Address
-    end_address: IPv4Address
-
-
-class DHCPServer(BaseColumnModel):
-    router_ip: IPv4Address
-    network: IPv4Network
-    ranges: List[DHCPRange]
-
-
 class Device(BaseColumnModel):
     location: str
     providers: List[str]
     roles: Optional[List[str]] = None
     node_name: str
     cvars: DeviceCVars
-    dhcp_servers: Optional[List[DHCPServer]] = None
 
 
 class DeviceContainer(BaseContainer):

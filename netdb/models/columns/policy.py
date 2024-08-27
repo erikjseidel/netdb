@@ -1,6 +1,6 @@
 from typing import Literal, Optional, Dict, List
 from pydantic import Field, IPvAnyAddress, IPvAnyNetwork
-from ..base import BaseContainer, BaseColumnModel
+from ..base_types import BaseContainer, BaseColumnModel
 
 
 class PolicyBasicRule(BaseColumnModel):

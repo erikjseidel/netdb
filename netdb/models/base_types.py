@@ -1,5 +1,7 @@
-from typing import Optional
+from typing import Annotated, Literal, Optional
 from pydantic import BaseModel, ConfigDict
+
+FamilyType = Annotated[str, Literal['ipv4', 'ipv6']]
 
 
 class BaseColumnModel(BaseModel):

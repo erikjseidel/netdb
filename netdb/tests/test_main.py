@@ -1,13 +1,11 @@
 from pprint import pprint
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 from fastapi.testclient import TestClient
 
 import pytest
 
 from mocked_data import interface
 from mocked_utils import mock_mongo_api
-
-mock_defaults = MagicMock(DB_NAME='netdb', TRANSACTIONS=True, READ_ONLY=False)
 
 
 def _container(column_type, datasource, weight, column):
@@ -26,7 +24,6 @@ with patch.dict(
     'sys.modules',
     {
         'util.mongo_api': mock_mongo_api,
-        'config.defaults': mock_defaults,
     },
 ):
     import main
@@ -197,12 +194,12 @@ def test_get_column_root():
                             'interfaces': [
                                 'bond0',
                                 'eth6',
-                                'eth7',
                             ],
                             'meta': {
                                 'netdb': {
                                     'datasource': 'netbox',
                                     'weight': 150,
+                                    'override': True,
                                 },
                             },
                         },
@@ -262,16 +259,6 @@ def test_get_column_root():
                             'ibgp_ipv4': '10.0.16.10',
                             'ibgp_ipv6': 'fd00:10::16:10',
                             'iso': '49.0001.0192.0000.0210.00',
-                            'lldp_interfaces': [
-                                'bond0',
-                                'bond1',
-                                'bond0.100',
-                                'bond1.100',
-                                'eth0',
-                                'eth1',
-                                'eth2',
-                                'eth3',
-                            ],
                             'local_asn': 65090,
                             'primary_contact': 'contact@help.us',
                             'primary_ipv4': '192.0.2.10',
@@ -279,28 +266,6 @@ def test_get_column_root():
                             'router_id': '192.0.2.10',
                             'znsl_prefixes': ['192.0.2.0/24', '2001:db8::/32'],
                         },
-                        'dhcp_servers': [
-                            {
-                                'network': '10.5.130.0/24',
-                                'ranges': [
-                                    {
-                                        'end_address': '10.5.130.254',
-                                        'start_address': '10.5.130.100',
-                                    }
-                                ],
-                                'router_ip': '10.5.130.1',
-                            },
-                            {
-                                'network': '192.0.2.128/26',
-                                'ranges': [
-                                    {
-                                        'end_address': '192.0.2.190',
-                                        'start_address': '192.0.2.138',
-                                    }
-                                ],
-                                'router_ip': '192.0.2.129',
-                            },
-                        ],
                         'location': 'New York, New York',
                         'meta': {
                             'netbox': {
@@ -377,7 +342,11 @@ def test_get_column_root():
                             'ipv4': {
                                 '4-PEER-OUT': {
                                     'meta': {
-                                        'netdb': {'datasource': 'repo', 'weight': 50}
+                                        'netdb': {
+                                            'datasource': 'repo',
+                                            'weight': 50,
+                                            'override': True,
+                                        }
                                     },
                                     'rules': [
                                         {
@@ -386,6 +355,13 @@ def test_get_column_root():
                                                 'prefix_list': '4-65000-PREFIXES'
                                             },
                                             'number': 50,
+                                        },
+                                        {
+                                            'action': 'permit',
+                                            'match': {
+                                                'prefix_list': '4-65005-PREFIXES'
+                                            },
+                                            'number': 55,
                                         },
                                         {'action': 'deny', 'number': 99},
                                     ],
@@ -423,7 +399,7 @@ def test_get_column(column, get_string, code, result):
             'datasource=netbox',
             200,
             {
-                'comment': 'bgp column: 0 elements deleted.',
+                'comment': 'bgp column: 2 elements deleted.',
                 'error': False,
                 'out': None,
                 'result': True,
@@ -434,7 +410,7 @@ def test_get_column(column, get_string, code, result):
             'datasource=netbox&category=neighbors',
             200,
             {
-                'comment': 'bgp column: 0 elements deleted.',
+                'comment': 'bgp column: 2 elements deleted.',
                 'error': False,
                 'out': None,
                 'result': True,
@@ -465,7 +441,7 @@ def test_get_column(column, get_string, code, result):
             'datasource=netbox',
             200,
             {
-                'comment': 'device column: 0 elements deleted.',
+                'comment': 'device column: 1 element deleted.',
                 'error': False,
                 'out': None,
                 'result': True,
@@ -476,7 +452,7 @@ def test_get_column(column, get_string, code, result):
             'datasource=netbox',
             200,
             {
-                'comment': 'interface column: 0 elements deleted.',
+                'comment': 'interface column: 7 elements deleted.',
                 'error': False,
                 'out': None,
                 'result': True,
@@ -487,7 +463,7 @@ def test_get_column(column, get_string, code, result):
             'datasource=netbox',
             200,
             {
-                'comment': 'protocol column: 0 elements deleted.',
+                'comment': 'protocol column: 3 elements deleted.',
                 'error': False,
                 'out': None,
                 'result': True,
@@ -498,7 +474,7 @@ def test_get_column(column, get_string, code, result):
             'datasource=repo',
             200,
             {
-                'comment': 'policy column: 0 elements deleted.',
+                'comment': 'policy column: 16 elements deleted.',
                 'error': False,
                 'out': None,
                 'result': True,
@@ -509,7 +485,7 @@ def test_get_column(column, get_string, code, result):
             'datasource=repo',
             200,
             {
-                'comment': 'firewall column: 0 elements deleted.',
+                'comment': 'firewall column: 17 elements deleted.',
                 'error': False,
                 'out': None,
                 'result': True,
@@ -544,7 +520,7 @@ def test_get_column_set():
     assert response.json() == {
         'comment': 'Column data for interface column.',
         'error': False,
-        'out': interface.mock_standard_interface_column(),
+        'out': interface.mock_standard_interface_column(check_override=True),
         'result': True,
     }
 
@@ -755,3 +731,505 @@ def test_put_column_pydantic_fail():
     )
     assert response.status_code == 422
     assert response.json() == interface.mock_invalid_interface_pydantic_return()
+
+
+@pytest.mark.parametrize(
+    'get_string,code,result',
+    [
+        (
+            "column=bgp",
+            200,
+            {
+                'comment': 'Column overrides',
+                'error': False,
+                'out': [
+                    {
+                        'category': 'neighbors',
+                        'column_type': 'bgp',
+                        'data': {
+                            'family': {
+                                'ipv4': {
+                                    'nhs': True,
+                                    'route_map': {
+                                        'export': '4-TRANSIT-OUT',
+                                        'import': 'REJECT-ALL',
+                                    },
+                                },
+                            },
+                        },
+                        'element_id': '169.254.169.254',
+                        'set_id': 'ROUTER1',
+                    },
+                ],
+                'result': True,
+            },
+        ),
+        (
+            "set_id=ROUTER1&column=bgp",
+            200,
+            {
+                'comment': 'Column overrides',
+                'error': False,
+                'out': [
+                    {
+                        'category': 'neighbors',
+                        'column_type': 'bgp',
+                        'data': {
+                            'family': {
+                                'ipv4': {
+                                    'nhs': True,
+                                    'route_map': {
+                                        'export': '4-TRANSIT-OUT',
+                                        'import': 'REJECT-ALL',
+                                    },
+                                },
+                            },
+                        },
+                        'element_id': '169.254.169.254',
+                        'set_id': 'ROUTER1',
+                    },
+                ],
+                'result': True,
+            },
+        ),
+        (
+            "column=policy&element_id=4-PEER-OUT",
+            200,
+            {
+                'comment': 'Column overrides',
+                'error': False,
+                'out': [
+                    {
+                        'category': 'route_maps',
+                        'column_type': 'policy',
+                        'data': {
+                            'rules': [
+                                {
+                                    'action': 'permit',
+                                    'match': {
+                                        'prefix_list': '4-65000-PREFIXES',
+                                    },
+                                    'number': 50,
+                                },
+                                {
+                                    'action': 'permit',
+                                    'match': {
+                                        'prefix_list': '4-65005-PREFIXES',
+                                    },
+                                    'number': 55,
+                                },
+                                {
+                                    'action': 'deny',
+                                    'number': 99,
+                                },
+                            ],
+                        },
+                        'element_id': '4-PEER-OUT',
+                        'family': 'ipv4',
+                        'set_id': 'ROUTER1',
+                    },
+                ],
+                'result': True,
+            },
+        ),
+        (
+            "set_id=ROUTER1&element_id=bond0.100",
+            200,
+            {
+                'comment': 'Column overrides',
+                'error': False,
+                'out': [
+                    {
+                        'column_type': 'interface',
+                        'data': {
+                            'disabled': True,
+                        },
+                        'element_id': 'bond0.100',
+                        'set_id': 'ROUTER1',
+                    },
+                ],
+                'result': True,
+            },
+        ),
+        (
+            "set_id=ROUTER1&column=protocol",
+            200,
+            {
+                'comment': 'Column overrides',
+                'error': False,
+                'out': [
+                    {
+                        'column_type': 'protocol',
+                        'data': {
+                            'interfaces': [
+                                'bond0',
+                                'eth6',
+                            ],
+                        },
+                        'element_id': 'lldp',
+                        'set_id': 'ROUTER1',
+                    },
+                ],
+                'result': True,
+            },
+        ),
+    ],
+)
+def test_get_override(get_string, code, result):
+    """
+    Test a GET request to API '/override' endpoint.
+
+    Expected result:
+       Overrides matching filter
+
+    """
+    response = client.get(f"/override?{get_string}")
+
+    assert response.status_code == code
+    assert response.json() == result
+
+
+@pytest.mark.parametrize(
+    'override,code,result',
+    [
+        (
+            {
+                'column_type': 'bgp',
+                'set_id': 'ROUTER1',
+                'category': 'neighbors',
+                'family': None,
+                'element_id': '169.254.169.254',
+                'data': {
+                    'family': {
+                        'ipv4': {
+                            'nhs': True,
+                            'route_map': {
+                                'import': 'REJECT-ALL',
+                                'export': '4-TRANSIT-OUT',
+                            },
+                        }
+                    },
+                },
+            },
+            200,
+            {
+                'comment': 'New override installed.',
+                'error': False,
+                'out': {
+                    'ROUTER1': {
+                        'neighbors': {
+                            '169.254.169.254': {
+                                'family': {
+                                    'ipv4': {
+                                        'nhs': True,
+                                        'route_map': {
+                                            'export': '4-TRANSIT-OUT',
+                                            'import': 'REJECT-ALL',
+                                        },
+                                    },
+                                },
+                                'meta': {
+                                    'netdb': {
+                                        'datasource': 'peering_manager',
+                                        'override': True,
+                                        'weight': 100,
+                                    },
+                                    'peering_manager': {
+                                        'status': 'enabled',
+                                        'type': 'transit-session',
+                                        'url': 'https://pm.example.net/api/peering/direct-peering-sessions/1/',
+                                    },
+                                },
+                                'multihop': 2,
+                                'password': 'red_herring',
+                                'remote_asn': 64500,
+                                'source': '192.0.2.12',
+                                'type': 'ebgp',
+                            },
+                        },
+                    },
+                },
+                'result': True,
+            },
+        ),
+        (
+            {
+                'column_type': 'firewall',
+                'set_id': 'ROUTER1',
+                'category': 'groups',
+                'family': 'ipv6',
+                'element_id': 'trusted6',
+                'data': {
+                    'type': 'network',
+                    'networks': ['fd00:cb00::/32', 'fd00:4700::/32', 'fd00:4800::/32'],
+                },
+            },
+            200,
+            {
+                'comment': 'New override installed.',
+                'error': False,
+                'out': {
+                    'ROUTER1': {
+                        'groups': {
+                            'ipv6': {
+                                'trusted6': {
+                                    'meta': {
+                                        'netdb': {
+                                            'datasource': 'repo',
+                                            'override': True,
+                                            'weight': 50,
+                                        },
+                                    },
+                                    'networks': [
+                                        'fd00:cb00::/32',
+                                        'fd00:4700::/32',
+                                        'fd00:4800::/32',
+                                    ],
+                                    'type': 'network',
+                                },
+                            },
+                        },
+                    },
+                },
+                'result': True,
+            },
+        ),
+        (
+            {
+                'column_type': 'interface',
+                'set_id': 'ROUTER1',
+                'category': None,
+                'family': None,
+                'element_id': 'bond0.100',
+                'data': {
+                    'disabled': True,
+                },
+            },
+            200,
+            {
+                'comment': 'New override installed.',
+                'error': False,
+                'out': {
+                    'ROUTER1': {
+                        'bond0.100': {
+                            'address': {
+                                '10.5.130.1/24': {
+                                    'meta': {
+                                        'netbox': {
+                                            'id': 1,
+                                            'last_updated': '2023-05-19T17:22:30.257562+00:00',
+                                            'url': 'https://netbox.example.net/ipam/ip-addresses/1/',
+                                        },
+                                        'tags': [
+                                            'lan',
+                                        ],
+                                    },
+                                },
+                            },
+                            'description': 'Private VLAN',
+                            'disabled': True,
+                            'ipv6_autoconf': False,
+                            'meta': {
+                                'netbox': {
+                                    'id': 2,
+                                    'last_updated': '2024-06-19T03:12:43.399690+00:00',
+                                    'url': 'https://netbox.example.net/dcim/interfaces/2/',
+                                },
+                                'netdb': {
+                                    'datasource': 'netbox',
+                                    'override': True,
+                                    'weight': 150,
+                                },
+                            },
+                            'mtu': 1500,
+                            'offload': False,
+                            'policy': {
+                                'ipv4': 'POLICY1',
+                            },
+                            'type': 'vlan',
+                            'use_dhcp': False,
+                            'vlan': {
+                                'id': 100,
+                                'parent': 'bond0',
+                            },
+                        },
+                    },
+                },
+                'result': True,
+            },
+        ),
+        (
+            {
+                'column_type': 'policy',
+                'set_id': 'ROUTER1',
+                'category': 'route_maps',
+                'family': 'ipv4',
+                'element_id': '4-PEER-OUT',
+                'data': {
+                    'rules': [
+                        {
+                            'action': 'permit',
+                            'match': {'prefix_list': '4-65000-PREFIXES'},
+                            'number': 50,
+                        },
+                        {
+                            'action': 'permit',
+                            'match': {'prefix_list': '4-65005-PREFIXES'},
+                            'number': 55,
+                        },
+                        {'action': 'deny', 'number': 99},
+                    ]
+                },
+            },
+            200,
+            {
+                'comment': 'New override installed.',
+                'error': False,
+                'out': {
+                    'ROUTER1': {
+                        'route_maps': {
+                            'ipv4': {
+                                '4-PEER-OUT': {
+                                    'meta': {
+                                        'netdb': {
+                                            'datasource': 'repo',
+                                            'override': True,
+                                            'weight': 50,
+                                        },
+                                    },
+                                    'rules': [
+                                        {
+                                            'action': 'permit',
+                                            'match': {
+                                                'prefix_list': '4-65000-PREFIXES',
+                                            },
+                                            'number': 50,
+                                        },
+                                        {
+                                            'action': 'permit',
+                                            'match': {
+                                                'prefix_list': '4-65005-PREFIXES',
+                                            },
+                                            'number': 55,
+                                        },
+                                        {
+                                            'action': 'deny',
+                                            'number': 99,
+                                        },
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                },
+                'result': True,
+            },
+        ),
+        (
+            {
+                'column_type': 'protocol',
+                'set_id': 'ROUTER1',
+                'category': None,
+                'family': None,
+                'element_id': 'lldp',
+                'data': {
+                    'interfaces': ['bond0', 'eth6'],
+                },
+            },
+            200,
+            {
+                'comment': 'New override installed.',
+                'error': False,
+                'out': {
+                    'ROUTER1': {
+                        'lldp': {
+                            'interfaces': [
+                                'bond0',
+                                'eth6',
+                            ],
+                            'meta': {
+                                'netdb': {
+                                    'datasource': 'netbox',
+                                    'override': True,
+                                    'weight': 150,
+                                },
+                            },
+                        },
+                    },
+                },
+                'result': True,
+            },
+        ),
+    ],
+)
+def test_put_override(override, code, result):
+    """
+    Test a PUT request to API '/override' endpoint.
+
+    Expected result:
+       Overriden column data and true result
+
+    """
+    response = client.put("/override", json=override)
+
+    assert response.status_code == code
+    assert response.json() == result
+
+
+@pytest.mark.parametrize(
+    'get_string,code,result',
+    [
+        (
+            "column=bgp",
+            200,
+            {
+                'comment': '1 override deleted.',
+                'error': False,
+                'out': None,
+                'result': True,
+            },
+        ),
+        (
+            "column_type=interface&element_id=bond0.100",
+            200,
+            {
+                'comment': '1 override deleted.',
+                'error': False,
+                'out': None,
+                'result': True,
+            },
+        ),
+        (
+            "set_id=ROUTER1",
+            200,
+            {
+                'comment': '5 overrides deleted.',
+                'error': False,
+                'out': None,
+                'result': True,
+            },
+        ),
+        (
+            "set_id=ROUTER2",
+            200,
+            {
+                'comment': '0 overrides deleted.',
+                'error': False,
+                'out': None,
+                'result': True,
+            },
+        ),
+    ],
+)
+def test_delete_override(get_string, code, result):
+    """
+    Test a DELETE request to API '/override' endpoint.
+
+    Expected result:
+       Delete operation verification result
+
+    """
+    response = client.delete(f"/override?{get_string}")
+
+    assert response.status_code == code
+    assert response.json() == result
