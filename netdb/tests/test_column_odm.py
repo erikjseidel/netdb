@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 from pprint import pprint
 
 import pytest
@@ -17,13 +17,10 @@ from util.exception import NetDBException
 
 from mocked_utils import mock_mongo_api
 
-mock_defaults = MagicMock(DB_NAME='netdb', TRANSACTIONS=True, READ_ONLY=False)
-
 with patch.dict(
     'sys.modules',
     {
         'util.mongo_api': mock_mongo_api,
-        'config.defaults': mock_defaults,
     },
 ):
     from odm import column_odm
@@ -206,7 +203,7 @@ def test_column_odm_read_init_bad_column():
         ),
     ],
 )
-def test_column_odm_mongo_generation(container, documents):
+def test_column_odm_document_generation(container, documents):
     """
     Test that ColumnODM container load initialization generates the correct
     MongoDB documents.
@@ -230,14 +227,48 @@ def test_column_odm_mongo_generation(container, documents):
         ('policy', policy.mock_standard_policy_column()),
     ],
 )
-def test_column_odm_fetch(column_type, column):
+def test_column_odm_fetch_generate_column(column_type, column):
     """
-    Test ColumnODM fetch for all column types.
+    Test ColumnODM fetch and generate for all column types.
     """
-    out = column_odm.ColumnODM(column_type=column_type).fetch().pruned_column
 
-    # Show all mongo_data in case of failure.
-    pprint(out)
+    #
+    # We run this test with overrides disabled.
+    #
+    out = (
+        column_odm.ColumnODM(column_type=column_type)
+        .fetch(enable_overrides=False)
+        .generate_column()
+        .pruned_column
+    )
+
+    assert out == column
+
+
+@pytest.mark.parametrize(
+    'column_type,column',
+    [
+        ('interface', interface.mock_standard_interface_column(check_override=True)),
+        ('protocol', protocol.mock_standard_protocol_column(check_override=True)),
+        ('bgp', bgp.mock_standard_bgp_column(check_override=True)),
+        ('firewall', firewall.mock_standard_firewall_column(check_override=True)),
+        ('policy', policy.mock_standard_policy_column(check_override=True)),
+    ],
+)
+def test_column_odm_fetch_with_overrides(column_type, column):
+    """
+    Test ColumnODM fetch and generate for all column types with overrides enabled.
+    """
+
+    #
+    # We run this test with overrides enabled.
+    #
+    out = (
+        column_odm.ColumnODM(column_type=column_type)
+        .fetch(enable_overrides=True)
+        .generate_column()
+        .pruned_column
+    )
 
     assert out == column
 

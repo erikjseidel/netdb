@@ -1,11 +1,24 @@
 from typing import Union
-from mocked_data import device, interface, bgp, protocol, firewall, policy
+from mocked_data import device, interface, bgp, protocol, firewall, policy, override
+
+from config.defaults import OVERRIDE_TABLE
+
+
+COLLECTION_FACTORY = {
+    'device': device.mock_standard_device_documents,
+    'interface': interface.mock_standard_interface_documents,
+    'protocol': protocol.mock_standard_protocol_documents,
+    'bgp': bgp.mock_standard_bgp_documents,
+    'firewall': firewall.mock_standard_firewall_documents,
+    'policy': policy.mock_standard_policy_documents,
+    OVERRIDE_TABLE: override.mock_override_documents,
+}
 
 
 class MongoAPI:
 
     def __init__(self, database: str, collection: str):
-        self.column_type = collection
+        self.collection = collection
         self.filter = None
         self.documents = []
 
@@ -13,19 +26,7 @@ class MongoAPI:
         """
         Mock MongoAPI read returns for valid column types.
         """
-        match self.column_type:
-            case 'device':
-                documents = device.mock_standard_device_documents()
-            case 'interface':
-                documents = interface.mock_standard_interface_documents()
-            case 'protocol':
-                documents = protocol.mock_standard_protocol_documents()
-            case 'bgp':
-                documents = bgp.mock_standard_bgp_documents()
-            case 'firewall':
-                documents = firewall.mock_standard_firewall_documents()
-            case 'policy':
-                documents = policy.mock_standard_policy_documents()
+        documents = COLLECTION_FACTORY[self.collection]()
 
         if query:
             # Simulate a mongo filtered return by, well, filtering the return.
@@ -59,8 +60,18 @@ class MongoAPI:
         Mock MongoAPI delete
         """
         self.filter = filt
+        documents = COLLECTION_FACTORY[self.collection]()
 
-        return 0
+        # Simulate a mongo filtered delete by, well, counting number of
+        # matching mocked elements.
+
+        return len(
+            [
+                document
+                for document in documents
+                if all(getattr(document, k) == v for k, v in filt.items())
+            ]
+        )
 
     def create_index(self, index: list) -> bool:
         """

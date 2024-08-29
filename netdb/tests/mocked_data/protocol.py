@@ -1,4 +1,4 @@
-from odm.document_models import NetdbDocument
+from models.types import NetdbDocument
 
 
 def mock_standard_protocol_data():
@@ -147,11 +147,11 @@ def mock_standard_protocol_documents():
     ]
 
 
-def mock_standard_protocol_column():
+def mock_standard_protocol_column(check_override=False):
     """
-    Standard IGP data column
+    Standard protocol data column
     """
-    return {
+    ret = {
         'ROUTER1': {
             'isis': {
                 'interfaces': [
@@ -221,3 +221,13 @@ def mock_standard_protocol_column():
             },
         }
     }
+
+    if check_override:
+        ret['ROUTER1']['lldp']['interfaces'] = [
+            'bond0',
+            'eth6',
+        ]
+
+        ret['ROUTER1']['lldp']['meta']['netdb']['override'] = True
+
+    return ret

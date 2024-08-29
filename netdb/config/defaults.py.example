@@ -1,8 +1,12 @@
 # Mongod host and port
-MONGO_URL="mongodb://192.0.2.1:27017/"
+MONGO_URL = "mongodb://192.0.2.1:27017/"
 # Mongod DB name
 DB_NAME = 'netdb'
 # This requires a mongodb relica set
 TRANSACTIONS = True
 # Used for instances on proxy minions and only need reads.
 READ_ONLY = False
+# Used for overrides table. Must not confict with column names.
+OVERRIDE_TABLE = 'override'
+# Overrides status
+OVERRIDES_ENABLED = True

@@ -1,4 +1,4 @@
-from odm.document_models import NetdbDocument
+from models.types import NetdbDocument
 
 
 def mock_standard_bgp_data(source):
@@ -345,12 +345,12 @@ def mock_standard_bgp_documents(source=None):
     return documents
 
 
-def mock_standard_bgp_column():
+def mock_standard_bgp_column(check_override=False):
     """
     Standard bgp data column
 
     """
-    return {
+    ret = {
         'ROUTER1': {
             'address_family': {
                 'ipv4': {'redistribute': ['static']},
@@ -369,7 +369,9 @@ def mock_standard_bgp_column():
                             'nhs': True,
                             'route_map': {
                                 'export': '4-TRANSIT-OUT',
-                                'import': '4-TRANSIT-IN',
+                                'import': (
+                                    'REJECT-ALL' if check_override else '4-TRANSIT-IN'
+                                ),
                             },
                         }
                     },
@@ -474,3 +476,10 @@ def mock_standard_bgp_column():
             },
         }
     }
+
+    if check_override:
+        ret['ROUTER1']['neighbors']['169.254.169.254']['meta']['netdb'][
+            'override'
+        ] = True
+
+    return ret

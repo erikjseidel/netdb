@@ -1,17 +1,28 @@
-from typing import Union, Optional
+from typing import List, Union, Optional, Self
 from fastapi.encoders import jsonable_encoder
 from pydantic import ValidationError
-from config.defaults import DB_NAME
-from models.root import RootContainer, COLUMN_TYPES, COLUMN_FACTORY
+from config.defaults import DB_NAME, OVERRIDE_TABLE
+from models.types import (
+    RootContainer,
+    NetdbDocument,
+    OverrideDocument,
+    COLUMN_TYPES,
+    COLUMN_FACTORY,
+)
 from util.mongo_api import MongoAPI
 from util.exception import NetDBException
-from .document_models import NetdbDocument
 
 
 class ColumnODM:
 
     # If set then elements with weight < 1 are presented as well
     __provide_all__ = False
+
+    # NetDB documents placed here pending column generation.
+    documents: Optional[List[NetdbDocument]] = None
+
+    # Override documents placed here by fetch() when overrides enabled.
+    override_documents: Optional[List[OverrideDocument]] = None
 
     def __init__(self, container: RootContainer = None, column_type: str = None):
         """
@@ -30,7 +41,6 @@ class ColumnODM:
         """
 
         # NetdbDocument documents stored here pending load into MongoDB.
-        self.documents = None
 
         self.column_type = None
 
@@ -46,6 +56,12 @@ class ColumnODM:
             raise NetDBException(
                 code=422,
                 message=f'Column {self.column_type} not available',
+            )
+
+        if self.column_type == OVERRIDE_TABLE:
+            raise NetDBException(
+                code=422,
+                message=f'Column {self.column_type} confict with override table. Please rename.',
             )
 
         # Initialize the MongoDB driver
@@ -147,15 +163,31 @@ class ColumnODM:
 
         self.documents = out
 
-    def _generate_column(self) -> None:
+    def generate_column(self) -> Self:
         """
         Convert MongoDB documents into column formated dict data.
         """
         out = {}
 
-        for netdb_document in self.documents:
+        override_map = None
+        if self.override_documents:
+            #
+            # If overrides are to be included. Then we read overrides for this column and
+            # generate a tuple keyed dict for them that can be used for fast lookups.
+            #
+            override_map = {
+                (
+                    document.set_id,
+                    document.category,
+                    document.family,
+                    document.element_id,
+                ): document.data
+                for document in self.override_documents
+            }
 
-            element = netdb_document.model_dump()
+        for document in self.documents:
+
+            element = document.model_dump()
 
             if element['weight'] < 1 and not self.__provide_all__:
                 #
@@ -166,7 +198,10 @@ class ColumnODM:
                 #
                 continue
 
-            if flat := element.pop('flat', False):
+            unwind = out
+            element_data = element.pop('data')
+
+            if element.pop('flat', False):
                 #
                 # In the case of flat sets the entirety of the set will all be in the
                 # same document and no nested dictionaries will need to be loaded from
@@ -181,18 +216,6 @@ class ColumnODM:
                 #
                 element_id = element.pop('element_id')
 
-            element_data = element.pop('data')
-
-            if not element_data.get('meta'):
-                element_data['meta'] = {}
-
-            element_data['meta']['netdb'] = {
-                'datasource': element['datasource'],
-                'weight': element['weight'],
-            }
-
-            unwind = out
-            if not flat:
                 #
                 # This is where, in the case of flat==False, we determine where in the
                 # column dict to place this particular element's nested dict.
@@ -201,7 +224,14 @@ class ColumnODM:
                     if name := element.get(level):
                         unwind = unwind.setdefault(name, {})
 
-            if element_id in unwind:
+            element_data.setdefault('meta', {})
+
+            element_data['meta']['netdb'] = {
+                'datasource': element['datasource'],
+                'weight': element['weight'],
+            }
+
+            if unwind.get(element_id):
                 #
                 # If the element (or set in case of flat columns) is already in the dict
                 # (i.e. placed their by a previous iteration of the main loop) then the
@@ -220,6 +250,23 @@ class ColumnODM:
                 ):
                     continue
 
+            if override_map:
+                #
+                # If overrides includes enabled and overrides exist then merge the override
+                # data into the config data.
+                #
+                override_tuple = (
+                    document.set_id,
+                    document.category,
+                    document.family,
+                    document.element_id,
+                )
+
+                # Update with override data if any found.
+                if override_data := override_map.get(override_tuple):
+                    element_data.update(override_data)
+                    element_data['meta']['netdb']['override'] = True
+
             unwind[element_id] = element_data
 
         try:
@@ -232,6 +279,8 @@ class ColumnODM:
                 message=f"Stored documents for {self.column_type} column failed validation.",
                 out=e.errors(),
             ) from e
+
+        return self
 
     def _is_registered(self) -> bool:
         """
@@ -252,7 +301,12 @@ class ColumnODM:
 
         return True
 
-    def fetch(self, filt: Union[dict, None] = None, show_hidden: bool = False) -> dict:
+    def fetch(
+        self,
+        filt: Union[dict, None] = None,
+        show_hidden: bool = False,
+        enable_overrides: bool = True,
+    ) -> Self:
         """
         Pull column ducuments from MongoDB and convert them into a column formatted
         structured dict data and return it to caller.
@@ -263,13 +317,26 @@ class ColumnODM:
         show_hidden: ``False``
             Public wrapper around `self.__provide_all__` (see above for more details)
 
+        enable_overrides: ``False``
+            If false do not load overrides
+
         """
         filt = filt or {}
 
         self.documents = self.mongo.read(filt)
 
         self.__provide_all__ = show_hidden
-        self._generate_column()
+
+        if enable_overrides:
+
+            override_filt = {
+                k: v
+                for k, v in filt.items()
+                if k in ['set_id', 'category', 'family', 'element_id'] and v
+            }
+            self.override_documents = MongoAPI(DB_NAME, OVERRIDE_TABLE).read(
+                query={'column_type': self.column_type, **override_filt}
+            )
 
         return self
 
@@ -324,11 +391,24 @@ class ColumnODM:
 
         return count
 
+    def set_overrides(self, documents: List[OverrideDocument]) -> Self:
+        """
+        Set load inputted override documents into self.override so they can be used in column
+        generation. Used by OverrideHandler to validate new overrides.
+
+        documents:
+            List of override documents
+
+        """
+        self.override_documents = documents
+
+        return self
+
     def validate(self) -> bool:
         """
-        Make sure that column data is valid. Thanks to FastAPI and its Pydantic based
-        validators, the only remaining thing to validate here is that set_ids in non-
-        device columns are the same name as a set_id in the device column.
+        Make sure that column data is valid. In case of column validations, we
+        assume that column has already been validated by FastAPI and only validate
+        that device is registered.
 
         """
         if self.column_type != 'device':

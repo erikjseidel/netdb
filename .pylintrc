@@ -637,4 +637,5 @@ disable=import-error,
         missing-class-docstring,
         redefined-outer-name,
         unused-argument,
-        duplicate-code
+        duplicate-code,
+        consider-using-f-string
