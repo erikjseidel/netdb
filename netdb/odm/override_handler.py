@@ -47,8 +47,8 @@ class OverrideHandler:
     def upsert(self, override: OverrideDocument) -> bool:
         """
         Upsert existing override (if exists) with new ones. If none already
-        exist then a new one is created.. Before insertion, override is validated
-        to ensure that (1) underlying configuration exists and that the overriden
+        exist then a new one is created. Before insertion, override is validated to
+        ensure that (1) underlying configuration exists and (2) that the overriden
         configuration is valid.
 
         override:
@@ -76,6 +76,18 @@ class OverrideHandler:
         # validation NetDBException thrown if errors are found.
         #
         column.set_overrides([override]).generate_column()
+
+        if column.overrides_applied != 1:
+            #
+            # Overrides applied should be exactly one. If zero, then the override
+            # doesn't actually match a discrete document / column element and thus
+            # could not be applied.
+            #
+            raise NetDBException(
+                code=422,
+                message="Invalid override. Does not match a discrete column element.",
+                out=override,
+            )
 
         # Validation passed. Store the override.
         self.mongo.replace_one(override)

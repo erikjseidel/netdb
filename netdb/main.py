@@ -413,9 +413,6 @@ def get_overrides(
     element_id: ``None``
         Filter query by `element_id' key
 
-    show_hidden: ``False``
-        Return 'hidden' (i.e. weight < 1) elements
-
     """
     filt = generate_filter(
         None, set_id, category, family, element_id, column_type=column

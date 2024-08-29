@@ -34,7 +34,7 @@ class BaseContainer(BaseColumnModel):
     @property
     def categories(self):
         """
-        Property method to return available category types for this column.
+        Return available category types for this column.
 
         """
         return self.__categories__
@@ -42,7 +42,7 @@ class BaseContainer(BaseColumnModel):
     @property
     def flat(self):
         """
-        Property method to return whether or not this is a "flat" column type.
+        Return whether or not this is a "flat" column type.
 
         """
         return self.__flat__

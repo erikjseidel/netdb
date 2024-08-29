@@ -18,29 +18,30 @@ class ColumnODM:
     # If set then elements with weight < 1 are presented as well
     __provide_all__ = False
 
-    # NetDB documents placed here pending column generation.
+    # NetDB documents placed here pending save or column generation.
     documents: Optional[List[NetdbDocument]] = None
 
     # Override documents placed here by fetch() when overrides enabled.
     override_documents: Optional[List[OverrideDocument]] = None
 
+    # Numnber of overrides applied to a generated column.
+    overrides_applied: int = 0
+
     def __init__(self, container: RootContainer = None, column_type: str = None):
         """
-        Initialize the ColumnODM object to MongoDB document mapper. This object converts
-        column data (in Pydantic column model format) into MongoDB documents, which are
-        then loaded into MongoDB and vice versa.
+        Initialize the ColumnODM object to NetDB document mapper. This object converts
+        column data (in Pydantic column model format) into NetDB documents, which can
+        then be loaded into MongoDB and vice versa.
 
         container: ``None``
             Pydantic column model data to be converted into document format and loaded
-            into MongoDB.
+            into NetDB document format.
 
-        type: ``None``
+        column_type: ``None``
             String containing the column type to be queried in cases where we are loading
             documents from MongoDB and converting to Pydantic column format.
 
         """
-
-        # NetdbDocument documents stored here pending load into MongoDB.
 
         self.column_type = None
 
@@ -165,7 +166,7 @@ class ColumnODM:
 
     def generate_column(self) -> Self:
         """
-        Convert MongoDB documents into column formated dict data.
+        Convert NetDB documents into column formated dict data.
         """
         out = {}
 
@@ -184,6 +185,8 @@ class ColumnODM:
                 ): document.data
                 for document in self.override_documents
             }
+
+            self.overrides_applied = 0
 
         for document in self.documents:
 
@@ -266,6 +269,7 @@ class ColumnODM:
                 if override_data := override_map.get(override_tuple):
                     element_data.update(override_data)
                     element_data['meta']['netdb']['override'] = True
+                    self.overrides_applied += 1
 
             unwind[element_id] = element_data
 
@@ -308,8 +312,7 @@ class ColumnODM:
         enable_overrides: bool = True,
     ) -> Self:
         """
-        Pull column ducuments from MongoDB and convert them into a column formatted
-        structured dict data and return it to caller.
+        Pull column ducuments from MongoDB and store them in self.documents.
 
         filt: ``None``
             Filter the query using a MongoDB compatable dict based filter
@@ -344,7 +347,7 @@ class ColumnODM:
         """
         Replace entire column or parts of column filtered by datasource with new data.
         Documents should already be loaded into into self.documents by
-        self._generate_mongo_documents().
+        self._generate_netdb_documents().
 
         This method is used by various SoT backends to manage 'their' portions of the
         configuration data column (as identified by 'datasource').
@@ -363,7 +366,7 @@ class ColumnODM:
     def delete(self, filt: dict) -> int:
         """
         Delete documents from MongoDB filtered by filter. Documents should already be
-        loaded into self.documents by self._generate_mongo_documents().
+        loaded into self.documents by self._generate_netdb_documents().
 
         """
         if not filt:
@@ -378,7 +381,7 @@ class ColumnODM:
     def replace(self) -> int:
         """
         Upsert existing documents with new ones. Documents should already be loaded
-        into self.documents by self._generate_mongo_documents().
+        into self.documents by self._generate_netdb_documents().
 
         """
         if self.column_type != 'device':
