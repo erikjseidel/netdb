@@ -19,9 +19,9 @@ COLUMN_FACTORY = {
     'protocol': ProtocolContainer,
 }
 
-COLUMN_CLASSES = list(COLUMN_FACTORY.values())
-
 COLUMN_TYPES = list(COLUMN_FACTORY.keys())
+
+COLUMN_CLASSES = list(COLUMN_FACTORY.values())
 
 ColumnType = Annotated[str, Literal[*COLUMN_TYPES]]
 
