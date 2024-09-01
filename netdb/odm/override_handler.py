@@ -1,4 +1,6 @@
-from typing import Optional, List, Self
+from typing import Optional, Self
+from beartype.typing import List
+from beartype import beartype
 from fastapi.encoders import jsonable_encoder
 
 from config.defaults import DB_NAME, OVERRIDE_TABLE
@@ -9,6 +11,7 @@ from models.types import OverrideDocument
 from .column_odm import ColumnODM
 
 
+@beartype
 class OverrideHandler:
 
     overrides: List[OverrideDocument] = None
@@ -44,7 +47,7 @@ class OverrideHandler:
 
         return self
 
-    def upsert(self, override: OverrideDocument) -> bool:
+    def upsert(self, override: OverrideDocument) -> dict:
         """
         Upsert existing override (if exists) with new ones. If none already
         exist then a new one is created. Before insertion, override is validated to
