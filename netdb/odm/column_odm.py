@@ -1,4 +1,6 @@
-from typing import List, Union, Optional, Self
+from typing import Union, Optional, Self
+from beartype.typing import List
+from beartype import beartype
 from fastapi.encoders import jsonable_encoder
 from pydantic import ValidationError
 from config.defaults import DB_NAME, OVERRIDE_TABLE
@@ -13,6 +15,7 @@ from util.mongo_api import MongoAPI
 from util.exception import NetDBException
 
 
+@beartype
 class ColumnODM:
 
     # If set then elements with weight < 1 are presented as well
@@ -343,7 +346,7 @@ class ColumnODM:
 
         return self
 
-    def reload(self, filt: Optional[dict] = None) -> Optional[dict]:
+    def reload(self, filt: Optional[dict] = None) -> Self:
         """
         Replace entire column or parts of column filtered by datasource with new data.
         Documents should already be loaded into into self.documents by
