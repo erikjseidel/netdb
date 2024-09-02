@@ -294,7 +294,7 @@ max-attributes=10
 max-bool-expr=5
 
 # Maximum number of branch for function / method body.
-max-branches=14
+max-branches=14  # Need to get this back to 12 (currently at 13)
 
 # Maximum number of locals for function / method body.
 max-locals=15
