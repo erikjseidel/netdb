@@ -309,7 +309,9 @@ class ColumnODM:
         names and the device should already be 'registered' in the device column.
 
         """
-        devices = [device.set_id for device in MongoAPI(DB_NAME, 'device').read_column()]
+        devices = [
+            device.set_id for device in MongoAPI(DB_NAME, 'device').read_column()
+        ]
 
         for set_id in self.container.column.keys():
             if set_id not in devices:
