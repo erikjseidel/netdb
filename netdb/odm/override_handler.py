@@ -14,9 +14,9 @@ from .column_odm import ColumnODM
 @beartype
 class OverrideHandler:
 
-    overrides: List[OverrideDocument] = None
+    overrides: Optional[List[OverrideDocument]] = None
 
-    def __init__(self, override: OverrideDocument = None):
+    def __init__(self, override: Optional[OverrideDocument] = None):
         """
         Initialize a new OverrideHandler instance and its database connection.
 
@@ -43,7 +43,7 @@ class OverrideHandler:
 
         filt = filt or {}
 
-        self.overrides = self.mongo.read(filt)
+        self.overrides = self.mongo.read_overrides(filt)
 
         return self
 

@@ -26,7 +26,14 @@ COLUMN_CLASSES = list(COLUMN_FACTORY.values())
 ColumnType = Annotated[str, Literal[*COLUMN_TYPES]]
 
 RootContainer = Annotated[
-    Union[*COLUMN_CLASSES],
+    Union[
+        DeviceContainer,
+        FirewallContainer,
+        PolicyContainer,
+        InterfaceContainer,
+        BGPContainer,
+        ProtocolContainer,
+    ],
     Body(discriminator='column_type'),
 ]
 

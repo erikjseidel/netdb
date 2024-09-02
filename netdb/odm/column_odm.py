@@ -8,6 +8,7 @@ from models.types import (
     RootContainer,
     NetdbDocument,
     OverrideDocument,
+    ColumnType,
     COLUMN_TYPES,
     COLUMN_FACTORY,
 )
@@ -27,10 +28,17 @@ class ColumnODM:
     # Override documents placed here by fetch() when overrides enabled.
     override_documents: Optional[List[OverrideDocument]] = None
 
-    # Numnber of overrides applied to a generated column.
+    # Number of overrides applied to a generated column
     overrides_applied: int = 0
 
-    def __init__(self, container: RootContainer = None, column_type: str = None):
+    # The colume type on which ColumnODM is operating.
+    column_type: Optional[ColumnType] = None
+
+    def __init__(
+        self,
+        container: Optional[RootContainer] = None,
+        column_type: Optional[ColumnType] = None,
+    ):
         """
         Initialize the ColumnODM object to NetDB document mapper. This object converts
         column data (in Pydantic column model format) into NetDB documents, which can
@@ -45,8 +53,6 @@ class ColumnODM:
             documents from MongoDB and converting to Pydantic column format.
 
         """
-
-        self.column_type = None
 
         if container:
             self.container = container
@@ -171,7 +177,13 @@ class ColumnODM:
         """
         Convert NetDB documents into column formated dict data.
         """
-        out = {}
+        out: dict = {}
+
+        if self.documents is None or self.column_type is None:
+            raise NetDBException(
+                code=503,
+                message='ColumnODM.generate_column called before setting column_type or loading documents from datasource.',
+            )
 
         override_map = None
         if self.override_documents:
@@ -297,7 +309,9 @@ class ColumnODM:
         names and the device should already be 'registered' in the device column.
 
         """
-        devices = [device.set_id for device in MongoAPI(DB_NAME, 'device').read()]
+        devices = [
+            device.set_id for device in MongoAPI(DB_NAME, 'device').read_column()
+        ]
 
         for set_id in self.container.column.keys():
             if set_id not in devices:
@@ -329,7 +343,7 @@ class ColumnODM:
         """
         filt = filt or {}
 
-        self.documents = self.mongo.read(filt)
+        self.documents = self.mongo.read_column(filt)
 
         self.__provide_all__ = show_hidden
 
@@ -340,7 +354,7 @@ class ColumnODM:
                 for k, v in filt.items()
                 if k in ['set_id', 'category', 'family', 'element_id'] and v
             }
-            self.override_documents = MongoAPI(DB_NAME, OVERRIDE_TABLE).read(
+            self.override_documents = MongoAPI(DB_NAME, OVERRIDE_TABLE).read_overrides(
                 query={'column_type': self.column_type, **override_filt}
             )
 
@@ -361,6 +375,11 @@ class ColumnODM:
 
         if self.column_type != 'device':
             self._is_registered()
+
+        if self.documents is None:
+            raise NetDBException(
+                code=503, message='ColumnODM.reload called on empty document set'
+            )
 
         self.mongo.reload(self.documents, filt)
 
@@ -389,6 +408,11 @@ class ColumnODM:
         """
         if self.column_type != 'device':
             self._is_registered()
+
+        if self.documents is None:
+            raise NetDBException(
+                code=500, message='ColumnODM.replace called on empty document set'
+            )
 
         count = 0
         for document in self.documents:

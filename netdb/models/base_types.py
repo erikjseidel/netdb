@@ -1,4 +1,4 @@
-from typing import Annotated, Literal, Optional
+from typing import Annotated, List, Literal, Optional
 from pydantic import BaseModel, ConfigDict
 
 FamilyType = Annotated[str, Literal['ipv4', 'ipv6']]
@@ -25,8 +25,8 @@ class BaseContainer(BaseColumnModel):
 
     """
 
-    __flat__ = False
-    __categories__ = []
+    __flat__: bool = False
+    __categories__: List[str] = []
 
     weight: int
     datasource: str

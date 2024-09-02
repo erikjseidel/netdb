@@ -1,7 +1,7 @@
-from typing import Union
+from typing import Union, List
 from pymongo import MongoClient, ReadPreference
 from models.types import NetdbDocument, OverrideDocument
-from config.defaults import TRANSACTIONS, MONGO_URL, OVERRIDE_TABLE
+from config.defaults import TRANSACTIONS, MONGO_URL
 
 
 class MongoAPI:
@@ -20,11 +20,14 @@ class MongoAPI:
         collection:
             MongoDB collection to use
 
+
         """
         if TRANSACTIONS:
             # Transactions implies a replica set. Read from first available (which should
             # just be local instance)
-            self.client = MongoClient(MONGO_URL, read_preference=ReadPreference.NEAREST)
+            self.client: MongoClient = MongoClient(
+                MONGO_URL, read_preference=ReadPreference.NEAREST
+            )
         else:
             self.client = MongoClient(MONGO_URL)
 
@@ -33,7 +36,7 @@ class MongoAPI:
         cursor = self.client[database]
         self.collection = cursor[collection]
 
-    def read(self, query: Union[dict, None] = None) -> list:
+    def read_column(self, query: Union[dict, None] = None) -> List[NetdbDocument]:
         """
         Read documents from the collection filtered by query.
 
@@ -41,38 +44,39 @@ class MongoAPI:
             Filter to use when reading documents from the collection
 
         """
-        query = query or {}
+        return [
+            NetdbDocument(
+                set_id=document['set_id'],
+                datasource=document['datasource'],
+                weight=document['weight'],
+                flat=document['flat'],
+                category=document['category'],
+                family=document['family'],
+                element_id=document['element_id'],
+                data=document['data'],
+            )
+            for document in self.collection.find(query or {})
+        ]
 
-        documents = self.collection.find(query)
+    def read_overrides(self, query: Union[dict, None] = None) -> List[OverrideDocument]:
+        """
+        Read documents from the collection filtered by query.
 
-        if self.collection_name == OVERRIDE_TABLE:
-            ret = [
-                OverrideDocument(
-                    column_type=document['datasource'],
-                    set_id=document['set_id'],
-                    category=document['category'],
-                    family=document['family'],
-                    element_id=document['element_id'],
-                    data=document['data'],
-                )
-                for document in documents
-            ]
-        else:
-            ret = [
-                NetdbDocument(
-                    set_id=document['set_id'],
-                    datasource=document['datasource'],
-                    weight=document['weight'],
-                    flat=document['flat'],
-                    category=document['category'],
-                    family=document['family'],
-                    element_id=document['element_id'],
-                    data=document['data'],
-                )
-                for document in documents
-            ]
+        query: ``None``
+            Filter to use when reading documents from the collection
 
-        return ret
+        """
+        return [
+            OverrideDocument(
+                column_type=document['datasource'],
+                set_id=document['set_id'],
+                category=document['category'],
+                family=document['family'],
+                element_id=document['element_id'],
+                data=document['data'],
+            )
+            for document in self.collection.find(query or {})
+        ]
 
     def reload(self, documents: list, filt: dict) -> bool:
         """
@@ -133,11 +137,13 @@ class MongoAPI:
             'category': document.category,
             'family': document.family,
             'element_id': document.element_id,
-            'datasource': document.datasource,
         }
 
+        if isinstance(document, NetdbDocument):
+            filt.update({'datasource': document.datasource})
+
         return bool(
-            self.collection.replace_one(filt, document.model_dump).modified_count
+            self.collection.replace_one(filt, document.model_dump()).modified_count
         )
 
     def delete_many(self, filt: dict) -> int:

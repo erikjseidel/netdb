@@ -1,5 +1,5 @@
 from typing import Union
-from mocked_data import device, interface, bgp, protocol, firewall, policy, override
+from mocked_data import device, interface, bgp, protocol, firewall, policy, override  # type: ignore
 
 from config.defaults import OVERRIDE_TABLE
 
@@ -19,12 +19,12 @@ class MongoAPI:
 
     def __init__(self, database: str, collection: str):
         self.collection = collection
-        self.filter = None
-        self.documents = []
+        self.filter: dict = {}
+        self.documents: list = []
 
-    def read(self, query: Union[dict, None] = None) -> list:
+    def read_column(self, query: Union[dict, None] = None) -> list:
         """
-        Mock MongoAPI read returns for valid column types.
+        Mock MongoAPI read_column returns for valid column types.
         """
         documents = COLLECTION_FACTORY[self.collection]()
 
@@ -37,6 +37,12 @@ class MongoAPI:
             ]
 
         return documents
+
+    def read_overrides(self, query: Union[dict, None] = None) -> list:
+        """
+        Mock MongoAPI read_overrides return
+        """
+        return self.read_column(query)
 
     def reload(self, documents: list, filt: dict) -> bool:
         """
