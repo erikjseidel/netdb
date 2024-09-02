@@ -5,4 +5,4 @@ RUN pip install --no-cache-dir --upgrade -r /netdb/requirements.txt
 COPY ./netdb /netdb/app
 COPY ./netdb/config/defaults.py.example /netdb/app/config/defaults.py
 COPY ./pytest.ini /netdb/app
-CMD ["pytest", "-vv"]
+#CMD ["pytest", "-vv"]

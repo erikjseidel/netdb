@@ -25,6 +25,10 @@ COLUMN_CLASSES = list(COLUMN_FACTORY.values())
 
 ColumnType = Annotated[str, Literal[*COLUMN_TYPES]]
 
+#
+# Mypy type checker does not like unpacked lists in Unions so we
+# exolicitely set instead.
+#
 RootContainer = Annotated[
     Union[
         DeviceContainer,

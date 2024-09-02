@@ -1,4 +1,3 @@
-from pprint import pprint
 from unittest.mock import patch
 from fastapi.testclient import TestClient
 
@@ -384,8 +383,6 @@ def test_get_column(column, get_string, code, result):
 
     """
     response = client.get(f"/column/{column}?{get_string}")
-
-    pprint(response.json())
 
     assert response.status_code == code
     assert response.json() == result
