@@ -34,7 +34,7 @@ class OverrideHandler:
 
     def fetch(self, filt: Optional[dict] = None) -> Self:
         """
-        Pull override documents from MongoDB and place them into self.overrides.
+        Pull override documents from datasource and place them into self.overrides.
 
         filt: ``None``
             Filter the query using a MongoDB compatable dict based filter

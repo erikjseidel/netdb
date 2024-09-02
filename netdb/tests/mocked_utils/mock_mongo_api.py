@@ -24,7 +24,7 @@ class MongoAPI:
 
     def read_column(self, query: Union[dict, None] = None) -> list:
         """
-        Mock MongoAPI read_column returns for valid column types.
+        Mock MongoAPI read_column (NetdbDocument) returns for valid column types.
         """
         documents = COLLECTION_FACTORY[self.collection]()
 
@@ -40,7 +40,9 @@ class MongoAPI:
 
     def read_overrides(self, query: Union[dict, None] = None) -> list:
         """
-        Mock MongoAPI read_overrides return
+        Mock MongoAPI read_overrides (OverrideDocument) return. Currently just
+        a wrapper around read_column as mocked data already in the correct
+        document format.
         """
         return self.read_column(query)
 

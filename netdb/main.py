@@ -33,6 +33,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
+# Application entry point
 app = FastAPI(
     title="NetDB API Version 2",
     description=resources.DESCRIPTION,

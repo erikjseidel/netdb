@@ -1,6 +1,7 @@
 from typing import Annotated, List, Literal, Optional
 from pydantic import BaseModel, ConfigDict
 
+# Used for 'family' column level. Currently only IPv4 and IPv6
 FamilyType = Annotated[str, Literal['ipv4', 'ipv6']]
 
 

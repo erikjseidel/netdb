@@ -1,5 +1,4 @@
 from unittest.mock import patch
-from pprint import pprint
 
 import pytest
 
@@ -211,7 +210,6 @@ def test_column_odm_document_generation(container, documents):
     odm = column_odm.ColumnODM(container=container)
 
     # Show all NetdbDocument documents in case of failure.
-    pprint(odm.documents)
 
     assert odm.documents == documents
 

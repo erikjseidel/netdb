@@ -38,7 +38,7 @@ class MongoAPI:
 
     def read_column(self, query: Union[dict, None] = None) -> List[NetdbDocument]:
         """
-        Read documents from the collection filtered by query.
+        Read column (NetdbDocument) documents from the collection filtered by query.
 
         query: ``None``
             Filter to use when reading documents from the collection
@@ -60,7 +60,7 @@ class MongoAPI:
 
     def read_overrides(self, query: Union[dict, None] = None) -> List[OverrideDocument]:
         """
-        Read documents from the collection filtered by query.
+        Read override (OverrideDocument) documents from the collection filtered by query.
 
         query: ``None``
             Filter to use when reading documents from the collection

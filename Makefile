@@ -18,11 +18,11 @@ lint:
 
 .PHONY: unit-tests
 unit-tests:
-	docker build -f Dockerfile.pytest -t test-netdb-api .; docker run --rm test-netdb-api; e=$$?; docker image rm test-netdb-api ; exit $$e
+	docker build -f Dockerfile.test -t test-netdb-api .; docker run --rm test-netdb-api pytest -vv; e=$$?; docker image rm test-netdb-api ; exit $$e
 
 .PHONY: type-check
 type-check:
-	docker build -f Dockerfile.pytest -t test-netdb-api .; docker run --rm test-netdb-api mypy --explicit-package-bases .; e=$$?; docker image rm test-netdb-api ; exit $$e
+	docker build -f Dockerfile.test -t test-netdb-api .; docker run --rm test-netdb-api mypy --explicit-package-bases .; e=$$?; docker image rm test-netdb-api ; exit $$e
 
 .PHONY: build
 build:
