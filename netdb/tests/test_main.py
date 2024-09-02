@@ -4,8 +4,8 @@ from fastapi.testclient import TestClient
 
 import pytest
 
-from mocked_data import interface
-from mocked_utils import mock_mongo_api
+from mocked_data import interface  # type: ignore
+from mocked_utils import mock_mongo_api  # type: ignore
 
 
 def _container(column_type, datasource, weight, column):

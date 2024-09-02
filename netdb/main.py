@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Union, Optional
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, Response, status
 from fastapi.exceptions import RequestValidationError, HTTPException
@@ -173,7 +173,7 @@ def validate_column(
 def reload_column(
     data: RootContainer,
     response: Response,
-) -> NetDBReturn:
+) -> Union[NetDBReturn, dict]:
     """
     Replace entire column or parts of column filtered by datasource with new data.
 
@@ -264,7 +264,7 @@ def get_column(
 def replace_elements(
     data: RootContainer,
     response: Response,
-) -> NetDBReturn:
+) -> Union[NetDBReturn, dict]:
     """
     Replace elements (or set in the case of 'flat' columns).
 
@@ -303,7 +303,7 @@ def delete_elements(
     category: Optional[str] = None,
     family: Optional[str] = None,
     element_id: Optional[str] = None,
-) -> NetDBReturn:
+) -> Union[NetDBReturn, dict]:
     """
     Delete elements from a column. Delete column elements matching the following keys:
 
@@ -431,7 +431,7 @@ def get_overrides(
 def put_override(
     override: OverrideDocument,
     response: Response,
-) -> NetDBReturn:
+) -> Union[NetDBReturn, dict]:
     """
     Put (upsert) a new override.
 
@@ -461,7 +461,7 @@ def delete_overrides(
     category: Optional[str] = None,
     family: Optional[str] = None,
     element_id: Optional[str] = None,
-) -> NetDBReturn:
+) -> Union[NetDBReturn, dict]:
     """
     Delete column overrides. Delete overrides matching the following keys:
 

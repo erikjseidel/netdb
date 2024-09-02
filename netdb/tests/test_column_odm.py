@@ -3,7 +3,7 @@ from pprint import pprint
 
 import pytest
 
-from mocked_data import device, interface, protocol, bgp, firewall, policy
+from mocked_data import device, interface, protocol, bgp, firewall, policy  # type: ignore
 from fastapi.encoders import jsonable_encoder
 
 from models.columns.device import DeviceContainer
@@ -15,7 +15,7 @@ from models.columns.policy import PolicyContainer
 
 from util.exception import NetDBException
 
-from mocked_utils import mock_mongo_api
+from mocked_utils import mock_mongo_api  # type: ignore
 
 with patch.dict(
     'sys.modules',
