@@ -1,6 +1,6 @@
 import logging
 
-from config.defaults import DB_NAME, OVERRIDE_TABLE
+from config.settings import NetdbSettings
 from models.types import COLUMN_TYPES
 from .mongo_api import MongoAPI
 
@@ -32,11 +32,24 @@ def initialize():
     that the required MongoDB collection indexes are in place.
 
     """
-    for column in COLUMN_TYPES:
-        logger.info("%s: Creating index for column %s", DB_NAME, column)
 
-        # This call will be a no-op if index already exists.
-        MongoAPI(DB_NAME, column).create_index(DEFAULT_INDEX)
+    # Load NetdbSettings
+    NetdbSettings.initialize()
 
-        logger.info("%s: Creating index for override table %s", DB_NAME, OVERRIDE_TABLE)
-        MongoAPI(DB_NAME, OVERRIDE_TABLE).create_index(OVERRIDE_INDEX)
+    # Get the loaded NetDB settings
+    settings = NetdbSettings.get_settings()
+
+    if not settings.read_only:
+        for column in COLUMN_TYPES:
+            logger.info("%s: Creating index for column %s", settings.db_name, column)
+
+            # This call will be a no-op if index already exists.
+            MongoAPI(settings.db_name, column).create_index(DEFAULT_INDEX)
+
+    if settings.overrides_enabled:
+        logger.info(
+            "%s: Creating index for override table %s",
+            settings.db_name,
+            settings.override_table,
+        )
+        MongoAPI(settings.db_name, settings.override_table).create_index(OVERRIDE_INDEX)
