@@ -6,7 +6,7 @@ from fastapi.encoders import jsonable_encoder
 
 import util.initialize as init
 import util.api_resources as resources
-from config.defaults import READ_ONLY, OVERRIDES_ENABLED
+from config.settings import NetdbSettings
 from models.types import RootContainer, OverrideDocument, COLUMN_TYPES
 from odm.column_odm import ColumnODM
 from odm.override_handler import OverrideHandler
@@ -24,12 +24,12 @@ from util.api_resources import (
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
-    Called at API startup time. Initialize the database (i.e. make sure indexes are installed)
-    unless started in read only mode.
+    Called at API startup time. Initialize NetDB (e.g. load global settings, make sure indexes are
+    installed unless started in read only mode).
 
     """
-    if not READ_ONLY:
-        init.initialize()
+    init.initialize()
+
     yield
 
 
@@ -120,7 +120,7 @@ async def netdb__exception_handler(request: Request, exc: NetDBException):
     return PrettyJSONResponse(content=response, status_code=exc.code)
 
 
-@app.get("/")
+@app.get('/')
 def read_root() -> dict:
     """
     API root handler. Simply returns API name and status=up
@@ -130,6 +130,18 @@ def read_root() -> dict:
         'name': 'NetDB API version 2',
         'status': 'up',
     }
+
+
+@app.get(
+    '/settings',
+    response_class=PrettyJSONResponse,
+)
+def display_settings() -> dict:
+    """
+    Show global NetDB settings.
+
+    """
+    return NetdbSettings.get_settings().model_dump()
 
 
 @app.get(
@@ -189,7 +201,7 @@ def reload_column(
         HTTP response context passed in by FastAPI
 
     """
-    if READ_ONLY:
+    if NetdbSettings.get_settings().read_only:
         response.status_code = status.HTTP_403_NOT_ALLOWED
         return ERR_READONLY
 
@@ -276,7 +288,7 @@ def replace_elements(
         HTTP response context passed in by FastAPI
 
     """
-    if READ_ONLY:
+    if NetdbSettings.get_settings().read_only:
         response.status_code = status.HTTP_403_NOT_ALLOWED
         return ERR_READONLY
 
@@ -332,7 +344,7 @@ def delete_elements(
         HTTP response context passed in by FastAPI
 
     """
-    if READ_ONLY:
+    if NetdbSettings.get_settings().read_only:
         response.status_code = status.HTTP_403_NOT_ALLOWED
         return ERR_READONLY
 
@@ -445,7 +457,7 @@ def put_override(
         HTTP response context passed in by FastAPI
 
     """
-    if not OVERRIDES_ENABLED:
+    if not NetdbSettings.get_settings().overrides_enabled:
         response.status_code = status.HTTP_403_NOT_ALLOWED
         return ERR_OVERRIDE_DISABLED
 
@@ -487,7 +499,7 @@ def delete_overrides(
         HTTP response context passed in by FastAPI
 
     """
-    if not OVERRIDES_ENABLED:
+    if not NetdbSettings.get_settings().overrides_enabled:
         response.status_code = status.HTTP_403_NOT_ALLOWED
         return ERR_OVERRIDE_DISABLED
 

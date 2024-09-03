@@ -3,7 +3,7 @@ from beartype.typing import List
 from beartype import beartype
 from fastapi.encoders import jsonable_encoder
 from pydantic import ValidationError
-from config.defaults import DB_NAME, OVERRIDE_TABLE
+from config.settings import NetdbSettings
 from models.types import (
     RootContainer,
     NetdbDocument,
@@ -68,14 +68,17 @@ class ColumnODM:
                 message=f'Column {self.column_type} not available',
             )
 
-        if self.column_type == OVERRIDE_TABLE:
+        # Get the global settings
+        settings = NetdbSettings.get_settings()
+
+        if self.column_type == settings.override_table:
             raise NetDBException(
                 code=422,
                 message=f'Column {self.column_type} confict with override table. Please rename.',
             )
 
         # Initialize the MongoDB driver
-        self.mongo = MongoAPI(DB_NAME, self.column_type)
+        self.mongo = MongoAPI(settings.db_name, self.column_type)
 
     @property
     def pruned_column(self) -> dict:
@@ -310,7 +313,10 @@ class ColumnODM:
 
         """
         devices = [
-            device.set_id for device in MongoAPI(DB_NAME, 'device').read_column()
+            device.set_id
+            for device in MongoAPI(
+                NetdbSettings.get_settings().db_name, 'device'
+            ).read_column()
         ]
 
         for set_id in self.container.column.keys():
@@ -349,14 +355,16 @@ class ColumnODM:
 
         if enable_overrides:
 
+            settings = NetdbSettings.get_settings()
+
             override_filt = {
                 k: v
                 for k, v in filt.items()
                 if k in ['set_id', 'category', 'family', 'element_id'] and v
             }
-            self.override_documents = MongoAPI(DB_NAME, OVERRIDE_TABLE).read_overrides(
-                query={'column_type': self.column_type, **override_filt}
-            )
+            self.override_documents = MongoAPI(
+                settings.db_name, settings.override_table
+            ).read_overrides(query={'column_type': self.column_type, **override_filt})
 
         return self
 

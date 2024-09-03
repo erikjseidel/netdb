@@ -1,8 +1,9 @@
 from typing import Union
 from mocked_data import device, interface, bgp, protocol, firewall, policy, override  # type: ignore
 
-from config.defaults import OVERRIDE_TABLE
+from config.settings import NetdbSettings
 
+NetdbSettings.initialize()
 
 COLLECTION_FACTORY = {
     'device': device.mock_standard_device_documents,
@@ -11,7 +12,7 @@ COLLECTION_FACTORY = {
     'bgp': bgp.mock_standard_bgp_documents,
     'firewall': firewall.mock_standard_firewall_documents,
     'policy': policy.mock_standard_policy_documents,
-    OVERRIDE_TABLE: override.mock_override_documents,
+    NetdbSettings.get_settings().override_table: override.mock_override_documents,
 }
 
 

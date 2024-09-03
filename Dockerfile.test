@@ -3,5 +3,5 @@ WORKDIR /netdb/app
 COPY ./requirements-pytest.txt /netdb/requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /netdb/requirements.txt
 COPY ./netdb /netdb/app
-COPY ./netdb/config/defaults.py.example /netdb/app/config/defaults.py
+COPY /netdb.env.example /netdb/app/.env
 COPY ./pytest.ini /netdb/app

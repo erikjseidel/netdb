@@ -1,7 +1,7 @@
 from typing import Union, List
 from pymongo import MongoClient, ReadPreference
 from models.types import NetdbDocument, OverrideDocument
-from config.defaults import TRANSACTIONS, MONGO_URL
+from config.settings import NetdbSettings
 
 
 class MongoAPI:
@@ -22,14 +22,16 @@ class MongoAPI:
 
 
         """
-        if TRANSACTIONS:
+        settings = NetdbSettings.get_settings()
+
+        if settings.transactions:
             # Transactions implies a replica set. Read from first available (which should
             # just be local instance)
             self.client: MongoClient = MongoClient(
-                MONGO_URL, read_preference=ReadPreference.NEAREST
+                settings.mongo_url, read_preference=ReadPreference.NEAREST
             )
         else:
-            self.client = MongoClient(MONGO_URL)
+            self.client = MongoClient(settings.mongo_url)
 
         self.collection_name = collection
 
@@ -96,7 +98,7 @@ class MongoAPI:
             'netbox'}`)
 
         """
-        if TRANSACTIONS:
+        if NetdbSettings.get_settings().transactions:
             with self.client.start_session() as session:
                 with session.start_transaction():
                     self.collection.delete_many(filt, session=session)

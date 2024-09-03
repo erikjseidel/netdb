@@ -3,7 +3,7 @@ from beartype.typing import List
 from beartype import beartype
 from fastapi.encoders import jsonable_encoder
 
-from config.defaults import DB_NAME, OVERRIDE_TABLE
+from config.settings import NetdbSettings
 from util.mongo_api import MongoAPI
 from util.exception import NetDBException
 from models.types import OverrideDocument
@@ -21,7 +21,8 @@ class OverrideHandler:
         Initialize a new OverrideHandler instance and its database connection.
 
         """
-        self.mongo = MongoAPI(DB_NAME, OVERRIDE_TABLE)
+        settings = NetdbSettings.get_settings()
+        self.mongo = MongoAPI(settings.db_name, settings.override_table)
 
     @property
     def pruned_overrides(self):
